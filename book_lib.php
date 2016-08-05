@@ -91,13 +91,11 @@ function list_record($login_id, $role=1)
 
 function list_book($format='')
 {
-	global $lgoin_id;
+	global $login_id;
 	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 1000px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
-	$borrow = "<a href=\"book.php?user=$login_id&action=new\">new</a>";
-	print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date', 'status', $borrow));
+	print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date', 'status', 'action'));
 	$sql = " select * from books";
 
-//	$sql = " select * from weekly.importcase";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
 	//	$prog = $row['Latest Qualcomm Progress Update'];
@@ -111,11 +109,15 @@ function list_book($format='')
 		$index= $row['index'];
 		$price= $row['price'];
 		$buy_date= $row['buy_date'];
-		$blink = "<a href=book.php?action=borrow&book_id=\"$book_id\">Borrow</a>";
-		if($status & 1)
+		$status=$row['status'];	
+		if($status != 0){
 			$status_text = "Out";
-		else
+			$status_text = "<a href=book.php?action=show_borrower&book_id=\"$book_id\">Out</a>";
+			$blink = "<a href=book.php?action=wait&book_id=\"$book_id\">Wait</a>";
+		}else{
 			$status_text = "Stock";
+			$blink = "<a href=book.php?action=borrow&book_id=\"$book_id\">Borrow</a>";
+		}
 		if($name == "TBD" || $name == "")
 			continue;
 		print("<tr>");
@@ -138,25 +140,53 @@ function is_member($login_id)
 	return 0;
 }
 
-function get_quiz_attribute($quiz_id, $attr)
-{
-	$sql = "select * from quiz where quiz_id=$quiz_id";
-	$res = mysql_query($sql) or die("Invalid query:".$sql.mysql_error());
-	if($row = mysql_fetch_array($res)){
-		$status = $row[$attr];
-		return $status;
-    }
-	return -1;
-}
-
 function wait_book($book_id, $login_id)
 {
-	borrow_book($book_id, $login_id, 4);
+	if(!check_record($book_id, $login_id))
+		return false;
+	add_record($book_id, $login_id, 4);
+	print("Add to waiting list successfully<br>");
 }
-function borrow_book($book_id, $login_id, $status=1)
+
+function borrow_book($book_id, $login_id)
 {
-	global $role, $max_books;
-	dprint("book:$book_id, login:$login_id, status:$status");
+	if(!check_record($book_id, $login_id))
+		return false;
+	add_record($book_id, $login_id, 1);
+	set_book_status($book_id, 1);
+}
+
+function show_borrower($book_id)
+{
+	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
+
+	print_tdlist(array('id', 'book','person','date', 'status'));
+
+	$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id='$book_id' and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status != 0";
+
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	while($row=mysql_fetch_array($res)){
+		$book_id = $row['book_id']; 
+		$name= $row['name'];
+		$user_name= $row['user_name'];
+		$status=$row['status'];	
+		if($status == 4){
+			$status_text = "Waiting";
+			$date = $row['adate'];
+		}else{
+			$status_text = "Own";
+			$date = $row['bdate'];
+		}
+		print("<tr>");
+		print_tdlist(array($book_id, $name, $user_name,$date, $status_text)); 
+		print("</tr>\n");
+	}
+	print("</table>");
+}
+
+function check_record($book_id, $login_id)
+{
+	global $role;
 	if($role == 0){
 		print("You are not a member!");
 		return false;
@@ -167,15 +197,11 @@ function borrow_book($book_id, $login_id, $status=1)
 		print ("You already borrowed this book!");
 		return false;
 	}
+	return true;
+}
 
-	$sql = " select * from history where borrower='$login_id' and status!=0";
-	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
-	$num_rows = mysql_num_rows($res);
-	if($num_rows >= $max_books){
-		print ("You has reached maximum books you can borrow!");
-		return false;
-	}
-
+function add_record($book_id, $login_id, $status=1)
+{
 	$time = time();
 	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
 	$sql = " insert into history set `borrower`='$login_id', book_id=$book_id, adate= '$time_start', status=$status";
@@ -183,7 +209,7 @@ function borrow_book($book_id, $login_id, $status=1)
 	return true;
 }
 
-function set_book_status($record_id, $status)
+function set_record_status($record_id, $status)
 {
 	$time = time();
 	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
@@ -194,11 +220,18 @@ function set_book_status($record_id, $status)
 	else if($status == 0)
 		$sql = " update history set sdate= '$time_start', status=$status where `record_id` = $record_id";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+
+	$sql = " select * from history where `record_id` = $record_id";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	if($row = mysql_fetch_array($res)){
+		$book_id = $row['book_id'];
+	}
+	set_book_status($book_id, $status);
 }
 
-function set_quiz_attribute($quiz_id, $attr, $value)
+function set_book_status($book_id, $status)
 {
-	$sql = "update quiz set `$attr` = $value where quiz_id=$quiz_id";
+	$sql = "update books set `status` = $status where book_id=$book_id";
 	$res = mysql_query($sql) or die("Invalid query:".$sql.mysql_error());
 	if($row = mysql_fetch_array($res)){
 		return true;
@@ -225,4 +258,21 @@ function check_passwd($login_id, $login_passwd){
 //	$passwd = crypt($login_passwd);
 	return 0;
 }
+
+function home_link($str="Home", $more=''){
+	print("<a href=\"book.php\">$str</a>" . $more);
+}
+
+function check_login(){
+	global $login_id;
+	session_start();
+	if(isset($_SESSION['user'])) $login_id=$_SESSION['user'];
+	else{
+		print("You are not login!");
+		exit();
+	}
+}
+
 ?>
+	
+

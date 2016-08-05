@@ -35,12 +35,7 @@ include 'book_lib.php';
 	copyright Xiaofeng(Daniel) Ling<xling@qualcomm.com>, 2012, Aug.
 */
 
-
-$link=mysql_connect("10.233.140.115:3306","weekly","week2pass");
-#$link=mysql_connect("localhost","exam","");
-mysql_query("set character set 'utf8'");//..
-mysql_query("set names 'utf8'");//.. 
-$db=mysql_select_db("book",$link);
+include 'db_connect.php';
 
 global $login_id;	
 global $show_techarea_case;
@@ -100,7 +95,7 @@ if($action == "logout"){
     header("Location: book_user_login.php");
 	exit;
 }
-
+$book_id=0;
 if(isset($_GET['book_id']))$book_id=$_GET['book_id'];
 if(isset($_GET['record_id']))$record_id=$_GET['record_id'];
 
@@ -130,49 +125,56 @@ if(isset($_POST['begin'])) $action="begin";
 if(isset($_POST['end']))$action="end";
 if(isset($_POST['list_all']))$action="list_all";
 
+if($role != 2 && preg_match("/manager|approve|history|stock/",$action)){
+	print("You are not administrator!");
+	return;
+}
+
 switch($action){
 	case "init":
 		print("<div>My Borrow");
 		list_record($login_id);
 		print("</div>");
 		print("<div>All Book");
-		list_book($login_id, $format);
+		list_book();
 		print("</div>");
-		break;
-	case "manager":
-		if($role == 2)
-			manage_record($login_id);
-		else
-			print("You are not administrator!");
-		break;
-	case "history":
-		if($role == 2)
-			list_record('all');
 		break;
 	case "borrow":
 		borrow_book($book_id, $login_id);
 		list_record($login_id);
 		//show_home();
 		break;
-	case "approve":
-		set_book_status($record_id, 2);
-		list_record($login_id);
-		break;
 	case "returning":
-		set_book_status($record_id, 3);
-		list_record($login_id);
-		break;
-	case "stock":
-		set_book_status($record_id, 0);
+		set_record_status($record_id, 3);
 		list_record($login_id);
 		break;
 	case "wait":
-		wait_book($book_id);
+		wait_book($book_id, $login_id);
 		break;
-	case "submit":
-        	save_answer($start, $end);
-		show_score($login_id);
-		list_book($login_id);
+	case "show_borrower":
+		show_borrower($book_id);
+		break;
+
+	/*admin*/
+	case "manager":
+		manage_record($login_id);
+		break;
+	case "push":
+		print("send mail");
+		home_link();
+		break;
+	case "approve":
+		set_record_status($record_id, 2);
+		manage_record($login_id);
+		break;
+	case "stock":
+		set_record_status($record_id, 0);
+		manage_record($login_id);
+		break;
+	case "history":
+		list_record('all');
+		break;
+
 }
 
 function show_home()
