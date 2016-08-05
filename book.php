@@ -102,7 +102,7 @@ if(isset($_GET['record_id']))$record_id=$_GET['record_id'];
 
 print "<a href=\"book.php\">Home</a> &nbsp;&nbsp;$login_text ";
 if($role == 2){
-	print "&nbsp;&nbsp;<a href=\"book.php?action=manager\">Manager</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=manage\">Manage</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">History</a>";
 }
 
@@ -144,26 +144,40 @@ switch($action){
 		list_record($login_id);
 		//show_home();
 		break;
+	case "cancel":
+		set_record_status($record_id, 0x100);
+		list_record($login_id);
+		break;
 	case "returning":
 		set_record_status($record_id, 3);
 		list_record($login_id);
 		break;
 	case "wait":
-		wait_book($book_id, $login_id);
+		if(wait_book($book_id, $login_id)){
+			$bookname = get_bookname($book_id);
+			$to = get_user_attr($borrower, 'email');
+			//$cc = 'xling@qti.qualcomm.com';
+			mail_html($to, $cc, "$login_id is waiting for your book <$bookname>", "");
+		}
+		home_link();
 		break;
 	case "show_borrower":
 		show_borrower($book_id);
 		break;
 
 	/*admin*/
-	case "manager":
+	case "manage":
 		manage_record($login_id);
 		break;
 	case "push":
-		print("send mail");
-		home_link();
+		$book_id = get_bookid_by_record($record_id);
+		$borrower = get_borrower($book_id);
+		$bookname = get_bookname($book_id);
+		$to = get_user_attr($borrower, 'email');
+		mail_html($to, $cc, "Please return the book <$bookname>", "");
+		home_link("Back", 'manage');
 		break;
-	case "approve":
+	case "lend":
 		set_record_status($record_id, 2);
 		manage_record($login_id);
 		break;
@@ -171,8 +185,12 @@ switch($action){
 		set_record_status($record_id, 0);
 		manage_record($login_id);
 		break;
+	case "reject_wait":
+		set_record_status($record_id, 0x100);
+		manage_record($login_id);
+		break;
 	case "history":
-		list_record('all');
+		list_record('all', 2);
 		break;
 
 }
