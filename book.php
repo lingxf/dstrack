@@ -1,10 +1,10 @@
 <html>
 <title>Book</title>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=gb-2312" />
 <meta http-equiv="Content-Language" content="zh-CN" /> 
 <!--
-<link rel="stylesheet" type="text/css" href="report.css" media="screen12"/>
-	A php that could do a quiz test based on a database
+-<link rel="stylesheet" type="text/css" href="report.css" media="screen12"/>
+	A php that could manage book library 
 	by Ling Xiaofeng <lingxf@gmail.com>
 -->
 <style type="text/css">
@@ -31,8 +31,7 @@ th, td {
 <?php
 include 'book_lib.php';
 /*
-	weekly report and manual tracking system
-	copyright Xiaofeng(Daniel) Ling<xling@qualcomm.com>, 2012, Aug.
+	copyright Xiaofeng(Daniel) Ling<lingxf@gmail.com>, 2016, Aug.
 */
 
 include 'db_connect.php';
@@ -166,6 +165,9 @@ switch($action){
 		break;
 
 	/*admin*/
+	case "migrate":
+		migrate_record($login_id);
+		break;
 	case "manage":
 		manage_record($login_id);
 		break;

@@ -22,8 +22,11 @@ function manage_record()
 
 function list_record($login_id, $role=1)
 {
-	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 800px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
-	print_tdlist(array('id', 'borrower', 'name','adate', 'bdate', 'rdate','sdate', 'status', 'action'));
+	$table_name = "id_table_record";
+	$tr_width = 800;
+	$background = '#cfcfff';
+	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	print_tdlist(array('序号','借阅人', '书名','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
 	if($role == 2)
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status & 0xff != 0 and t3.user = t1.borrower";
 	else
@@ -31,6 +34,7 @@ function list_record($login_id, $role=1)
 	if($login_id == 'all')
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower";
 	
+	$i = 0;
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
 		print("<tr>");
@@ -52,57 +56,65 @@ function list_record($login_id, $role=1)
 		if($role == 2){
 			$blink = "";
 			if($status == 1){
-				$status_text = "Applying";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">Approve</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">Reject</a>";
+				$status_text = "申请中";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">批准</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">拒绝</a>";
 			}else if($status == 2){
-				$status_text = "Out";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=push\">Push</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">Stock</a>";
+				$status_text = "借出";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=push\">催还</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
 			}else if($status == 3){
-				$status_text = "Returning";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=stock\">Approve</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=lend\">Reject</a>";
+				$status_text = "归回中";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=lend\">拒绝</a>";
 			}else if($status == 4){
-				$status_text = "Waiting";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">Approve</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_wait\">Reject</a>";
+				$status_text = "等候";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">批准</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_wait\">拒绝</a>";
 			}else if($status == 0){
-				$status_text = "Returned";
+				$status_text = "已还";
 			}else{
-				$status_text = "Cancel";
+				$status_text = "取消";
 			}
 		}else if($role == 1){
 			$blink = "";
 			if($status == 1){
-				$status_text = "Borrowing";
+				$status_text = "借阅中";
 			}else if($status == 4){
-				$status_text = "Waiting";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel\">Cancel</a>";
+				$status_text = "等候";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel\">取消</a>";
 			}else if($status == 2){
-				$status_text = "Out";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=returning\">Return</a>";
+				$status_text = "借出";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=returning\">归还</a>";
 			}else if($status == 3){
-				$status_text = "Returning";
+				$status_text = "归还中";
 				$blink = "";
 			}else if($status == 0){
-				$status_text = "Returned";
+				$status_text = "已还";
 			}else{
-				$status_text = "Cancel";
+				$status_text = "取消";
 			}
 		}
-		print_tdlist(array($record_id, $borrower, $name, $adate, $bdate, $rdate,$sdate, $status_text, $blink)); 
+		$i++;
+		print_tdlist(array($i, $borrower, $name, $adate, $bdate, $rdate,$sdate, $status_text, $blink)); 
 		print("</tr>\n");
 	}
 	print("</table>");
 }
 
-function list_book($format='')
+function list_book($format='normal')
 {
 	global $login_id;
-	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 1000px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
-	print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date', 'status', 'action'));
-	$sql = " select * from books";
+
+	$table_name = "book";
+	$tr_width = 800;
+	$background = '#efefef';
+	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	if($format == 'normal')
+		print_tdlist(array('编号', '书名','作者', '描述','评论','状态', '操作'));
+	else
+		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date', 'status', 'action'));
+	$sql = " select * from books order by book_id asc";
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
@@ -117,16 +129,19 @@ function list_book($format='')
 		$status=$row['status'];	
 		if($status != 0){
 			$status_text = "Out";
-			$status_text = "<a href=book.php?action=show_borrower&book_id=\"$book_id\">Out</a>";
-			$blink = "<a href=book.php?action=wait&book_id=\"$book_id\">Wait</a>";
+			$status_text = "<a href=book.php?action=show_borrower&book_id=\"$book_id\">借出</a>";
+			$blink = "<a href=book.php?action=wait&book_id=\"$book_id\">等候</a>";
 		}else{
-			$status_text = "Stock";
-			$blink = "<a href=book.php?action=borrow&book_id=\"$book_id\">Borrow</a>";
+			$status_text = "在库";
+			$blink = "<a href=book.php?action=borrow&book_id=\"$book_id\">借阅</a>";
 		}
 		if($name == "TBD" || $name == "")
 			continue;
 		print("<tr>");
-		print_tdlist(array($book_id, $name, $author, $isbn, $index, $price, $buy_date, $status_text, $blink)); 
+		if($format == 'normal')
+			print_tdlist(array($book_id, $name, $author, $desc, $comments, $status_text, $blink)); 
+		else
+			print_tdlist(array($book_id, $name, $author, $isbn, $index, $price, $buy_date, $status_text, $blink)); 
 		print("</tr>\n");
 	}
 	print("</table>");
@@ -152,6 +167,54 @@ function wait_book($book_id, $login_id)
 	add_record($book_id, $login_id, 4);
 	print("Add to waiting list successfully<br>");
 	return true;
+}
+
+function get_user_id($user_name)
+{
+	$sql = " select * from member";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	while($row=mysql_fetch_array($res)){
+		$name= $row['user_name'];
+		$id=$row['user'];
+		$nn = explode(', ', $user_name);
+		$n = count($nn);
+		$mm = explode(' ', $name);
+		$m = count($mm);
+		//if($nn[0] == $mm[$m-1] && $nn[$n-1] == $mm[0]){
+		if($nn[0] == $mm[$m-1]){
+			$str1 = $mm[0];
+			$str2 = str_replace(" ", '', $nn[1]);
+			//print("$nn[0] -- |$nn[1]|$mm[0]|$str2|<br>");
+			if(!strcasecmp($str1,$str2)){
+				//print("$user_name|$name|$id:");
+				return $id;
+			}
+		}
+	}
+	//print("$user_name not matched:");
+	return '';
+}
+function migrate_record($login_id)
+{
+	global $max_books;
+	$sql = " select book_id,bdate,rdate,t1.name, t1.user_name from old_record t1, books t2 where t1.index = t2.index ";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	while($row=mysql_fetch_array($res)){
+		$book_id = $row['book_id'];
+		$name= $row['name'];
+		$bdate = $row['bdate'];
+		$rdate = $row['rdate'];
+		$user_name= $row['user_name'];
+		if($rdate == '')
+			$status = 2;
+		else
+			$status = 0;
+		$id = get_user_id($user_name);
+		if($id == '')
+			print(" $user_name, $book_id, $name, $bdate, $rdate<br>");
+		else
+			add_record_full($book_id, $id, $bdate, $rdate, $status);
+	}
 }
 
 function borrow_book($book_id, $login_id)
@@ -198,7 +261,7 @@ function show_borrower($book_id)
 {
 	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
 
-	print_tdlist(array('id', 'book','person','date', 'status'));
+	print_tdlist(array('序号', '书名','借阅人','日期', '状态'));
 
 	$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status != 0 order by `adate` asc";
 
@@ -245,11 +308,20 @@ function check_record($book_id, $login_id)
 	return true;
 }
 
-function add_record($book_id, $login_id, $status=1)
+function add_record($book_id, $user_id, $status=1)
 {
 	$time = time();
 	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
-	$sql = " insert into history set `borrower`='$login_id', book_id=$book_id, adate= '$time_start', status=$status";
+	$sql = " insert into history set `borrower`='$user_id', book_id=$book_id, adate= '$time_start', status=$status";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	return true;
+}
+
+function add_record_full($book_id, $user_id, $bdate, $sdate, $status=1)
+{
+	$time = time();
+	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
+	$sql = " insert into history set `borrower`='$user_id', book_id=$book_id, adate='$bdate', bdate= '$bdate', rdate='$sdate', sdate='$sdate', status=$status";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	return true;
 }
