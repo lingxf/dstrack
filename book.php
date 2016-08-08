@@ -35,10 +35,10 @@ include 'book_lib.php';
 */
 
 include 'db_connect.php';
+include 'debug.php';
 
 global $login_id;	
 global $show_techarea_case;
-$debug=1;
 
 session_start();
 
