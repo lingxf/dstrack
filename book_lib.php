@@ -45,7 +45,7 @@ function list_record($login_id, $format='self')
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	print_tdlist(array('序号','借阅人', '书名','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
 	if($format == 'approve')
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status < 0x100 and status != 0 and t1.status != 2 and t3.user = t1.borrower order by adate asc";
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status < 0x100 and t1.status != 0 and t1.status != 2 and t3.user = t1.borrower order by adate asc";
 	else if($format == 'self')
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.borrower='$login_id' and t1.book_id = t2.book_id and t3.user = t1.borrower order by adate desc ";
 	else if($format == 'out')
@@ -173,8 +173,9 @@ function list_book($format='normal')
 			print_td($name,200);
 			print_td($author,150);
 			print_td($desc,'','','',$sc_desc);
-			print_td($comments, '100','','',$sc_comments);
-			print_tdlist(array($status_text, $blink)); 
+			print_td($comments, '150','','',$sc_comments);
+			print_td($status_text,35);
+			print_td($blink,35);
 		}else
 			print_tdlist(array($book_id, $name, $author, $isbn, $index, $price, $buy_date, $status_text, $blink)); 
 		print("</tr>\n");
@@ -489,8 +490,9 @@ function check_login(){
 }
 function get_admin_mail()
 {
-	$cc = "yingwang@qti.qualcomm.com";
-//	$cc .= ";xling@qti.qualcomm.com";
+	$cc = '';
+//	$cc = "yingwang@qti.qualcomm.com;";
+	$cc .= "xling@qti.qualcomm.com";
 	return $cc;
 }
 function mail_html($to, $cc, $subject, $message)
