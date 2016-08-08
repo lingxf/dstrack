@@ -498,8 +498,8 @@ function check_login(){
 function get_admin_mail()
 {
 	$cc = '';
-//	$cc = "yingwang@qti.qualcomm.com;";
-	$cc .= "xling@qti.qualcomm.com";
+	$cc = "yingwang@qti.qualcomm.com;";
+//	$cc .= "xling@qti.qualcomm.com";
 	return $cc;
 }
 function mail_html($to, $cc, $subject, $message)
