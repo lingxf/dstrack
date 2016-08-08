@@ -142,7 +142,7 @@ function show_edit_col(tdc, id, col)
 {
 	if(col==2)
 		cont_edit_col(tdc, id, col, '');
-	else if(col==1)
+	else if(col==8)
 		cont_edit_col(tdc, id, col, tdc.innerHTML);
 	else
 		get_edit_column(tdc, id, col, cont_edit_col);

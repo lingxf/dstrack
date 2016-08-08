@@ -1,4 +1,3 @@
-
 <?php
 function dprint($str)
 {
@@ -524,5 +523,3 @@ function mail_html($to, $cc, $subject, $message)
 
 }
 ?>
-	
-
