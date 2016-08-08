@@ -17,22 +17,30 @@ function print_tdlist($tdlist)
 function manage_record()
 {
 	global $login_id;
-	list_record($login_id, 2);
+	list_record($login_id, 'approve');
 }
 
-function list_record($login_id, $role=1)
+function out_record()
+{
+	global $login_id;
+	list_record($login_id, 'out');
+}
+
+function list_record($login_id, $format='self')
 {
 	$table_name = "id_table_record";
 	$tr_width = 800;
-	$background = '#cfcfff';
+	$background = '#cfcfcf';
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
-	print_tdlist(array('ĞòºÅ','½èÔÄÈË', 'ÊéÃû','ÉêÇëÈÕÆÚ', '½è³öÈÕÆÚ', '»Ø»¹ÈÕÆÚ','Èë¿âÈÕÆÚ', '×´Ì¬', '²Ù×÷'));
-	if($role == 2)
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status & 0xff != 0 and t3.user = t1.borrower";
-	else
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.borrower='$login_id' and t1.book_id = t2.book_id and t3.user = t1.borrower";
-	if($login_id == 'all')
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower";
+	print_tdlist(array('åºå·','å€Ÿé˜…äºº', 'ä¹¦å','ç”³è¯·æ—¥æœŸ', 'å€Ÿå‡ºæ—¥æœŸ', 'å›è¿˜æ—¥æœŸ','å…¥åº“æ—¥æœŸ', 'çŠ¶æ€', 'æ“ä½œ'));
+	if($format == 'approve')
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status & 0xff != 0 and t1.status != 2 and t3.user = t1.borrower order by adate asc";
+	else if($format == 'self')
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.borrower='$login_id' and t1.book_id = t2.book_id and t3.user = t1.borrower order by adate desc ";
+	else if($format == 'out')
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower order by bdate asc";
+	else if($format == 'history')
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by rdate desc ";
 	
 	$i = 0;
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
@@ -46,53 +54,53 @@ function list_record($login_id, $role=1)
 		$bdate= $row['bdate']; 
 		$rdate= $row['rdate']; 
 		$sdate= $row['sdate']; 
-		if($role != 2){
+		if($format == 'self'){
 			$adate = substr($adate, 0, 10);
 			$bdate = substr($bdate, 0, 10);
 			$rdate = substr($rdate, 0, 10);
 			$sdate = substr($sdate, 0, 10);
 		}
 		$status = $row['status'];
-		if($role == 2){
+		if($format == 'approve' || $role == 'out'){
 			$blink = "";
 			if($status == 1){
-				$status_text = "ÉêÇëÖĞ";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">Åú×¼</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">¾Ü¾ø</a>";
+				$status_text = "ç”³è¯·ä¸­";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">æ‰¹å‡†</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">æ‹’ç»</a>";
 			}else if($status == 2){
-				$status_text = "½è³ö";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=push\">´ß»¹</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">Èë¿â</a>";
+				$status_text = "å€Ÿå‡º";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=push\">å‚¬è¿˜</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">å…¥åº“</a>";
 			}else if($status == 3){
-				$status_text = "¹é»ØÖĞ";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=stock\">Èë¿â</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=lend\">¾Ü¾ø</a>";
+				$status_text = "å½’å›ä¸­";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=stock\">å…¥åº“</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=lend\">æ‹’ç»</a>";
 			}else if($status == 4){
-				$status_text = "µÈºò";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">Åú×¼</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_wait\">¾Ü¾ø</a>";
+				$status_text = "ç­‰å€™";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">æ‰¹å‡†</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_wait\">æ‹’ç»</a>";
 			}else if($status == 0){
-				$status_text = "ÒÑ»¹";
+				$status_text = "å·²è¿˜";
 			}else{
-				$status_text = "È¡Ïû";
+				$status_text = "å–æ¶ˆ";
 			}
-		}else if($role == 1){
+		}else if($format == 'self'){
 			$blink = "";
 			if($status == 1){
-				$status_text = "½èÔÄÖĞ";
+				$status_text = "å€Ÿé˜…ä¸­";
 			}else if($status == 4){
-				$status_text = "µÈºò";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel\">È¡Ïû</a>";
+				$status_text = "ç­‰å€™";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel\">å–æ¶ˆ</a>";
 			}else if($status == 2){
-				$status_text = "½è³ö";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=returning\">¹é»¹</a>";
+				$status_text = "å€Ÿå‡º";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=returning\">å½’è¿˜</a>";
 			}else if($status == 3){
-				$status_text = "¹é»¹ÖĞ";
+				$status_text = "å½’è¿˜ä¸­";
 				$blink = "";
 			}else if($status == 0){
-				$status_text = "ÒÑ»¹";
+				$status_text = "å·²è¿˜";
 			}else{
-				$status_text = "È¡Ïû";
+				$status_text = "å–æ¶ˆ";
 			}
 		}
 		$i++;
@@ -104,14 +112,14 @@ function list_record($login_id, $role=1)
 
 function list_book($format='normal')
 {
-	global $login_id;
+	global $login_id, $role;
 
 	$table_name = "book";
 	$tr_width = 800;
 	$background = '#efefef';
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'normal')
-		print_tdlist(array('±àºÅ', 'ÊéÃû','×÷Õß', 'ÃèÊö','ÆÀÂÛ','×´Ì¬', '²Ù×÷'));
+		print_tdlist(array('ç¼–å·', 'ä¹¦å','ä½œè€…', 'æè¿°','è¯„è®º','çŠ¶æ€', 'æ“ä½œ'));
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date', 'status', 'action'));
 	$sql = " select * from books order by book_id asc";
@@ -129,15 +137,20 @@ function list_book($format='normal')
 		$status=$row['status'];	
 		if($status != 0){
 			$status_text = "Out";
-			$status_text = "<a href=book.php?action=show_borrower&book_id=\"$book_id\">½è³ö</a>";
-			$blink = "<a href=book.php?action=wait&book_id=\"$book_id\">µÈºò</a>";
+			$status_text = "<a href=book.php?action=show_borrower&book_id=\"$book_id\">å€Ÿå‡º</a>";
+			$blink = "<a href=book.php?action=wait&book_id=\"$book_id\">ç­‰å€™</a>";
 		}else{
-			$status_text = "ÔÚ¿â";
-			$blink = "<a href=book.php?action=borrow&book_id=\"$book_id\">½èÔÄ</a>";
+			$status_text = "<a href=book.php?action=show_borrower&book_id=\"$book_id\">";
+			$status_text .= "åœ¨åº“";
+			$status_text .= "</a>";
+			$blink = "<a href=book.php?action=borrow&book_id=\"$book_id\">å€Ÿé˜…</a>";
 		}
 		if($name == "TBD" || $name == "")
 			continue;
-		print("<tr>");
+		$bcolor = 'white';
+		if($status != 0)
+			$bcolor = '#efcfef';
+		print("<tr style='background:$bcolor;'>");
 		if($format == 'normal')
 			print_tdlist(array($book_id, $name, $author, $desc, $comments, $status_text, $blink)); 
 		else
@@ -212,8 +225,10 @@ function migrate_record($login_id)
 		$id = get_user_id($user_name);
 		if($id == '')
 			print(" $user_name, $book_id, $name, $bdate, $rdate<br>");
-		else
+		else{
 			add_record_full($book_id, $id, $bdate, $rdate, $status);
+			set_book_status($book_id, $status);
+		}
 	}
 }
 
@@ -257,13 +272,17 @@ function get_borrower($book_id)
 	return '';
 }
 
-function show_borrower($book_id)
+function show_borrower($book_id, $format="wait")
 {
 	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
 
-	print_tdlist(array('ĞòºÅ', 'ÊéÃû','½èÔÄÈË','ÈÕÆÚ', '×´Ì¬'));
-
-	$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status != 0 order by `adate` asc";
+	print_tdlist(array('åºå·', 'ä¹¦å','å€Ÿé˜…äºº','æ—¥æœŸ', 'çŠ¶æ€'));
+	if($format == 'out')
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status != 0 and t1.status != 4 and t1.status != 0x100 order by `adate` asc";
+	else if($format == 'wait')
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status = 4 order by `adate` asc";
+	else
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status = 0 order by `adate` asc";
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
@@ -282,6 +301,9 @@ function show_borrower($book_id)
 			$date = $row['adate'];
 		}else if($status == 3){
 			$status_text = "Returning";
+			$date = $row['rdate'];
+		}else if($status == 0){
+			$status_text = "Returned";
 			$date = $row['rdate'];
 		}else
 			continue;

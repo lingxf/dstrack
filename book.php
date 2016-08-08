@@ -1,6 +1,6 @@
 <html>
 <title>Book</title>
-<meta http-equiv="Content-Type" content="text/html; charset=gb-2312" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta http-equiv="Content-Language" content="zh-CN" /> 
 <!--
 -<link rel="stylesheet" type="text/css" href="report.css" media="screen12"/>
@@ -102,6 +102,7 @@ if(isset($_GET['record_id']))$record_id=$_GET['record_id'];
 print "<a href=\"book.php\">Home</a> &nbsp;&nbsp;$login_text ";
 if($role == 2){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=manage\">Manage</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">Lent</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">History</a>";
 }
 
@@ -124,7 +125,7 @@ if(isset($_POST['begin'])) $action="begin";
 if(isset($_POST['end']))$action="end";
 if(isset($_POST['list_all']))$action="list_all";
 
-if($role != 2 && preg_match("/manager|approve|history|stock/",$action)){
+if($role != 2 && preg_match("/manager|approve|history|stock|push|list_out|lend|reject_wait/",$action)){
 	print("You are not administrator!");
 	return;
 }
@@ -161,7 +162,12 @@ switch($action){
 		home_link();
 		break;
 	case "show_borrower":
-		show_borrower($book_id);
+		print("current owner<br>");
+		show_borrower($book_id, 'out');
+		print("waiting list<br>");
+		show_borrower($book_id, 'wait');
+		print("borrow history<br>");
+		show_borrower($book_id, 'borrow');
 		break;
 
 	/*admin*/
@@ -170,6 +176,9 @@ switch($action){
 		break;
 	case "manage":
 		manage_record($login_id);
+		break;
+	case "list_out":
+		out_record($login_id);
 		break;
 	case "push":
 		$book_id = get_bookid_by_record($record_id);
@@ -180,7 +189,15 @@ switch($action){
 		home_link("Back", 'manage');
 		break;
 	case "lend":
+		$book_id = get_bookid_by_record($record_id);
+		$borrower = get_borrower($book_id);
+		$bookname = get_bookname($book_id);
+		$to = get_user_attr($borrower, 'email');
+		$user = get_user_attr($borrower, 'name');
+		$cc = "yingwang@qti.qualcomm.com";
+		$cc = "xling@qti.qualcomm.com";
 		set_record_status($record_id, 2);
+		mail_html($to, $cc, "<$bookname> is lent to <$user>", "");
 		manage_record($login_id);
 		break;
 	case "stock":
@@ -192,7 +209,7 @@ switch($action){
 		manage_record($login_id);
 		break;
 	case "history":
-		list_record('all', 2);
+		list_record('all', 'history');
 		break;
 
 }
