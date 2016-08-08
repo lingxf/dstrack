@@ -5,6 +5,7 @@
 */
 
 include 'book_lib.php';
+include 'debug.php';
 include 'db_connect.php';
 
 session_start();

@@ -155,8 +155,11 @@ function list_book($format='normal')
 		$desc =  $row['desc'];
 		$desc = substr($desc, 0, 300);
 		$comments=  $row['comments'];
-		$sc_desc = "ondblclick='show_edit_col(this,$book_id,1)'";
-		$sc_comments = "ondblclick='show_edit_col(this,$book_id,2)'";
+		$comments = substr($comments, 0, 200);
+		if($role > 0){
+			$sc_desc = "ondblclick='show_edit_col(this,$book_id,1)'";
+			$sc_comments = "ondblclick='show_edit_col(this,$book_id,2)'";
+		}
 
 		$status=$row['status'];	
 		if($status != 0){
@@ -497,9 +500,11 @@ function check_login(){
 }
 function get_admin_mail()
 {
+	global $debug;
 	$cc = '';
 	$cc = "yingwang@qti.qualcomm.com;";
-//	$cc .= "xling@qti.qualcomm.com";
+	if($debug == 1)
+		$cc = "xling@qti.qualcomm.com";
 	return $cc;
 }
 function mail_html($to, $cc, $subject, $message)

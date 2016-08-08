@@ -36,8 +36,8 @@ include 'book_lib.php';
 	copyright Xiaofeng(Daniel) Ling<lingxf@gmail.com>, 2016, Aug.
 */
 
-include 'db_connect.php';
 include 'debug.php';
+include 'db_connect.php';
 
 global $login_id;	
 global $show_techarea_case;
