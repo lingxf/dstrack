@@ -43,16 +43,20 @@ function list_record($login_id, $format='self')
 	$tr_width = 800;
 	$background = '#cfcfcf';
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
-	print_tdlist(array('序号','借阅人', '书名','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
-	if($format == 'approve')
+	if($format == 'approve'){
+		print_tdlist(array('序号','借阅人', '书名','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status < 0x100 and t1.status != 0 and t1.status != 2 and t3.user = t1.borrower order by adate asc";
-	else if($format == 'self')
+	}else if($format == 'self'){
+		print_tdlist(array('序号','借阅人', '书名','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.borrower='$login_id' and t1.book_id = t2.book_id and t3.user = t1.borrower order by adate desc ";
-	else if($format == 'out')
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower order by bdate asc";
-	else if($format == 'history')
+	}else if($format == 'out'){
+		print_tdlist(array('序号','借阅人', '书名','申请日期', '借出日期', '状态', '操作'));
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower order by bdate desc";
+	}else if($format == 'history'){
+		print_tdlist(array('序号','借阅人', '书名','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by rdate desc ";
-	
+	}	
+
 	$i = 0;
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
@@ -72,7 +76,7 @@ function list_record($login_id, $format='self')
 			$sdate = substr($sdate, 0, 10);
 		}
 		$status = $row['status'];
-		if($format == 'approve' || $role == 'out'){
+		if($format == 'approve' || $format == 'out'){
 			$blink = "";
 			if($status == 1){
 				$status_text = "申请中";
@@ -115,7 +119,10 @@ function list_record($login_id, $format='self')
 			}
 		}
 		$i++;
-		print_tdlist(array($i, $borrower, $name, $adate, $bdate, $rdate,$sdate, $status_text, $blink)); 
+		if($format == 'out')
+			print_tdlist(array($i, $borrower, $name, $adate, $bdate, $status_text, $blink)); 
+		else
+			print_tdlist(array($i, $borrower, $name, $adate, $bdate, $rdate,$sdate, $status_text, $blink)); 
 		print("</tr>\n");
 	}
 	print("</table>");
