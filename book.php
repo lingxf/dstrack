@@ -2,6 +2,8 @@
 <title>Book</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta http-equiv="Content-Language" content="zh-CN" /> 
+
+<script type="text/javascript" src="inpage_edit.js"></script>
 <!--
 -<link rel="stylesheet" type="text/css" href="report.css" media="screen12"/>
 	A php that could manage book library 
@@ -78,7 +80,7 @@ else if($role == 1)
 else
 	$role_text = "Non-member";
 
-if($role == 0)
+if($login_id == 'NoLogin')
 	$login_text = "<a href=book_user_login.php>Login<a/>";
 else
 	$login_text = "<a href=book_user_setting.php>$login_id($role_text)<a/> &nbsp;&nbsp;<a href=\"book.php?action=logout\">Logout</a>";
@@ -162,11 +164,13 @@ switch($action){
 		home_link();
 		break;
 	case "show_borrower":
-		print("current owner<br>");
+		print("当前借阅人<br>");
 		show_borrower($book_id, 'out');
-		print("waiting list<br>");
+		print("介绍<br>");
+		show_book($book_id);
+		print("等待列表<br>");
 		show_borrower($book_id, 'wait');
-		print("borrow history<br>");
+		print("历史借阅记录<br>");
 		show_borrower($book_id, 'borrow');
 		break;
 
@@ -185,6 +189,7 @@ switch($action){
 		$borrower = get_borrower($book_id);
 		$bookname = get_bookname($book_id);
 		$to = get_user_attr($borrower, 'email');
+		$cc = get_admin_mail();
 		mail_html($to, $cc, "Timeout, Please return the book <$bookname>", "");
 		home_link("Back", 'manage');
 		break;
@@ -194,8 +199,7 @@ switch($action){
 		$bookname = get_bookname($book_id);
 		$to = get_user_attr($borrower, 'email');
 		$user = get_user_attr($borrower, 'name');
-		$cc = "yingwang@qti.qualcomm.com";
-		$cc = "xling@qti.qualcomm.com";
+		$cc = get_admin_mail();
 		set_record_status($record_id, 2);
 		mail_html($to, $cc, "<$bookname> is lent to <$user>", "");
 		manage_record($login_id);
@@ -206,14 +210,24 @@ switch($action){
 		$bookname = get_bookname($book_id);
 		$to = get_user_attr($borrower, 'email');
 		$user = get_user_attr($borrower, 'name');
-		$cc = "yingwang@qti.qualcomm.com";
-		$cc = "xling@qti.qualcomm.com";
+		$cc = get_admin_mail();
 		mail_html($to, $cc, "<$bookname> is returned by <$user>", "");
 		set_record_status($record_id, 0);
 		manage_record($login_id);
 		break;
-	case "reject_wait":
+	case "reject":
+		$book_id = get_bookid_by_record($record_id);
+		$borrower = get_borrower($book_id);
+		$bookname = get_bookname($book_id);
+		$to = get_user_attr($borrower, 'email');
+		$user = get_user_attr($borrower, 'name');
+		$cc = get_admin_mail();
+		mail_html($to, $cc, "You apply to <$bookname> is rejected", "");
 		set_record_status($record_id, 0x100);
+		manage_record($login_id);
+		break;
+	case "reject_wait":
+		set_record_status($record_id, 0x101);
 		manage_record($login_id);
 		break;
 	case "history":
