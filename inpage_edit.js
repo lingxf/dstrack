@@ -122,6 +122,7 @@ function cont_edit_col(tdc, id, col, txt)
 	var box = '<button type="button" onclick="save_edit_col(this.parentNode,\''+id+'\','+col+')" class="gwt-Button">Save</button><button type="button" onclick="discard_edit_col(this.parentNode)" class="gwt-Button">Discard</button>';
 	tdc.innerHTML = "<textarea cols="+w+" rows="+h+"spellcheck='true'>"+txt+"</textarea><br>"+box;
 	ta = tdc.firstChild;
+
 	if(ta.setSelectionRange){
 		//ta.setSelectionRange(1000,1000);
 		ta.setSelectionRange(len,len);
@@ -132,6 +133,7 @@ function cont_edit_col(tdc, id, col, txt)
 		tempText.moveBegin("character",-len);
 		tempText.select();
 	}
+
 //	tdc.firstChild.scrollIntoView();
 	ctdc = tdc;
 };
@@ -140,6 +142,8 @@ function show_edit_col(tdc, id, col)
 {
 	if(col==2)
 		cont_edit_col(tdc, id, col, '');
+	else if(col==1)
+		cont_edit_col(tdc, id, col, tdc.innerHTML);
 	else
 		get_edit_column(tdc, id, col, cont_edit_col);
 }

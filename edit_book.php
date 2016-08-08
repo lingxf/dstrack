@@ -24,7 +24,7 @@ if($book_id && $op=="modify"){
 	if($col == 'comments'){
 		$cm = "[$login_id]$intext<br>";
 		$tt =  read_book_column($book_id, $col);
-		if($tt)
+		if($tt != -1)
 			$cm .= $tt;
 		$intext = $cm;
 	}
@@ -35,7 +35,7 @@ if($book_id && $op=="modify"){
 	print("$text");
 }else if($book_id && $op=="read"){
 	$tt = read_book_column($book_id, $col);
-	if(!$tt)
+	if($tt == -1)
 		print("No this book");
 	else
 		print $tt;

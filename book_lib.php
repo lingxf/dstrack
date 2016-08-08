@@ -295,14 +295,13 @@ function get_bookname($book_id)
 
 function read_book_column($book_id, $col)
 {
-
 	$sql = "select * from books where `book_id`=$book_id";
 	$res1=mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	if($row1=mysql_fetch_array($res1)){
 		$tt = $row1["$col"];
 		return $tt;
 	}
-	return false;
+	return -1;
 }
 
 function show_book($book_id)
