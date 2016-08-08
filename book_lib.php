@@ -129,7 +129,7 @@ function list_book($format='normal')
 		$book_id = $row['book_id']; 
 		$name= $row['name'];
 		$author= $row['author'];
-		$author = substr($author, 0, 32);
+		$author = substr($author, 0, 64);
 		$isbn= $row['ISBN'];
 		$index= $row['index'];
 		$price= $row['price'];
@@ -447,7 +447,7 @@ function mail_html($to, $cc, $subject, $message)
 		$headers .= "Cc: $cc" . "\r\n";
 	$headers .= "Bcc: xling@qti.qualcomm.com" . "\r\n";
 
-	dprint("mail|to:$to|cc:$cc|$subject\n");
+	dprint("mail|to:$to|cc:$cc|$subject<br>\n");
 //	print("$message\n");
 //	$to = 'xling@qti.qualcomm.com';
 	mail($to,$subject, $message, $headers);

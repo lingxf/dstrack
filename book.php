@@ -132,10 +132,10 @@ if($role != 2 && preg_match("/manager|approve|history|stock|push|list_out|lend|r
 
 switch($action){
 	case "init":
-		print("<div>My Borrow");
+		print("<div>我的借阅");
 		list_record($login_id);
 		print("</div>");
-		print("<div>All Book");
+		print("<div>书库列表");
 		list_book();
 		print("</div>");
 		break;
@@ -185,7 +185,7 @@ switch($action){
 		$borrower = get_borrower($book_id);
 		$bookname = get_bookname($book_id);
 		$to = get_user_attr($borrower, 'email');
-		mail_html($to, $cc, "Please return the book <$bookname>", "");
+		mail_html($to, $cc, "Timeout, Please return the book <$bookname>", "");
 		home_link("Back", 'manage');
 		break;
 	case "lend":
@@ -201,6 +201,14 @@ switch($action){
 		manage_record($login_id);
 		break;
 	case "stock":
+		$book_id = get_bookid_by_record($record_id);
+		$borrower = get_borrower($book_id);
+		$bookname = get_bookname($book_id);
+		$to = get_user_attr($borrower, 'email');
+		$user = get_user_attr($borrower, 'name');
+		$cc = "yingwang@qti.qualcomm.com";
+		$cc = "xling@qti.qualcomm.com";
+		mail_html($to, $cc, "<$bookname> is returned by <$user>", "");
 		set_record_status($record_id, 0);
 		manage_record($login_id);
 		break;
