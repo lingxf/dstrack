@@ -157,8 +157,8 @@ switch($action){
 	case "wait":
 		if(wait_book($book_id, $login_id)){
 			$bookname = get_bookname($book_id);
+			$borrower = get_borrower($book_id);
 			$to = get_user_attr($borrower, 'email');
-			//$cc = 'xling@qti.qualcomm.com';
 			mail_html($to, $cc, "$login_id is waiting for your book <$bookname>", "");
 		}
 		home_link();
