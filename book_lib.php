@@ -146,13 +146,16 @@ function list_book($format='normal')
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
 		$book_id = $row['book_id']; 
-		$name= $row['name'];
+		$name = $row['name'];
+		if($name == "TBD" || $name == "")
+			continue;
+		$name = "<a href='book.php?action=show_borrower&book_id=$book_id'>$name</a>";
 		$author= $row['author'];
 		$author = substr($author, 0, 64);
-		$isbn= $row['ISBN'];
-		$index= $row['index'];
-		$price= $row['price'];
-		$buy_date= substr($row['buy_date'], 0, 10);
+		$isbn = $row['ISBN'];
+		$index = $row['index'];
+		$price = $row['price'];
+		$buy_date = substr($row['buy_date'], 0, 10);
 		$desc =  $row['desc'];
 		mb_internal_encoding("UTF-8");
 		$desc = mb_substr($desc, 0, 100);
@@ -348,7 +351,7 @@ function show_borrower($book_id, $format="wait")
 {
 	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
 
-	print_tdlist(array('序号', '书名','借阅人','日期', '状态'));
+	print_tdlist(array('编号', '书名','借阅人','日期', '状态'));
 	if($format == 'out')
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status != 0 and t1.status != 4 and t1.status < 0x100 order by `adate` asc";
 	else if($format == 'wait')
@@ -363,19 +366,19 @@ function show_borrower($book_id, $format="wait")
 		$user_name= $row['user_name'];
 		$status=$row['status'];	
 		if($status == 4){
-			$status_text = "Waiting";
+			$status_text = "等候";
 			$date = $row['adate'];
 		}else if($status == 2){
-			$status_text = "Own";
+			$status_text = "已借";
 			$date = $row['bdate'];
 		}else if($status == 1){
-			$status_text = "Borrowing";
+			$status_text = "申请中";
 			$date = $row['adate'];
 		}else if($status == 3){
-			$status_text = "Returning";
+			$status_text = "归还中";
 			$date = $row['rdate'];
 		}else if($status == 0){
-			$status_text = "Returned";
+			$status_text = "已还";
 			$date = $row['rdate'];
 		}else
 			continue;
