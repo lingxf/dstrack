@@ -106,6 +106,7 @@ if($role == 2){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=manage\">Manage</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">Lent</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">History</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=log\">Log</a>";
 }
 
 print("<br>");
@@ -168,7 +169,8 @@ switch($action){
 			$bookname = get_bookname($book_id);
 			$borrower = get_borrower($book_id);
 			$to = get_user_attr($borrower, 'email');
-			mail_html($to, $cc, "$login_id is waiting for your book <$bookname>", "");
+			$user = get_user_attr($login_id, 'name');
+			mail_html($to, $cc, "$user is waiting for your book <$bookname>", "");
 		}
 		home_link();
 		break;
@@ -211,6 +213,7 @@ switch($action){
 		$cc = get_admin_mail();
 		set_record_status($record_id, 2);
 		mail_html($to, $cc, "<$bookname> is lent to <$user>", "");
+		add_log($login_id, $borrower, $book_id, 2);
 		manage_record($login_id);
 		break;
 	case "stock":
@@ -221,6 +224,7 @@ switch($action){
 		$user = get_user_attr($borrower, 'name');
 		$cc = get_admin_mail();
 		mail_html($to, $cc, "<$bookname> is returned by <$user>", "");
+		add_log($login_id, $borrower, $book_id, 0);
 		set_record_status($record_id, 0);
 		manage_record($login_id);
 		break;
@@ -241,6 +245,9 @@ switch($action){
 		break;
 	case "history":
 		list_record('all', 'history');
+		break;
+	case "log":
+		list_log();
 		break;
 
 }

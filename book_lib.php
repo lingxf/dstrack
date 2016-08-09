@@ -353,6 +353,44 @@ function get_borrower($book_id)
 	return '';
 }
 
+function list_log($format='normal')
+{
+	global $login_id, $role;
+
+	$table_name = "log";
+	$tr_width = 800;
+	$background = '#efefef';
+	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	if($format == 'normal')
+		print_tdlist(array('日期', '操作人','编号', '书名','借阅人','动作'));
+	$sql = " select * from log f1, books f2, member f3 where f1.book_id = f2.book_id and f1.member_id = f3.user order by timestamp desc";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	while($row=mysql_fetch_array($res)){
+		$book_id = $row['book_id']; 
+		$operator = $row['operator'];
+		$member_id= $row['member_id'];
+		$timestamp= $row['timestamp'];
+		$bookname = $row['name'];
+		$username = $row['user_name'];
+		$status=$row['status'];	
+
+		if($status == 0){
+			$status_text = "还入";
+		}else{
+			$status_text = "借出";
+		}
+		$bcolor = 'white';
+		if($status != 0)
+			$bcolor = '#efcfef';
+		print("<tr style='background:$bcolor;'>");
+		if($format == 'normal'){
+			print_tdlist(array($timestamp, $operator, $book_id, $bookname, $username, $status_text)); 
+		}
+		print("</tr>\n");
+	}
+	print("</table>");
+}
+
 function show_borrower($book_id, $format="wait")
 {
 	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
@@ -525,6 +563,13 @@ function get_admin_mail()
 		$cc = "xling@qti.qualcomm.com";
 	return $cc;
 }
+function add_log($login_id, $borrower, $book_id, $status)
+{
+	$sql = " insert into log set `operator`='$login_id', book_id=$book_id, member_id = '$borrower', status=$status";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	return true;
+}
+
 function mail_html($to, $cc, $subject, $message)
 {
 	$headers = 'From: weekly@cedump-sh.ap.qualcomm.com' . "\r\n" .
