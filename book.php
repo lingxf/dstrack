@@ -137,8 +137,16 @@ switch($action){
 		print("<div>我的借阅");
 		list_record($login_id);
 		print("</div>");
-		print("<div>书库列表");
+		print("<div>书库列表 <a href='book.php?action=brief'>简略</a>");
 		list_book();
+		print("</div>");
+		break;
+	case "brief":
+		print("<div>我的借阅");
+		list_record($login_id);
+		print("</div>");
+		print("<div>书库列表 <a href='book.php?action=init'>完整</a>");
+		list_book('brief');
 		print("</div>");
 		break;
 	case "borrow":

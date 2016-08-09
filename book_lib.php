@@ -137,6 +137,8 @@ function list_book($format='normal')
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'normal')
 		print_tdlist(array('编号', '书名','作者', '描述','评论','状态', '操作'));
+	else if($format == 'brief')
+		print_tdlist(array('编号', '书名','作者', '状态', '操作'));
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date', 'status', 'action'));
 	$sql = " select * from books order by book_id asc";
@@ -152,9 +154,12 @@ function list_book($format='normal')
 		$price= $row['price'];
 		$buy_date= substr($row['buy_date'], 0, 10);
 		$desc =  $row['desc'];
-		$desc = substr($desc, 0, 300);
+		mb_internal_encoding("UTF-8");
+		$desc = mb_substr($desc, 0, 100);
+		if($desc)
+			$desc .= "<a href='book.php?action=show_borrower&book_id=$book_id'>...</a>";
 		$comments=  $row['comments'];
-		$comments = substr($comments, 0, 200);
+		$comments = mb_substr($comments, 0, 100);
 		if($role > 0){
 			$sc_desc = "ondblclick='show_edit_col(this,$book_id,1)'";
 			$sc_comments = "ondblclick='show_edit_col(this,$book_id,2)'";
@@ -183,6 +188,12 @@ function list_book($format='normal')
 			print_td($author,150);
 			print_td($desc,'','','',$sc_desc);
 			print_td($comments, '150','','',$sc_comments);
+			print_td($status_text,35);
+			print_td($blink,35);
+		}else if($format == 'brief'){
+			print_td($book_id,10);
+			print_td($name,200);
+			print_td($author,150);
 			print_td($status_text,35);
 			print_td($blink,35);
 		}else
