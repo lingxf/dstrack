@@ -175,9 +175,13 @@ function list_book($format='normal')
 			$blink = "<a href=book.php?action=wait&book_id=\"$book_id\">等候</a>";
 		}else{
 			$status_text = "<a href=book.php?action=show_borrower&book_id=\"$book_id\">";
-			$status_text .= "在库";
-			$status_text .= "</a>";
-			$blink = "<a href=book.php?action=borrow&book_id=\"$book_id\">借阅</a>";
+			if($buy_date == '' || $buy_date == "0000-00-00")
+				$status_text .= "待购";
+			else{
+				$status_text .= "在库";
+				$status_text .= "</a>";
+				$blink = "<a href=book.php?action=borrow&book_id=\"$book_id\">借阅</a>";
+			}
 		}
 		if($name == "TBD" || $name == "")
 			continue;
