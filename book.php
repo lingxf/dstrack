@@ -86,7 +86,7 @@ else
 	$login_text = "<a href=book_user_setting.php>$login_id($role_text)<a/> &nbsp;&nbsp;<a href=\"book.php?action=logout\">Logout</a>";
 
 
-$action="init";
+$action="brief";
 if(isset($_GET['action']))$action=$_GET['action'];
 if($action == "logout"){
 	$_SESSION = array();
@@ -133,6 +133,7 @@ if($role != 2 && preg_match("/manager|approve|history|stock|push|list_out|lend|r
 }
 
 switch($action){
+	case "complete":
 	case "init":
 		print("<div>我的借阅");
 		list_record($login_id);
@@ -145,7 +146,7 @@ switch($action){
 		print("<div>我的借阅");
 		list_record($login_id);
 		print("</div>");
-		print("<div>书库列表 <a href='book.php?action=init'>完整</a>");
+		print("<div>书库列表 <a href='book.php?action=complete'>完整</a>");
 		list_book('brief');
 		print("</div>");
 		break;
