@@ -86,7 +86,7 @@ function list_record($login_id, $format='self')
 				$blink = "<a href=\"book.php?record_id=$record_id&action=push\">催还</a>";
 				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
 			}else if($status == 3){
-				$status_text = "归回中";
+				$status_text = "归还中";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
 				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=lend\">拒绝</a>";
 			}else if($status == 4){
