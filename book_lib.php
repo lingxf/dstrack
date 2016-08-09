@@ -201,8 +201,8 @@ function list_book($format='normal')
 			print_td($blink,35);
 		}else if($format == 'brief'){
 			print_td($book_id,10);
-			print_td($name,200);
-			print_td($author,150);
+			print_td($name);
+			print_td($author);
 			print_td($status_text,35);
 			print_td($blink,35);
 		}else
