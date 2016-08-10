@@ -39,9 +39,9 @@ include 'book_lib.php';
 include 'debug.php';
 include 'db_connect.php';
 
-global $login_id;	
-global $show_techarea_case;
+global $login_id, $max_book, $setting;	
 
+session_name('book');
 session_start();
 
 $sid=session_id();
@@ -86,7 +86,7 @@ else
 	$login_text = "<a href=book_user_setting.php>$login_id($role_text)<a/> &nbsp;&nbsp;<a href=\"book.php?action=logout\">Logout</a>";
 
 
-$action="brief";
+$action="init";
 if(isset($_GET['action']))$action=$_GET['action'];
 if($action == "logout"){
 	$_SESSION = array();
@@ -133,22 +133,22 @@ if($role != 2 && preg_match("/manager|approve|history|stock|push|list_out|lend|r
 	return;
 }
 
+if(isset($_GET['view'])) $view=$_GET['view'];
+else if(isset($_SESSION['view'])) $view=$_SESSION['view'];
+else $view = $setting & 1 ? 'normal':'brief';
+$_SESSION['view'] = $view;
+$_SESSION['setting'] = $setting;
+dprint("Setting:$setting");
+
 switch($action){
-	case "complete":
 	case "init":
 		print("<div>我的借阅");
 		list_record($login_id);
 		print("</div>");
-		print("<div>书库列表 <a href='book.php?action=brief'>简略</a>");
-		list_book();
-		print("</div>");
-		break;
-	case "brief":
-		print("<div>我的借阅");
-		list_record($login_id);
-		print("</div>");
-		print("<div>书库列表 <a href='book.php?action=complete'>完整</a>");
-		list_book('brief');
+		$view_op = $view == 'brief'?'normal':'brief';
+		$view_ch = $view_op == 'brief'?'简略':'完整';
+		print("<div>书库列表 <a href='book.php?view=$view_op'>$view_ch</a>");
+		list_book($view);
 		print("</div>");
 		break;
 	case "borrow":

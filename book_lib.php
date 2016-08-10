@@ -214,12 +214,13 @@ function list_book($format='normal')
 
 function is_member($login_id)
 {
-	global $max_books;
+	global $max_books, $setting;
 	$sql = "select * from member where user=\"$login_id\"";
 	$res = mysql_query($sql) or die("Invalid query:".$sql.mysql_error());
 	if($row = mysql_fetch_array($res)){
 		$role= $row['role'];
-		$max_books= $row['max'];
+		$max_books = $row['max'];
+		$setting = $row['setting'];
 		return $role;
 	}
 	return 0;
@@ -547,6 +548,7 @@ function home_link($str="Home", $action='', $more=''){
 
 function check_login(){
 	global $login_id;
+	session_name('book');
 	session_start();
 	if(isset($_SESSION['user'])) $login_id=$_SESSION['user'];
 	else{

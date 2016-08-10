@@ -8,6 +8,7 @@ include 'book_lib.php';
 include 'debug.php';
 include 'db_connect.php';
 
+session_name('book');
 session_start();
 
 $book_id=$_POST['book_id'];
