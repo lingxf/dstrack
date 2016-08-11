@@ -125,7 +125,7 @@ function cont_edit_col(tdc, id, col, txt)
 
 	if(ta.setSelectionRange){
 		//ta.setSelectionRange(1000,1000);
-		ta.setSelectionRange(len,len);
+		ta.setSelectionRange(len,len+1);
 		ta.focus();
 	}else if(ta.createTextRange){
 		tempText=ta.createTextRange();
