@@ -29,11 +29,14 @@ if($book_id && $op=="modify"){
 			$cm .= $tt;
 		$intext = $cm;
 	}
-	$sql = "UPDATE books set `$col`='$intext'";
+	if($col == 'class')
+		$sql = "UPDATE books set `$col`=$intext ";
+	else
+		$sql = "UPDATE books set `$col`='$intext'";
 	$sql .= " where `book_id`=$book_id";
 	$res1=mysql_query($sql) or die("Invalid query1:" . $sql . mysql_error());
 	$text = str_replace("''", "'", $intext);
-	print("$text");
+	print(get_class_name($text));
 }else if($book_id && $op=="read"){
 	$tt = read_book_column($book_id, $col);
 	if($tt == -1)

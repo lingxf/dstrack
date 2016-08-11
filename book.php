@@ -126,7 +126,7 @@ if(isset($_POST['begin'])) $action="begin";
 if(isset($_POST['end']))$action="end";
 if(isset($_POST['list_all']))$action="list_all";
 
-dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage<br>");
+dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage setting:$setting<br>");
 
 if($role != 2 && preg_match("/manager|approve|history|stock|push|list_out|lend|reject_wait/",$action)){
 	print("You are not administrator!");
@@ -138,7 +138,6 @@ else if(isset($_SESSION['view'])) $view=$_SESSION['view'];
 else $view = $setting & 1 ? 'normal':'brief';
 $_SESSION['view'] = $view;
 $_SESSION['setting'] = $setting;
-dprint("Setting:$setting");
 
 switch($action){
 	case "home":
@@ -192,10 +191,10 @@ switch($action){
 		home_link();
 		break;
 	case "show_borrower":
+		print("介绍 - ");
+		show_book($book_id);
 		print("当前借阅人<br>");
 		show_borrower($book_id, 'out');
-		print("介绍<br>");
-		show_book($book_id);
 		print("等待列表<br>");
 		show_borrower($book_id, 'wait');
 		print("历史借阅记录<br>");

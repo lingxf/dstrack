@@ -158,11 +158,9 @@ function list_book($format='normal', $start=1, $items=50)
     print('<input type="submit"');  print(' name="end" value="End" />   ');
 	print('</span>');
 
-	dprint("items:$items");
-
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'normal')
-		print_tdlist(array('编号', '书名','作者', '描述','评论','状态', '操作'));
+		print_tdlist(array('编号', '书名','作者', '描述','评论','分类', '状态', '操作'));
 	else if($format == 'brief')
 		print_tdlist(array('编号', '书名','作者', '状态', '操作'));
 	else
@@ -183,6 +181,8 @@ function list_book($format='normal', $start=1, $items=50)
 		$index = $row['index'];
 		$price = $row['price'];
 		$buy_date = substr($row['buy_date'], 0, 10);
+		$class =  $row['class'];
+		$class_text = get_class_name($class);
 		$desc =  $row['desc'];
 		mb_internal_encoding("UTF-8");
 		$desc = mb_substr($desc, 0, 100);
@@ -193,6 +193,7 @@ function list_book($format='normal', $start=1, $items=50)
 		if($role > 0){
 			$sc_desc = "ondblclick='show_edit_col(this,$book_id,1)'";
 			$sc_comments = "ondblclick='show_edit_col(this,$book_id,2)'";
+			$sc_class = "ondblclick='show_edit_col(this,$book_id,3)'";
 		}
 
 		$status=$row['status'];	
@@ -224,6 +225,7 @@ function list_book($format='normal', $start=1, $items=50)
 			print_td($author,150);
 			print_td($desc,'','','',$sc_desc);
 			print_td($comments, '150','','',$sc_comments);
+			print_td($class_text, 35, '', '', $sc_class);
 			print_td($status_text,35);
 			print_td($blink,35);
 		}else if($format == 'brief'){
@@ -367,16 +369,46 @@ function read_book_column($book_id, $col)
 	return -1;
 }
 
+function get_class_name($class=0)
+{
+	$namelist = array('未分','小说', '历史', '技术', '科普', '社会', '传记', '管理');
+	#print_r($namelist);
+	return $namelist[$class];
+}
+
 function show_book($book_id)
 {
 	$sql = " select * from books where book_id=$book_id";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
 		$desc= $row['desc'];
+		$name= $row['name'];
+		$id= $row['book_id'];
 		$comments= $row['comments'];
+		$isbn = $row['ISBN'];
+		$index = $row['index'];
+		$price = $row['price'];
+		$buy_date= $row['buy_date'];
+		$buy_date= substr($buy_date, 0, 10);
+		$sponsor = $row['sponsor'];
+		$class = $row['class'];
+		$class_text = get_class_name($class);
+
+		print("《" . $name . "》");
+		print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
+		print("<tr>");
+		print_tdlist(array('编号', 'ISBN','索引','价格','分类', 'Sponsor', '购买日期'));
+		print("</tr>");
+		print("<tr>");
+		print_tdlist(array($id, $isbn, $index, $price, $class_text, $sponsor, $buy_date)); 
+		print("</tr>");
+		print("</table>");
+		print("<br/>");
+
 		print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
 		print("<tr><td>$desc</td></tr>");
 		print("</table>");
+
 		print("评论<br>");
 		print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
 		print("<tr><td>$comments</td></tr>");

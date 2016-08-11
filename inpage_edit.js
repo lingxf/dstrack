@@ -29,15 +29,15 @@ var ctdc = null;
 var ctxt = "";
 var cnewtxt = "";
 var undotxt = "";
-var colnames = ['NULL', 'desc', 'comments'];
+var colnames = ['NULL', 'desc', 'comments', 'class'];
 
 function save_edit_col(tdc, id, col)
 {
 	//var txt = tdc.firstChild.innerHTML;
 	var txt = tdc.firstChild.value;
 
-	var colnames = ['NULL', 'desc', 'comments'];
-	if(col < 3){
+	var colnames = ['NULL', 'desc', 'comments', 'class'];
+	if(col < 8){
 		var arg = "book_id="+id+"&col="+colnames[col]+"&op=modify&text="+txt;
 		var scripts = "edit_book.php";
 	}
@@ -56,7 +56,7 @@ function save_edit_col(tdc, id, col)
 			if(txt == xmlhttp.responseText)
 				ctxt = txt;
 	  }else{
-   			tdc.innerHTML =xmlhttp.readyState+"status:"+xmlhttp.status+xmlhttp.responseText;
+   			tdc.innerHTML =xmlhttp.readyState+":status:"+xmlhttp.status+xmlhttp.responseText;
 	  }
   	});
 
@@ -71,7 +71,7 @@ function discard_edit_col(tdc)
 function get_edit_column(tdc, id, col, callback)
 {
 
-	var colnames = ['NULL', 'desc', 'comments'];	
+	var colnames = ['NULL', 'desc', 'comments', 'class'];	
 	var arg = "book_id="+id+"&col="+colnames[col]+"&op=read&text=a";
 	var scripts = "edit_book.php";
 	var ttxt;
@@ -140,7 +140,7 @@ function cont_edit_col(tdc, id, col, txt)
 
 function show_edit_col(tdc, id, col)
 {
-	if(col==2)
+	if(col == 2)
 		cont_edit_col(tdc, id, col, '');
 	else if(col==8)
 		cont_edit_col(tdc, id, col, tdc.innerHTML);
