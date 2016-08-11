@@ -72,6 +72,7 @@ else{
 //  exit;
 }
 $max_books = 1;
+$items_perpage = 50;
 $role = is_member($login_id);
 if($role == 2)
 	$role_text = "Admin";
