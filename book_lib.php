@@ -127,7 +127,7 @@ function list_record($login_id, $format='self')
 	print("</table>");
 }
 
-function list_book($format='normal', $start=1, $items=50)
+function list_book($format='normal', $start=0, $items=50)
 {
 	global $login_id, $role, $class;
 
@@ -137,18 +137,29 @@ function list_book($format='normal', $start=1, $items=50)
 
     $hasmore = false;
     $hasprev = false;
-	$sql = "select * from books where `book_id` > ($start+$items-1)";
+	$sql = "select * from books";
+	if($class != 100)
+		$sql .= " where class = $class ";
 	$res1 = mysql_query($sql) or die("Invalid query:" .$sql. mysql_error());
-	if($row1 = mysql_fetch_array($res1)){
+	$rows = mysql_num_rows($res1);
+	print("$start, $rows, $items");
+	if($start >= $rows){
+		$start = $rows - $items;
+        if($start < 0)
+            $start = 0;
+        $_SESSION['start'] = $start;
+	}
+
+	print("$start, $rows, $items");
+
+	$ns = $start+$items;
+
+	if($ns < $rows){
         $hasmore = true;
     }
 
-	$sql = "select * from books where `book_id`<$start";
-	$res1 = mysql_query($sql) or die("Invalid query:".$sql.mysql_error());
-	if($row1 = mysql_fetch_array($res1)){
+	if($start > 0)
         $hasprev = true;
-    }
-
 
     print('<form enctype="multipart/form-data" action="book.php" method="POST">');
 	print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
@@ -167,9 +178,9 @@ function list_book($format='normal', $start=1, $items=50)
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date', 'status', 'action'));
 
 	if($class == 100)
-		$sql = " select * from books where book_id >= $start and book_id < $start + $items order by book_id asc";
+		$sql = " select * from books order by book_id asc limit $start, $items";
 	else
-		$sql = " select * from books where book_id >= $start and book_id < $start + $items and class = $class order by book_id asc";
+		$sql = " select * from books where class = $class order by book_id asc limit $start, $items";
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){

@@ -137,7 +137,7 @@ if(isset($_GET['items_perpage'])) $items_perpage=$_GET['items_perpage'];
 else if(isset($_SESSION['items_perpage'])) $items_perpage = $_SESSION['items_perpage'];
 $_SESSION['items_perpage'] = $items_perpage;
 
-if(!isset($_SESSION['start'])) $_SESSION['start'] = 1;
+if(!isset($_SESSION['start'])) $_SESSION['start'] = 0;
 $start = $_SESSION['start'];
 
 
@@ -155,10 +155,10 @@ if($role != 2 && preg_match("/manager|approve|history|stock|push|list_out|lend|r
 }
 
 if(isset($_GET['class'])) $view=$_GET['class'];
-else if(isset($_SESSION['class'])) $view=$_SESSION['class'];
+else if(isset($_SESSION['class'])) $class=$_SESSION['class'];
 else $class = 100;
 $_SESSION['class'] = $class;
-$class = 1;
+
 if(isset($_GET['view'])) $view=$_GET['view'];
 else if(isset($_SESSION['view'])) $view=$_SESSION['view'];
 else $view = $setting & 1 ? 'normal':'brief';
@@ -175,20 +175,22 @@ switch($action){
 		show_home();
         break;
     case "begin":
-        $start = 1;
+        $start = 0;
         $_SESSION['start'] = $start;
 		show_home();
         break;
     case "end":
         $end = get_total_books();
-		$start = $end + 1 - $items_perpage;
+		$start = $end - $items_perpage - 1;
+        if($start < 0)
+            $start = 0;
         $_SESSION['start'] = $start;
 		show_home();
         break;
     case "prev":
         $start -= $items_perpage;
-        if($start < 1)
-            $start = 1;
+        if($start < 0)
+            $start = 0;
         $_SESSION['start'] = $start;
 		show_home();
         break;
@@ -297,7 +299,7 @@ switch($action){
 function show_home()
 {
 	global $login_id, $view, $start, $items_perpage;
-	global $class_list;
+	global $class_list, $class;
 	print("<div>我的借阅");
 	list_record($login_id);
 	print("</div>");
@@ -313,7 +315,9 @@ function show_home()
 	print("<select id='sel_class' onchange='change_class(this.value, 0)'>");
 	print("<option value='100'>所有</option>");
 	foreach($class_list as $key => $class_text) {
-		print("<option value='$key'>$class_text</option>");
+		print("<option value='$key' ");
+		if($class == $key) print("selected");
+		print(" >$class_text</option>");
 	}
 	print("</select>");
 	print("</div>");
