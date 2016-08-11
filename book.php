@@ -75,9 +75,13 @@ if(isset($_POST['login'])){
 	    if($ret == 1){
 	        print("No user $login_id exist");
 	        unset($_SESSION['user']); 
+			home_link();
+			exit;
 	    }else if($ret == 2){
 	        print("wrong password");
 	        unset($_SESSION['user']);
+			home_link();
+			exit;
 	    }else
 	        $_SESSION['user'] = $login_id;
 	}
