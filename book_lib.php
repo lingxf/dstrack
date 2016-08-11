@@ -142,7 +142,6 @@ function list_book($format='normal', $start=0, $items=50)
 		$sql .= " where class = $class ";
 	$res1 = mysql_query($sql) or die("Invalid query:" .$sql. mysql_error());
 	$rows = mysql_num_rows($res1);
-	print("$start, $rows, $items");
 	if($start >= $rows){
 		$start = $rows - $items;
         if($start < 0)
@@ -150,7 +149,7 @@ function list_book($format='normal', $start=0, $items=50)
         $_SESSION['start'] = $start;
 	}
 
-	print("$start, $rows, $items");
+	dprint("$start, $rows, $items");
 
 	$ns = $start+$items;
 
