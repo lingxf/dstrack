@@ -281,7 +281,7 @@ function show_home()
 	print("&nbsp;<a href='book.php?items_perpage=25'>25</a>");
 	print("&nbsp;<a href='book.php?items_perpage=50'>50</a>");
 	print("&nbsp;<a href='book.php?items_perpage=100'>100</a>");
-	print("&nbsp;<a href='book.php?items_perpage=100'>200</a>");
+	print("&nbsp;<a href='book.php?items_perpage=200'>200</a>");
 	list_book($view, $start, $items_perpage);
 	print("</div>");
 }
