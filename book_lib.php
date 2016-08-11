@@ -151,7 +151,7 @@ function list_book($format='normal', $start=1, $items=50)
 
 
     print('<form enctype="multipart/form-data" action="book.php" method="POST">');
-	print('<span>nbsp;nbsp;');
+	print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
     print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
     print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
     print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
@@ -238,6 +238,7 @@ function list_book($format='normal', $start=1, $items=50)
 	}
 	print("</table>");
 
+	print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
     print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
     print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
     print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
