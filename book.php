@@ -278,7 +278,7 @@ function show_home()
 	$view_op = $view == 'brief'?'normal':'brief';
 	$view_ch = $view_op == 'brief'?'简略':'完整';
 	print("<div>书库列表 <a href='book.php?view=$view_op'>$view_ch</a>");
-	print("&nbsp;<a href='book.php?items_perpage=20'>25</a>");
+	print("&nbsp;<a href='book.php?items_perpage=25'>25</a>");
 	print("&nbsp;<a href='book.php?items_perpage=50'>50</a>");
 	print("&nbsp;<a href='book.php?items_perpage=100'>100</a>");
 	print("&nbsp;<a href='book.php?items_perpage=100'>200</a>");
