@@ -127,13 +127,37 @@ function list_record($login_id, $format='self')
 	print("</table>");
 }
 
-function list_book($format='normal')
+function list_book($format='normal', $start=1, $items=50)
 {
 	global $login_id, $role;
 
 	$table_name = "book";
 	$tr_width = 800;
 	$background = '#efefef';
+
+    $hasmore = false;
+    $hasprev = false;
+	$sql = "select * from books where `book_id` > ($start+$items-1)";
+	$res1 = mysql_query($sql) or die("Invalid query:" .$sql. mysql_error());
+	if($row1 = mysql_fetch_array($res1)){
+        $hasmore = true;
+    }
+
+	$sql = "select * from books where `book_id`<$start";
+	$res1 = mysql_query($sql) or die("Invalid query:".$sql.mysql_error());
+	if($row1 = mysql_fetch_array($res1)){
+        $hasprev = true;
+    }
+
+
+    print('<form enctype="multipart/form-data" action="book.php" method="POST">');
+    print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
+    print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
+    print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
+    print('<input type="submit"');  print(' name="end" value="End" />   ');
+
+	dprint("items:$items");
+
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'normal')
 		print_tdlist(array('编号', '书名','作者', '描述','评论','状态', '操作'));
@@ -141,7 +165,8 @@ function list_book($format='normal')
 		print_tdlist(array('编号', '书名','作者', '状态', '操作'));
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date', 'status', 'action'));
-	$sql = " select * from books order by book_id asc";
+
+	$sql = " select * from books where book_id >= $start and book_id < $start + $items order by book_id asc";
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
@@ -210,17 +235,24 @@ function list_book($format='normal')
 		print("</tr>\n");
 	}
 	print("</table>");
+
+    print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
+    print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
+    print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
+    print('<input type="submit"');  print(' name="end" value="End" />   ');
+	print('</form');
 }
 
 function is_member($login_id)
 {
-	global $max_books, $setting;
+	global $max_books, $setting, $items_perpage;
 	$sql = "select * from member where user=\"$login_id\"";
 	$res = mysql_query($sql) or die("Invalid query:".$sql.mysql_error());
 	if($row = mysql_fetch_array($res)){
 		$role= $row['role'];
 		$max_books = $row['max'];
 		$setting = $row['setting'];
+		$items_perpage = $row['perpage'];
 		return $role;
 	}
 	return 0;
@@ -300,6 +332,14 @@ function borrow_book($book_id, $login_id)
 	add_record($book_id, $login_id, 1);
 	set_book_status($book_id, 1);
 	return true;
+}
+
+function get_total_books()
+{
+	$sql = " select * from books";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$rows = mysql_num_rows($res);
+	return $rows;
 }
 
 function get_bookname($book_id)

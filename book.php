@@ -86,7 +86,7 @@ else
 	$login_text = "<a href=book_user_setting.php>$login_id($role_text)<a/> &nbsp;&nbsp;<a href=\"book.php?action=logout\">Logout</a>";
 
 
-$action="init";
+$action="home";
 if(isset($_GET['action']))$action=$_GET['action'];
 if($action == "logout"){
 	$_SESSION = array();
@@ -97,8 +97,8 @@ if($action == "logout"){
 	exit;
 }
 $book_id=0;
-if(isset($_GET['book_id']))$book_id=$_GET['book_id'];
-if(isset($_GET['record_id']))$record_id=$_GET['record_id'];
+if(isset($_GET['book_id'])) $book_id=$_GET['book_id'];
+if(isset($_GET['record_id'])) $record_id=$_GET['record_id'];
 
 
 print "<a href=\"book.php\">Home</a> &nbsp;&nbsp;$login_text ";
@@ -110,23 +110,22 @@ if($role == 2){
 }
 
 print("<br>");
-dprint("Action:$action Login:$login_id book_id:$book_id<br>");
 
-if(!isset($_SESSION['item_perpage'])) $_SESSION['item_perpage'] = 10;
+if(isset($_GET['items_perpage'])) $items_perpage=$_GET['items_perpage'];
+else if(isset($_SESSION['items_perpage'])) $items_perpage = $_SESSION['items_perpage'];
+$_SESSION['items_perpage'] = $items_perpage;
+
 if(!isset($_SESSION['start'])) $_SESSION['start'] = 1;
-if(!isset($_SESSION['end'])) $_SESSION['end'] = $_SESSION['start'] + $_SESSION['item_perpage'] - 1;
-
-$item_perpage = $_SESSION['item_perpage'];
 $start = $_SESSION['start'];
-$end = $_SESSION['end'];
-$set_standard_answer = false;
 
-if(isset($_POST['submit'])) $action="submit";
+
 if(isset($_POST['prev'])) $action="prev";
 if(isset($_POST['next']))$action="next";
 if(isset($_POST['begin'])) $action="begin";
 if(isset($_POST['end']))$action="end";
 if(isset($_POST['list_all']))$action="list_all";
+
+dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage<br>");
 
 if($role != 2 && preg_match("/manager|approve|history|stock|push|list_out|lend|reject_wait/",$action)){
 	print("You are not administrator!");
@@ -141,16 +140,33 @@ $_SESSION['setting'] = $setting;
 dprint("Setting:$setting");
 
 switch($action){
-	case "init":
-		print("<div>我的借阅");
-		list_record($login_id);
-		print("</div>");
-		$view_op = $view == 'brief'?'normal':'brief';
-		$view_ch = $view_op == 'brief'?'简略':'完整';
-		print("<div>书库列表 <a href='book.php?view=$view_op'>$view_ch</a>");
-		list_book($view);
-		print("</div>");
+	case "home":
+		show_home();
 		break;
+    case "next":
+        $start += $items_perpage;
+        $_SESSION['start'] = $start;
+		show_home();
+        break;
+    case "begin":
+        $start = 1;
+        $_SESSION['start'] = $start;
+		show_home();
+        break;
+    case "end":
+        $end = get_total_books();
+		$start = $end + 1 - $items_perpage;
+        $_SESSION['start'] = $start;
+		show_home();
+        break;
+    case "prev":
+        $start -= $items_perpage;
+        if($start < 1)
+            $start = 1;
+        $_SESSION['start'] = $start;
+		show_home();
+        break;
+
 	case "borrow":
 		borrow_book($book_id, $login_id);
 		list_record($login_id);
@@ -254,12 +270,18 @@ switch($action){
 
 function show_home()
 {
-	global $login_id;
-	print("<div>My Borrow");
+	global $login_id, $view, $start, $items_perpage;
+	print("<div>我的借阅");
 	list_record($login_id);
 	print("</div>");
-	print("<div>All Book");
-	list_book();
+	$view_op = $view == 'brief'?'normal':'brief';
+	$view_ch = $view_op == 'brief'?'简略':'完整';
+	print("<div>书库列表 <a href='book.php?view=$view_op'>$view_ch</a>");
+	print("&nbsp;<a href='book.php?items_perpage=20'>25</a>");
+	print("&nbsp;<a href='book.php?items_perpage=50'>50</a>");
+	print("&nbsp;<a href='book.php?items_perpage=100'>100</a>");
+	print("&nbsp;<a href='book.php?items_perpage=100'>200</a>");
+	list_book($view, $start, $items_perpage);
 	print("</div>");
 }
 

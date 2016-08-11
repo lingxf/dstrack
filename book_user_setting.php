@@ -12,32 +12,21 @@ include 'db_connect.php';
 
 global $login_id, $login_password;
 check_login();
-$setting = $_SESSION['setting'];
 
 print "<a href=\"book.php\">Home</a> &nbsp;&nbsp;<a href=\"book_user_setting.php\">Setting</a>";
 
-$sql1 = "select * from weekly.reporter where reporter='$login_id'";
-$res1=mysql_query($sql1) or die("invalid query:" . mysql_error());
-if(!$row1=mysql_fetch_array($res1)) {
-	print("not found user id");
-	return;
-}
-
-$reporter1=$row1['reporter'];
-$name1=$row1['name'];
-$email1=$row1['email'];
 
 if(isset($_POST['save'])){
 	$name=$_POST['name'];
 	$email=$_POST['email'];
 	$view=$_POST['view'];
+	$perpage=$_POST['perpage'];
 	$setting = ($setting & ~1) | $view;
 	$sql1 = "update weekly.reporter set name='$name',email='$email' where reporter='$login_id'";
 	$res1=mysql_query($sql1) or die("invalid query:" . mysql_error());
 
-	$sql = "update member set user_name='$name',email='$email', setting=$setting where user='$login_id'";
+	$sql = "update member set user_name='$name',email='$email', setting=$setting, perpage=$perpage where user='$login_id'";
 	$res=mysql_query($sql) or die("invalid query:$sql" . mysql_error());
-
 	printf("<br>Update successfully!");
 	return;
 }else if(isset($_POST['change_password'])){
@@ -62,6 +51,26 @@ if(isset($_POST['save'])){
 			return;
 		}
 	}
+}else{
+	$sql1 = "select * from weekly.reporter where reporter='$login_id'";
+	$res1=mysql_query($sql1) or die("invalid query:" . mysql_error());
+	if(!$row1=mysql_fetch_array($res1)) {
+		print("not found user id");
+		return;
+	}
+	$reporter1=$row1['reporter'];
+	$name1=$row1['name'];
+	$email1=$row1['email'];
+
+	$sql1 = "select * from member where user='$login_id'";
+	$res1=mysql_query($sql1) or die("invalid query:" . mysql_error());
+	if(!$row1=mysql_fetch_array($res1)) {
+		print("not found user id");
+		return;
+	}
+	$perpage=$row1['perpage'];
+	$setting = $_SESSION['setting'];
+	dprint("$reporter1, $perpage");
 }
 ?>
 
@@ -71,6 +80,7 @@ if(isset($_POST['save'])){
 <tr><th>Name:</th><td><input name="name" type="text" value='<?php  echo $name1;?>'></td></tr>
 <tr><th>email:</th><td><input name="email" type="text" value='<?php  echo $email1;?>'></td></tr>
 <tr><th>default view:</th><td><input type='radio' name="view" value=0 <?php if(!$setting&1) print'checked'; ?> >简略<input type='radio' name="view" value=1 <?php if($setting&1) print'checked';?> >完整</td></tr>
+<tr><th>book/page:</th><td><input type='text' name="perpage" value='<?php echo $perpage;?>'></td></tr>
 </table>
 <input class="btn" type="submit" name="save" value="Save">
 
