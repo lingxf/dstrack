@@ -151,10 +151,12 @@ function list_book($format='normal', $start=1, $items=50)
 
 
     print('<form enctype="multipart/form-data" action="book.php" method="POST">');
+	print('<span>nbsp;nbsp;');
     print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
     print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
     print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
     print('<input type="submit"');  print(' name="end" value="End" />   ');
+	print('</span>');
 
 	dprint("items:$items");
 
@@ -198,23 +200,23 @@ function list_book($format='normal', $start=1, $items=50)
 			$status_text = "Out";
 			$status_text = "<a href=book.php?action=show_borrower&book_id=\"$book_id\">借出</a>";
 			$blink = "<a href=book.php?action=wait&book_id=\"$book_id\">等候</a>";
+			$bcolor = '#efcfef';
 		}else{
 			$status_text = "<a href=book.php?action=show_borrower&book_id=\"$book_id\">";
 			if($buy_date == '' || $buy_date == "0000-00-00"){
 				$status_text .= "待购";
 				$status_text .= "</a>";
 				$blink = "";
+				$bcolor = '#00ff80';
 			}else{
 				$status_text .= "在库";
 				$status_text .= "</a>";
 				$blink = "<a href=book.php?action=borrow&book_id=\"$book_id\">借阅</a>";
+				$bcolor = 'white';
 			}
 		}
 		if($name == "TBD" || $name == "")
 			continue;
-		$bcolor = 'white';
-		if($status != 0)
-			$bcolor = '#efcfef';
 		print("<tr style='background:$bcolor;'>");
 		if($format == 'normal'){
 			print_td($book_id,10);
