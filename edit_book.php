@@ -36,7 +36,10 @@ if($book_id && $op=="modify"){
 	$sql .= " where `book_id`=$book_id";
 	$res1=mysql_query($sql) or die("Invalid query1:" . $sql . mysql_error());
 	$text = str_replace("''", "'", $intext);
-	print(get_class_name($text));
+	if($col == 'class')
+		print(get_class_name($text));
+	else
+		print($text);
 }else if($book_id && $op=="read"){
 	$tt = read_book_column($book_id, $col);
 	if($tt == -1)

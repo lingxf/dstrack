@@ -129,7 +129,7 @@ function list_record($login_id, $format='self')
 
 function list_book($format='normal', $start=1, $items=50)
 {
-	global $login_id, $role;
+	global $login_id, $role, $class;
 
 	$table_name = "book";
 	$tr_width = 800;
@@ -166,7 +166,10 @@ function list_book($format='normal', $start=1, $items=50)
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date', 'status', 'action'));
 
-	$sql = " select * from books where book_id >= $start and book_id < $start + $items order by book_id asc";
+	if($class == 100)
+		$sql = " select * from books where book_id >= $start and book_id < $start + $items order by book_id asc";
+	else
+		$sql = " select * from books where book_id >= $start and book_id < $start + $items and class = $class order by book_id asc";
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
@@ -369,11 +372,12 @@ function read_book_column($book_id, $col)
 	return -1;
 }
 
+$class_list = array('未分','小说', '历史', '技术', '科普', '社会', '传记', '管理');
 function get_class_name($class=0)
 {
-	$namelist = array('未分','小说', '历史', '技术', '科普', '社会', '传记', '管理');
+	global $class_list;
 	#print_r($namelist);
-	return $namelist[$class];
+	return $class_list[$class];
 }
 
 function show_book($book_id)

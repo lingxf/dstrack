@@ -30,6 +30,27 @@ th, td {
 }
 </style>
 <body onload="show_filter()">
+<script type="text/javascript">
+function change_class(bookclass, view){
+	url = "show_book.php?";
+	url = url + "class="+bookclass;
+	if(view != 0)
+		url = url + "&view="+view;
+
+	document.getElementById("div_booklist").innerHTML="Please wait...";
+	loadXMLDoc(url,function() {
+	  	if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+			document.getElementById("div_booklist").innerHTML=xmlhttp.responseText;
+	  	}else{
+			if(xmlhttp.status=='0')
+				document.getElementById("div_booklist").innerHTML="Please wait...";
+			else
+				document.getElementById("div_booklist").innerHTML=xmlhttp.status+xmlhttp.responseText;
+		}
+		});
+};
+</script>
+
 <?php
 include 'book_lib.php';
 /*
@@ -133,6 +154,11 @@ if($role != 2 && preg_match("/manager|approve|history|stock|push|list_out|lend|r
 	return;
 }
 
+if(isset($_GET['class'])) $view=$_GET['class'];
+else if(isset($_SESSION['class'])) $view=$_SESSION['class'];
+else $class = 100;
+$_SESSION['class'] = $class;
+$class = 1;
 if(isset($_GET['view'])) $view=$_GET['view'];
 else if(isset($_SESSION['view'])) $view=$_SESSION['view'];
 else $view = $setting & 1 ? 'normal':'brief';
@@ -271,16 +297,28 @@ switch($action){
 function show_home()
 {
 	global $login_id, $view, $start, $items_perpage;
+	global $class_list;
 	print("<div>我的借阅");
 	list_record($login_id);
 	print("</div>");
+
 	$view_op = $view == 'brief'?'normal':'brief';
 	$view_ch = $view_op == 'brief'?'简略':'完整';
-	print("<div>书库列表 <a href='book.php?view=$view_op'>$view_ch</a>");
+	print("<div'>书库列表 <a href='book.php?view=$view_op'>$view_ch</a>");
 	print("&nbsp;<a href='book.php?items_perpage=25'>25</a>");
 	print("&nbsp;<a href='book.php?items_perpage=50'>50</a>");
 	print("&nbsp;<a href='book.php?items_perpage=100'>100</a>");
 	print("&nbsp;<a href='book.php?items_perpage=200'>200</a>");
+	print("&nbsp;&nbsp;&nbsp;&nbsp;分类");
+	print("<select id='sel_class' onchange='change_class(this.value, 0)'>");
+	print("<option value='100'>所有</option>");
+	foreach($class_list as $key => $class_text) {
+		print("<option value='$key'>$class_text</option>");
+	}
+	print("</select>");
+	print("</div>");
+
+	print("<div id='div_booklist'>");
 	list_book($view, $start, $items_perpage);
 	print("</div>");
 }
