@@ -20,6 +20,7 @@ $_SESSION['class'] = $class;
 
 $start=$_SESSION['start'];
 $items_perpage=$_SESSION['items_perpage'];
+$comment_type = $_SESSION['comment_type'];
 
 list_book($view, $start, $items_perpage);
 
