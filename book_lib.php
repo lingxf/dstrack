@@ -129,7 +129,7 @@ function list_record($login_id, $format='self')
 
 function list_book($format='normal', $start=0, $items=50)
 {
-	global $login_id, $role, $class;
+	global $login_id, $role, $class, $comment_type;
 
 	$table_name = "book";
 	$tr_width = 800;
@@ -137,9 +137,16 @@ function list_book($format='normal', $start=0, $items=50)
 
     $hasmore = false;
     $hasprev = false;
-	$sql = "select * from books";
-	if($class != 100)
-		$sql .= " where class = $class ";
+
+	$cond = "where 1 ";
+	if($class == 100)
+		$cond .= "";
+	else
+		$cond .= " and class = $class";
+	if($comment_type != 0)
+		$cond .= " and comments != '' ";
+
+	$sql = "select * from books $cond ";
 	$res1 = mysql_query($sql) or die("Invalid query:" .$sql. mysql_error());
 	$rows = mysql_num_rows($res1);
 	if($start >= $rows){
@@ -176,10 +183,7 @@ function list_book($format='normal', $start=0, $items=50)
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date', 'status', 'action'));
 
-	if($class == 100)
-		$sql = " select * from books order by book_id asc limit $start, $items";
-	else
-		$sql = " select * from books where class = $class order by book_id asc limit $start, $items";
+	$sql = " select * from books $cond order by book_id asc limit $start, $items";
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){

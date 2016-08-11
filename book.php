@@ -158,7 +158,16 @@ if($role != 2 && preg_match("/manager|approve|history|stock|push|list_out|lend|r
 	return;
 }
 
-if(isset($_GET['class'])) $view=$_GET['class'];
+if(isset($_GET['comment_type'])) $comment_type=$_GET['comment_type'];
+else if(isset($_SESSION['comment_type'])) $comment_type=$_SESSION['comment_type'];
+else $comment_type = 0;
+$_SESSION['comment_type'] = $comment_type;
+if($comment_type == 1){
+	$view = 'normal';
+	$_SESSION['view'] = $view;
+}
+
+if(isset($_GET['class'])) $class=$_GET['class'];
 else if(isset($_SESSION['class'])) $class=$_SESSION['class'];
 else $class = 100;
 $_SESSION['class'] = $class;
@@ -303,7 +312,7 @@ switch($action){
 function show_home()
 {
 	global $login_id, $view, $start, $items_perpage;
-	global $class_list, $class;
+	global $class_list, $class, $comment_type;
 	print("<div>我的借阅");
 	list_record($login_id);
 	print("</div>");
@@ -315,7 +324,7 @@ function show_home()
 	print("&nbsp;<a href='book.php?items_perpage=50'>50</a>");
 	print("&nbsp;<a href='book.php?items_perpage=100'>100</a>");
 	print("&nbsp;<a href='book.php?items_perpage=200'>200</a>");
-	print("&nbsp;&nbsp;&nbsp;&nbsp;分类");
+	print("&nbsp;&nbsp;&nbsp;&nbsp;分类&nbsp;");
 	print("<select id='sel_class' onchange='change_class(this.value, 0)'>");
 	print("<option value='100'>所有</option>");
 	foreach($class_list as $key => $class_text) {
@@ -324,6 +333,10 @@ function show_home()
 		print(" >$class_text</option>");
 	}
 	print("</select>");
+	if($comment_type == 0)
+		print("&nbsp;<a href='book.php?comment_type=1'>只看评论</a>");
+	else
+		print("&nbsp;<a href='book.php?comment_type=0'>全部</a>");
 	print("</div>");
 
 	print("<div id='div_booklist'>");
