@@ -182,7 +182,7 @@ function list_book($format='normal', $start=0, $items=50)
 	else if($format == 'brief')
 		print_tdlist(array('编号', '书名','作者','分类', '状态', '操作'));
 	else if($format == 'class')
-		print_tdlist(array('编号', '书名','作者','中图分类','咱分类','状态', '操作'));
+		print_tdlist(array('编号', '书名','作者','描述','中图分类','咱分类','状态', '操作'));
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date', 'status', 'action'));
 
@@ -262,6 +262,7 @@ function list_book($format='normal', $start=0, $items=50)
 			print_td($book_id,10);
 			print_td($name);
 			print_td($author);
+			print_td($desc,'','','',$sc_desc);
 			print_td($class_name);
 			print_td($class_text, 35, '', '', $sc_class);
 			print_td($status_text,35);
