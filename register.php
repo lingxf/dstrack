@@ -28,8 +28,8 @@ if(isset($_POST['password1']))
 if(isset($_POST['password2']))
 	$ps2 = $_POST['password2'];
 if($ps1 == $ps2)
-	$sql="SELECT * FROM weekly.reporter WHERE reporter = '$user' or email = '$email';";
-	$sql_ins="INSERT into weekly.reporter set reporter = '$user', email = '$email', password = '$ps1';";
+	$sql="SELECT * FROM user.user WHERE user_id = '$user' or email = '$email';";
+	$sql_ins="INSERT into user.user set user_id = '$user', email = '$email', password = '$ps1';";
 	$res=mysql_query($sql) or die("Query Error:".$sql . mysql_error());
 	$row=mysql_fetch_array($res);
 	if($row){

@@ -22,7 +22,7 @@ if(isset($_POST['save'])){
 	$view=$_POST['view'];
 	$perpage=$_POST['perpage'];
 	$setting = ($setting & ~1) | $view;
-	$sql1 = "update weekly.reporter set name='$name',email='$email' where reporter='$login_id'";
+	$sql1 = "update user.user set name='$name',email='$email' where user_id ='$login_id'";
 	$res1=mysql_query($sql1) or die("invalid query:" . mysql_error());
 
 	$sql = "update member set user_name='$name',email='$email', setting=$setting, perpage=$perpage where user='$login_id'";
@@ -41,7 +41,7 @@ if(isset($_POST['save'])){
 				print("password does not correct");
 				return;
 			}
-			$sql1 = "update weekly.reporter set password=ENCRYPT('$newpassword1', 'ab') where reporter='$login_id'";
+			$sql1 = "update user.user set password=ENCRYPT('$newpassword1', 'ab') where user_id ='$login_id'";
 			$res1=mysql_query($sql1) or die("invalid query:" . mysql_error());
 			printf("<br>Change password successfully!");
 			home_link("Back");
@@ -52,13 +52,13 @@ if(isset($_POST['save'])){
 		}
 	}
 }else{
-	$sql1 = "select * from weekly.reporter where reporter='$login_id'";
+	$sql1 = "select * from user.user where user_id ='$login_id'";
 	$res1=mysql_query($sql1) or die("invalid query:" . mysql_error());
 	if(!$row1=mysql_fetch_array($res1)) {
 		print("not found user id");
 		return;
 	}
-	$reporter1=$row1['reporter'];
+	$user1=$row1['user_id'];
 	$name1=$row1['name'];
 	$email1=$row1['email'];
 
@@ -70,13 +70,13 @@ if(isset($_POST['save'])){
 	}
 	$perpage=$row1['perpage'];
 	$setting = $_SESSION['setting'];
-	dprint("$reporter1, $perpage");
+	dprint("$user1, $perpage");
 }
 ?>
 
 <form method="post" action="book_user_setting.php">
 <table id='id_setting' width=150 class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 style='width:200pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>
-<tr class="odd noclick"><th width=100>User ID:</th><td><input name="reporter" readonly type="text" value="<?php  echo $reporter1; ?>"></td></tr>
+<tr class="odd noclick"><th width=100>User ID:</th><td><input name="user_id" readonly type="text" value="<?php  echo $user1; ?>"></td></tr>
 <tr><th>Name:</th><td><input name="name" type="text" value='<?php  echo $name1;?>'></td></tr>
 <tr><th>email:</th><td><input name="email" type="text" value='<?php  echo $email1;?>'></td></tr>
 <tr><th>default view:</th><td><input type='radio' name="view" value=0 <?php if(!$setting&1) print'checked'; ?> >简略<input type='radio' name="view" value=1 <?php if($setting&1) print'checked';?> >完整</td></tr>

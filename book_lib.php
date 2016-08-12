@@ -642,7 +642,7 @@ function set_book_status($book_id, $status)
 
 function check_passwd($login_id, $login_passwd){
 
-	$sql1="SELECT * FROM weekly.reporter WHERE reporter = '$login_id';";
+	$sql1="SELECT * FROM user.user WHERE user_id = '$login_id';";
 	$res1=mysql_query($sql1) or die("Query Error:" . mysql_error());
 	$row1=mysql_fetch_array($res1);
 	if(!$row1)
@@ -651,7 +651,7 @@ function check_passwd($login_id, $login_passwd){
 		return 0;
     if($row1['password'] == $login_passwd)
         return 0;
-	$sql1="SELECT * FROM weekly.reporter WHERE reporter = '$login_id' and password=ENCRYPT('$login_passwd', 'ab');";
+	$sql1="SELECT * FROM user.user WHERE user_id = '$login_id' and password=ENCRYPT('$login_passwd', 'ab');";
 	$res1=mysql_query($sql1) or die("Query Error:" . mysql_error());
 	$row1=mysql_fetch_array($res1);
 	if(!$row1)
@@ -661,7 +661,7 @@ function check_passwd($login_id, $login_passwd){
 }
 
 function get_user_attr($user, $prop) {
-	$sql1 = "select * from weekly.reporter where reporter='$user'";
+	$sql1 = "select * from user.user where user_id ='$user'";
 	$res1=mysql_query($sql1) or die("Invalid query:" . $sql1 . mysql_error());
 	if($row1=mysql_fetch_array($res1))
 		return $row1["$prop"];
