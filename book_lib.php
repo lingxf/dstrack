@@ -409,7 +409,7 @@ function read_book_column($book_id, $col)
 	return -1;
 }
 
-$class_list = array('未分','小说', '历史', '技术', '科普', '社会', '传记', '管理');
+$class_list = array('未分','小说', '历史', '技术', '科普', '社会', '传记', '文学', '管理', '经济', '教育');
 function get_class_name($class=0)
 {
 	global $class_list;
