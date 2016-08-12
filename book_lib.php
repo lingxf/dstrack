@@ -36,6 +36,7 @@ function out_record()
 	list_record($login_id, 'out');
 }
 
+
 function list_record($login_id, $format='self')
 {
 	$table_name = "id_table_record";
@@ -179,7 +180,9 @@ function list_book($format='normal', $start=0, $items=50)
 	if($format == 'normal')
 		print_tdlist(array('编号', '书名','作者', '描述','评论','分类', '状态', '操作'));
 	else if($format == 'brief')
-		print_tdlist(array('编号', '书名','作者', '状态', '操作'));
+		print_tdlist(array('编号', '书名','作者','分类', '状态', '操作'));
+	else if($format == 'class')
+		print_tdlist(array('编号', '书名','作者','中图分类','咱分类','状态', '操作'));
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date', 'status', 'action'));
 
@@ -199,7 +202,9 @@ function list_book($format='normal', $start=0, $items=50)
 		$price = $row['price'];
 		$buy_date = substr($row['buy_date'], 0, 10);
 		$class =  $row['class'];
+		$class_name = get_class_name($index);
 		$class_text = get_class_name($class);
+
 		$desc =  $row['desc'];
 		mb_internal_encoding("UTF-8");
 		$desc = mb_substr($desc, 0, 100);
@@ -253,10 +258,19 @@ function list_book($format='normal', $start=0, $items=50)
 			print_td($class_text, 35, '', '', $sc_class);
 			print_td($status_text,35);
 			print_td($blink,35);
+		}else if($format == 'class'){
+			print_td($book_id,10);
+			print_td($name);
+			print_td($author);
+			print_td($class_name);
+			print_td($class_text, 35, '', '', $sc_class);
+			print_td($status_text,35);
+			print_td($blink,35);
 		}else if($format == 'brief'){
 			print_td($book_id,10);
 			print_td($name);
 			print_td($author);
+			print_td($class_text, 35, '', '', $sc_class);
 			print_td($status_text,35);
 			print_td($blink,35);
 		}else
@@ -398,8 +412,20 @@ $class_list = array('未分','小说', '历史', '技术', '科普', '社会', '
 function get_class_name($class=0)
 {
 	global $class_list;
-	#print_r($namelist);
-	return $class_list[$class];
+	if(is_numeric($class))
+		return $class_list[$class];
+	else if($class == '')
+		return $class_list[0];
+	else{
+		$in = substr($class, 0, 1);
+		$sql = "select * from class_name where `index` = '$in'";
+		$res=mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+		if($row=mysql_fetch_array($res)){
+			$tt = $row["class_name"];
+			return $tt;
+		}
+		return $class_list[0];
+	}
 }
 
 function show_book($book_id)
@@ -413,6 +439,7 @@ function show_book($book_id)
 		$comments= $row['comments'];
 		$isbn = $row['ISBN'];
 		$index = $row['index'];
+		$class_name = get_class_name($index);
 		$price = $row['price'];
 		$buy_date= $row['buy_date'];
 		$buy_date= substr($buy_date, 0, 10);
@@ -423,10 +450,10 @@ function show_book($book_id)
 		print("《" . $name . "》");
 		print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
 		print("<tr>");
-		print_tdlist(array('编号', 'ISBN','索引','价格','分类', 'Sponsor', '购买日期'));
+		print_tdlist(array('编号', 'ISBN','索引','价格','中图分类', '咱分类', 'Sponsor', '购买日期'));
 		print("</tr>");
 		print("<tr>");
-		print_tdlist(array($id, $isbn, $index, $price, $class_text, $sponsor, $buy_date)); 
+		print_tdlist(array($id, $isbn, $index, $price, $class_name, $class_text, $sponsor, $buy_date)); 
 		print("</tr>");
 		print("</table>");
 		print("<br/>");

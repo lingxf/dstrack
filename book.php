@@ -324,7 +324,7 @@ function show_home()
 	print("&nbsp;<a href='book.php?items_perpage=50'>50</a>");
 	print("&nbsp;<a href='book.php?items_perpage=100'>100</a>");
 	print("&nbsp;<a href='book.php?items_perpage=200'>200</a>");
-	print("&nbsp;&nbsp;&nbsp;&nbsp;分类&nbsp;");
+	print("&nbsp;&nbsp;&nbsp;&nbsp;<a href='book.php?view=class'>分类</a>&nbsp;");
 	print("<select id='sel_class' onchange='change_class(this.value, 0)'>");
 	print("<option value='100'>所有</option>");
 	foreach($class_list as $key => $class_text) {

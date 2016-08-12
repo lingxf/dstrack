@@ -17,6 +17,8 @@ else $view=$_SESSION['view'];
 $class=$_SESSION['class'];
 if(isset($_GET['class'])) $class=$_GET['class'];
 $_SESSION['class'] = $class;
+$login_id = $_SESSION['user'];
+$role = is_member($login_id);
 
 $start=$_SESSION['start'];
 $items_perpage=$_SESSION['items_perpage'];
