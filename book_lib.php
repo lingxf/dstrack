@@ -217,13 +217,16 @@ function list_book($format='normal', $start=0, $items=50)
 		if($status != 0){
 			$status_text = "Out";
 			$text = "借出";
-			if($status == 1)
+			$bcolor = '#efcfef';
+			if($status == 1){
 				$text = "借中";
-			else if($status == 3)
+				$bcolor = '#efcf2f';
+			}else if($status == 3){
 				$text = "还中";
+				$bcolor = '#ef2fef';
+			}
 			$status_text = "<a href=book.php?action=show_borrower&book_id=\"$book_id\">$text</a>";
 			$blink = "<a href=book.php?action=wait&book_id=\"$book_id\">等候</a>";
-			$bcolor = '#efcfef';
 		}else{
 			$status_text = "<a href=book.php?action=show_borrower&book_id=\"$book_id\">";
 			if($buy_date == '' || $buy_date == "0000-00-00"){
