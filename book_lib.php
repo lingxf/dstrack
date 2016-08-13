@@ -217,6 +217,10 @@ function list_book($format='normal', $start=0, $items=50)
 			$sc_comments = "ondblclick='show_edit_col(this,$book_id,2)'";
 			$sc_class = "ondblclick='show_edit_col(this,$book_id,3)'";
 		}
+		$id = $book_id;
+		if($role > 1){
+			$id = "<a href='edit_book_ui.php?book_id=$book_id'>$id</a>";
+		}
 
 		$status=$row['status'];	
 		if($status != 0){
@@ -250,7 +254,7 @@ function list_book($format='normal', $start=0, $items=50)
 			continue;
 		print("<tr style='background:$bcolor;'>");
 		if($format == 'normal'){
-			print_td($book_id,10);
+			print_td($id,10);
 			print_td($name,200);
 			print_td($author,150);
 			print_td($desc,'','','',$sc_desc);
@@ -259,7 +263,7 @@ function list_book($format='normal', $start=0, $items=50)
 			print_td($status_text,35);
 			print_td($blink,35);
 		}else if($format == 'class'){
-			print_td($book_id,10);
+			print_td($id,10);
 			print_td($name);
 			print_td($author);
 			print_td($desc,'','','',$sc_desc);
@@ -268,14 +272,14 @@ function list_book($format='normal', $start=0, $items=50)
 			print_td($status_text,35);
 			print_td($blink,35);
 		}else if($format == 'brief'){
-			print_td($book_id,10);
+			print_td($id,10);
 			print_td($name);
 			print_td($author);
 			print_td($class_text, 35, '', '', $sc_class);
 			print_td($status_text,35);
 			print_td($blink,35);
 		}else
-			print_tdlist(array($book_id, $name, $author, $isbn, $index, $price, $buy_date, $status_text, $blink)); 
+			print_tdlist(array($id, $name, $author, $isbn, $index, $price, $buy_date, $status_text, $blink)); 
 		print("</tr>\n");
 	}
 	print("</table>");
@@ -493,7 +497,7 @@ function list_log($format='normal')
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'normal')
 		print_tdlist(array('日期', '操作人','编号', '书名','借阅人','动作'));
-	$sql = " select * from log f1, books f2, member f3 where f1.book_id = f2.book_id and f1.member_id = f3.user order by timestamp desc";
+	$sql = " select f1.book_id, f1.operator, f1.member_id, f1.timestamp, f2.name, f3.user_name, f1.status from log f1, books f2, member f3 where f1.book_id = f2.book_id and f1.member_id = f3.user order by timestamp desc";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
 		$book_id = $row['book_id']; 
@@ -506,6 +510,8 @@ function list_log($format='normal')
 
 		if($status == 0){
 			$status_text = "还入";
+		}else if($status == 10){
+			$status_text = "新购";
 		}else{
 			$status_text = "借出";
 		}

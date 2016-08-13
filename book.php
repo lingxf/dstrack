@@ -133,6 +133,7 @@ if($role == 2){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">Lent</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">History</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=log\">Log</a>";
+	print "&nbsp;&nbsp;<a href=\"edit_book_ui.php\">Add</a>";
 }
 
 print("<br>");
