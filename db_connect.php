@@ -1,5 +1,5 @@
 <?php
-$link=mysql_connect("10.233.140.115:3306","bookweb","book2web");
+$link=mysql_connect("localhost","bookweb","book2web");
 mysql_query("set character set 'utf8'");//..
 mysql_query("set names 'utf8'");//.. 
 #mysql_query("set character set 'gb2312'");//..
