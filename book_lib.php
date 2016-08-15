@@ -44,13 +44,13 @@ function list_record($login_id, $format='self')
 	$background = '#cfcfcf';
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'approve'){
-		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
+		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status < 0x100 and t1.status != 0 and t1.status != 2 and t3.user = t1.borrower order by adate asc";
 	}else if($format == 'self'){
-		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
+		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.borrower='$login_id' and t1.book_id = t2.book_id and t3.user = t1.borrower order by adate desc ";
 	}else if( $format == 'waityou'){
-		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
+		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$book_id = get_bookid_by_borrower($login_id);
 		print("$login_id, bookid:$book_id<br>");
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id='$book_id' and t2.book_id = $book_id and t3.user = t1.borrower and t1.status = 4 order by adate asc ";
@@ -58,8 +58,8 @@ function list_record($login_id, $format='self')
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower order by bdate desc";
 	}else if($format == 'history'){
-		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by rdate desc ";
+		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by sdate desc ";
 	}	
 
 	$i = 0;
@@ -82,8 +82,8 @@ function list_record($login_id, $format='self')
 		}
 		$status = $row['status'];
 		$status_text = "";
+		$blink = "";
 		if($format == 'approve' || $format == 'out'){
-			$blink = "";
 			if($status == 1){
 				$status_text = "申请中";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">批准</a>";
@@ -106,7 +106,6 @@ function list_record($login_id, $format='self')
 				$status_text = "取消";
 			}
 		}else if($format == 'self'){
-			$blink = "";
 			if($status == 1){
 				$status_text = "借阅中";
 			}else if($status == 4){
@@ -124,7 +123,6 @@ function list_record($login_id, $format='self')
 				$status_text = "取消";
 			}
 		}else if($format == 'waityou'){
-			$blink = "";
 			if($status == 4){
 				$status_text = "等候";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=transfer\">转移</a>";
@@ -762,7 +760,10 @@ function get_admin_mail()
 function add_log($login_id, $borrower, $book_id, $status)
 {
 	$sql = " insert into log set `operator`='$login_id', book_id=$book_id, member_id = '$borrower', status=$status";
+	dprint("add_log:$sql <br>");
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$rows = mysql_affected_rows();
+	dprint("rows:$rows<br>");
 	return true;
 }
 

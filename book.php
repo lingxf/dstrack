@@ -281,9 +281,9 @@ switch($action){
 		$to = get_user_attr($new_borrower, 'email');
 		$to .= ';' . get_user_attr($old_borrower, 'email');
 		$cc = get_admin_mail();
+		add_log($login_id, $old_borrower, $book_id, 0);
+		add_log($login_id, $new_borrower, $book_id, 2);
 		mail_html($to, $cc, "<$bookname> is transfered from <$old_borrower:$old_user> to <$new_borrower:$new_user>", "");
-		add_log($login_id, $old_user, $book_id, 0);
-		add_log($login_id, $new_user, $book_id, 2);
 		set_record_status($record_id_my, 0);
 		set_record_status($record_id, 2);
 		manage_record($login_id);
@@ -348,7 +348,7 @@ function show_home()
 	global $class_list, $class, $comment_type;
 	print("<div>我的借阅");
 	list_record($login_id);
-	print("<div>我的等候");
+	print("<div>我的被等候");
 	list_record($login_id, 'waityou');
 	print("</div>");
 
