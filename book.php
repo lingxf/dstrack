@@ -267,7 +267,7 @@ switch($action){
 		$borrower = get_borrower($book_id);
 		$bookname = get_bookname($book_id);
 		$old_status = get_book_status($book_id);
-		if($old_status != 0){
+		if($old_status != 0 && $old_status != 1){
 			print("<$book_id>$bookname is not returned yet");
 			break;
 		}
