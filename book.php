@@ -228,6 +228,7 @@ switch($action){
 			$borrower = get_borrower($book_id);
 			$to = get_user_attr($borrower, 'email');
 			$user = get_user_attr($login_id, 'name');
+			$cc = '';
 			mail_html($to, $cc, "$user is waiting for your book <$bookname>", "");
 		}
 		home_link();
@@ -262,6 +263,32 @@ switch($action){
 		mail_html($to, $cc, "Timeout, Please return the book <$bookname>", "");
 		home_link("Back", 'manage');
 		break;
+	case "transfer":
+		$book_id = get_bookid_by_record($record_id);
+		$old_borrower = get_borrower($book_id);
+		$bookname = get_bookname($book_id);
+		$record_id_my = get_record($book_id);
+		$new_borrower = get_borrower_by_record($record_id);
+		dprint("trasnfer:$book_id,$old_borrower, $new_borrower, $bookname, $record_id, $record_id_my<br>");
+		if($old_borrower != $login_id){
+			print("$bookname is owned not by you currently<br>");
+			break;
+		}
+		$old_status = get_book_status($book_id);
+		$old_user = get_user_attr($old_borrower, 'name');
+		$new_user = get_user_attr($new_borrower, 'name');
+
+		$to = get_user_attr($new_borrower, 'email');
+		$to .= ';' . get_user_attr($old_borrower, 'email');
+		$cc = get_admin_mail();
+		mail_html($to, $cc, "<$bookname> is transfered from <$old_borrower:$old_user> to <$new_borrower:$new_user>", "");
+		add_log($login_id, $old_user, $book_id, 0);
+		add_log($login_id, $new_user, $book_id, 2);
+		set_record_status($record_id_my, 0);
+		set_record_status($record_id, 2);
+		manage_record($login_id);
+		break;
+
 	case "lend":
 		$book_id = get_bookid_by_record($record_id);
 		$borrower = get_borrower($book_id);
@@ -275,7 +302,7 @@ switch($action){
 		$user = get_user_attr($borrower, 'name');
 		$cc = get_admin_mail();
 		set_record_status($record_id, 2);
-		mail_html($to, $cc, "<$bookname> is lent to <$user>", "");
+		mail_html($to, $cc, "<$bookname> is lent to <$borrower:$user>", "");
 		add_log($login_id, $borrower, $book_id, 2);
 		manage_record($login_id);
 		break;
@@ -321,6 +348,8 @@ function show_home()
 	global $class_list, $class, $comment_type;
 	print("<div>我的借阅");
 	list_record($login_id);
+	print("<div>我的等候");
+	list_record($login_id, 'waityou');
 	print("</div>");
 
 	$view_op = $view == 'brief'?'normal':'brief';

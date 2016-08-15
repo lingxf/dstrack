@@ -44,16 +44,21 @@ function list_record($login_id, $format='self')
 	$background = '#cfcfcf';
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'approve'){
-		print_tdlist(array('序号','借阅人', '书名','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
+		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status < 0x100 and t1.status != 0 and t1.status != 2 and t3.user = t1.borrower order by adate asc";
 	}else if($format == 'self'){
-		print_tdlist(array('序号','借阅人', '书名','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
+		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.borrower='$login_id' and t1.book_id = t2.book_id and t3.user = t1.borrower order by adate desc ";
+	}else if( $format == 'waityou'){
+		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
+		$book_id = get_bookid_by_borrower($login_id);
+		print("$login_id, bookid:$book_id<br>");
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id='$book_id' and t2.book_id = $book_id and t3.user = t1.borrower and t1.status = 4 order by adate asc ";
 	}else if($format == 'out'){
-		print_tdlist(array('序号','借阅人', '书名','申请日期', '借出日期', '状态', '操作'));
+		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower order by bdate desc";
 	}else if($format == 'history'){
-		print_tdlist(array('序号','借阅人', '书名','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
+		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '回还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by rdate desc ";
 	}	
 
@@ -76,6 +81,7 @@ function list_record($login_id, $format='self')
 			$sdate = substr($sdate, 0, 10);
 		}
 		$status = $row['status'];
+		$status_text = "";
 		if($format == 'approve' || $format == 'out'){
 			$blink = "";
 			if($status == 1){
@@ -117,12 +123,18 @@ function list_record($login_id, $format='self')
 			}else{
 				$status_text = "取消";
 			}
+		}else if($format == 'waityou'){
+			$blink = "";
+			if($status == 4){
+				$status_text = "等候";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=transfer\">转移</a>";
+			}
 		}
 		$i++;
 		if($format == 'out')
-			print_tdlist(array($i, $borrower, $name, $adate, $bdate, $status_text, $blink)); 
+			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $status_text, $blink)); 
 		else
-			print_tdlist(array($i, $borrower, $name, $adate, $bdate, $rdate,$sdate, $status_text, $blink)); 
+			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $rdate,$sdate, $status_text, $blink)); 
 		print("</tr>\n");
 	}
 	print("</table>");
@@ -182,9 +194,9 @@ function list_book($format='normal', $start=0, $items=50)
 	else if($format == 'brief')
 		print_tdlist(array('编号', '书名','作者','分类', '状态', '操作'));
 	else if($format == 'class')
-		print_tdlist(array('编号', '书名','作者','描述','中图分类','咱分类','状态', '操作'));
+		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','咱分类','状态', '操作'));
 	else
-		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date', 'status', 'action'));
+		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date','sponsor','status', 'action'));
 
 	$sql = " select * from books $cond order by book_id asc limit $start, $items";
 
@@ -200,6 +212,7 @@ function list_book($format='normal', $start=0, $items=50)
 		$isbn = $row['ISBN'];
 		$index = $row['index'];
 		$price = $row['price'];
+		$sponsor = $row['sponsor'];
 		$buy_date = substr($row['buy_date'], 0, 10);
 		$class =  $row['class'];
 		$class_name = get_class_name($index);
@@ -267,6 +280,7 @@ function list_book($format='normal', $start=0, $items=50)
 			print_td($name);
 			print_td($author);
 			print_td($desc,'','','',$sc_desc);
+			print_td($sponsor,60);
 			print_td($class_name);
 			print_td($class_text, 35, '', '', $sc_class);
 			print_td($status_text,35);
@@ -279,7 +293,7 @@ function list_book($format='normal', $start=0, $items=50)
 			print_td($status_text,35);
 			print_td($blink,35);
 		}else
-			print_tdlist(array($id, $name, $author, $isbn, $index, $price, $buy_date, $status_text, $blink)); 
+			print_tdlist(array($id, $name, $author, $isbn, $index, $price, $buy_date, $sponsor, $status_text, $blink)); 
 		print("</tr>\n");
 	}
 	print("</table>");
@@ -477,14 +491,29 @@ function show_book($book_id)
 
 function get_borrower($book_id)
 {
+	$r = array();
+	$r = get_record_by_bookid($book_id);
+	return $r[1];
+}
 
-	$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status != 0 order by `adate` asc";
+function get_record($book_id)
+{
+	$r = array();
+	$r = get_record_by_bookid($book_id);
+	return $r[0];
+}
+
+function get_record_by_bookid($book_id)
+{
+
+	$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status != 0 and t1.status < 4 order by `adate` asc";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
 		$borrower = $row['borrower'];
-		return $borrower;
+		$record_id = $row['record_id'];
+		return array($record_id, $borrower);
 	}
-	return '';
+	return array('', '');
 }
 
 function list_log($format='normal')
@@ -603,6 +632,17 @@ function add_record_full($book_id, $user_id, $bdate, $sdate, $status=1)
 	return true;
 }
 
+function get_bookid_by_borrower($borrower)
+{
+	$sql = " select * from history where `borrower` = '$borrower' and status = 2 ";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	if($row = mysql_fetch_array($res)){
+		$book_id = $row['book_id'];
+		return $book_id;
+	}
+	return 0;
+}
+
 function get_bookid_by_record($record_id)
 {
 	$sql = " select * from history where `record_id` = $record_id";
@@ -614,9 +654,19 @@ function get_bookid_by_record($record_id)
 	return 0;
 }
 
+function get_borrower_by_record($record_id)
+{
+	$sql = " select * from history where `record_id` = $record_id";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	if($row = mysql_fetch_array($res)){
+		$borrower = $row['borrower'];
+		return $borrower;
+	}
+	return 0;
+}
 function set_record_status($record_id, $status)
 {
-	dprint("set_record_status:$record_id $status");
+	dprint("set_record_status:$record_id:$status<br>");
 	$time = time();
 	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
 	if($status == 2)
@@ -627,7 +677,7 @@ function set_record_status($record_id, $status)
 		$sql = " update history set sdate= '$time_start', status=$status where `record_id` = $record_id";
 	else
 		$sql = " update history set sdate= '$time_start', status=$status where `record_id` = $record_id";
-	dprint("$sql");
+	dprint("$sql<br>");
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	if($status < 0x100){
 		$book_id = get_bookid_by_record($record_id);
@@ -727,7 +777,7 @@ function mail_html($to, $cc, $subject, $message)
 		$headers .= "Cc: $cc" . "\r\n";
 	$headers .= "Bcc: xling@qti.qualcomm.com" . "\r\n";
 
-	dprint("mail|to:$to|cc:$cc|$subject<br>\n");
+	dprint("mail|to:$to|cc:$cc|". htmlentities($subject, ENT_COMPAT | ENT_HTML401, 'utf-8') . "<br>\n");
 //	print("$message\n");
 //	$to = 'xling@qti.qualcomm.com';
 	mail($to,$subject, $message, $headers);
