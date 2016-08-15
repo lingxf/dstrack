@@ -16,7 +16,7 @@ $role = is_member($login_id);
 if(!isset($_POST['op']))
 	exit();
 $op=$_POST['op'];
-if($op == 'read' || $op == 'write'){
+if($op == 'read' || $op == 'write' || $op=='modify'){
 	$book_id=$_POST['book_id'];
 	$col=$_POST['col'];
 	$text=$_POST['text'];
