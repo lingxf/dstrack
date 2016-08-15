@@ -635,6 +635,15 @@ function set_record_status($record_id, $status)
 	}
 }
 
+function get_book_status($book_id)
+{
+	$sql = "select status from books where book_id=$book_id";
+	$res = mysql_query($sql) or die("Invalid query:".$sql.mysql_error());
+	if($row = mysql_fetch_array($res)){
+		return $row['status'];
+    }
+	return -1;
+}
 function set_book_status($book_id, $status)
 {
 	$sql = "update books set `status` = $status where book_id=$book_id";

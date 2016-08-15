@@ -266,6 +266,11 @@ switch($action){
 		$book_id = get_bookid_by_record($record_id);
 		$borrower = get_borrower($book_id);
 		$bookname = get_bookname($book_id);
+		$old_status = get_book_status($book_id);
+		if($old_status != 0){
+			print("<$book_id>$bookname is not returned yet");
+			break;
+		}
 		$to = get_user_attr($borrower, 'email');
 		$user = get_user_attr($borrower, 'name');
 		$cc = get_admin_mail();
