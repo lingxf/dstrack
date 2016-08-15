@@ -51,8 +51,13 @@ function list_record($login_id, $format='self')
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.borrower='$login_id' and t1.book_id = t2.book_id and t3.user = t1.borrower order by adate desc ";
 	}else if( $format == 'waityou'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
-		$book_id = get_bookid_by_borrower($login_id);
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id='$book_id' and t2.book_id = $book_id and t3.user = t1.borrower and t1.status = 4 order by adate asc ";
+		$book_ids = get_bookid_by_borrower($login_id);
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.status = 4  and t1.borrower = t3.user and t1.book_id = t2.book_id and ( 0 ";
+		foreach($book_ids as $book_id){
+			$sql .= " or t1.book_id=$book_id " ;
+		}
+		$sql .= ") ";
+		$sql .= " order by adate asc ";
 	}else if($format == 'out'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower order by bdate desc";
@@ -631,13 +636,14 @@ function add_record_full($book_id, $user_id, $bdate, $sdate, $status=1)
 
 function get_bookid_by_borrower($borrower)
 {
+	$book_ids = array();
 	$sql = " select * from history where `borrower` = '$borrower' and status = 2 ";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
-	if($row = mysql_fetch_array($res)){
+	while($row = mysql_fetch_array($res)){
 		$book_id = $row['book_id'];
-		return $book_id;
+		$book_ids[] = $book_id;
 	}
-	return 0;
+	return $book_ids;
 }
 
 function get_bookid_by_record($record_id)
