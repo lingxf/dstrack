@@ -356,7 +356,7 @@ function show_home()
 	global $class_list, $class, $comment_type;
 	print("<div>我的借阅");
 	list_record($login_id);
-	print("<div>我的被等候");
+	print("<div>我的等候人");
 	list_record($login_id, 'waityou');
 	print("</div>");
 
