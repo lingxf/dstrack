@@ -50,7 +50,7 @@ function list_record($login_id, $format='self')
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.borrower='$login_id' and t1.book_id = t2.book_id and t3.user = t1.borrower order by adate desc ";
 	}else if( $format == 'waityou'){
-		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
+		print_tdlist(array('序号','等候人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$book_ids = get_bookid_by_borrower($login_id);
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.status = 4  and t1.borrower = t3.user and t1.book_id = t2.book_id and ( 0 ";
 		foreach($book_ids as $book_id){
@@ -142,7 +142,7 @@ function list_record($login_id, $format='self')
 	print("</table>");
 }
 
-function list_book($format='normal', $start=0, $items=50)
+function list_book($format='normal', $start=0, $items=50, $get_count=0)
 {
 	global $login_id, $role, $class, $comment_type;
 
@@ -188,6 +188,7 @@ function list_book($format='normal', $start=0, $items=50)
     print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
     print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
     print('<input type="submit"');  print(' name="end" value="End" />   ');
+	print("&nbsp;共 $rows 本&nbsp;");
 	print('</span>');
 
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
@@ -387,7 +388,7 @@ function borrow_book($book_id, $login_id)
 	global $max_books;
 	if(!check_record($book_id, $login_id))
 		return false;
-	$sql = " select * from history where borrower='$login_id' and status < 0x100 and status !=0 and status != 3";
+	$sql = " select * from history where borrower='$login_id' and (status = 1 or status = 2)";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	$rows = mysql_num_rows($res);
 	if($rows >= $max_books){

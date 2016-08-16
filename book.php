@@ -271,12 +271,20 @@ switch($action){
 		$new_borrower = get_borrower_by_record($record_id);
 		dprint("trasnfer:$book_id,$old_borrower, $new_borrower, $bookname, $record_id, $record_id_my<br>");
 		if($old_borrower != $login_id){
-			print("$bookname is owned not by you currently<br>");
+			print("$bookname is not owned by you currently<br>");
 			break;
 		}
 		$old_status = get_book_status($book_id);
 		$old_user = get_user_attr($old_borrower, 'name');
 		$new_user = get_user_attr($new_borrower, 'name');
+		$new_max = get_user_attr($new_borrower, 'max');
+		$sql = " select * from history where borrower='$new_borrower' and (status = 1 or status = 2)";
+		$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+		$rows = mysql_num_rows($res);
+		if($rows >= $new_max){
+			print ("$new_user 已达最高借阅数，请让他/她先归还!");
+			break;
+		}
 
 		$to = get_user_attr($new_borrower, 'email');
 		$to .= ';' . get_user_attr($old_borrower, 'email');
@@ -286,7 +294,7 @@ switch($action){
 		mail_html($to, $cc, "<$bookname> is transfered from <$old_borrower:$old_user> to <$new_borrower:$new_user>", "");
 		set_record_status($record_id_my, 0);
 		set_record_status($record_id, 2);
-		manage_record($login_id);
+		show_home($login_id);
 		break;
 
 	case "lend":
