@@ -153,7 +153,7 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
     $hasmore = false;
     $hasprev = false;
 
-	$cond = "where 1 ";
+	$cond = "where name != 'TBD' ";
 	if($class == 100)
 		$cond .= "";
 	else
