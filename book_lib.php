@@ -123,6 +123,8 @@ function list_record($login_id, $format='self')
 				$blink = "";
 			}else if($status == 0){
 				$status_text = "已还";
+			}else if($status == 101){
+				$status_text = "拒绝";
 			}else{
 				$status_text = "取消";
 			}
@@ -784,7 +786,7 @@ function mail_html($to, $cc, $subject, $message)
 		$headers .= "Cc: $cc" . "\r\n";
 	$headers .= "Bcc: xling@qti.qualcomm.com" . "\r\n";
 
-	dprint("mail|to:$to|cc:$cc|". htmlentities($subject, ENT_COMPAT | ENT_HTML401, 'utf-8') . "<br>\n");
+	dprint("mail|to:$to|cc:$cc|". htmlentities($subject, ENT_COMPAT, 'utf-8') . "<br>\n");
 //	print("$message\n");
 //	$to = 'xling@qti.qualcomm.com';
 	mail($to,$subject, $message, $headers);
