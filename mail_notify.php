@@ -31,7 +31,7 @@ function mail_tbd_list(){
 	<tr><th style='text-align: left;'>Link:</th><td><a href='http://cedump-sh.ap.qualcomm.com/book/?action=manage'>Manage</a></td></tr>
 	</table>";
 
-	exec("php mail_notify.php mail", $output);
+	exec("php mail_notify.php gen", $output);
 	foreach($output as $line){
 		$message .= $line . "\n"; 
 	}
