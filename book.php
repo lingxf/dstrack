@@ -134,6 +134,7 @@ if($role == 2){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">History</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=log\">Log</a>";
 	print "&nbsp;&nbsp;<a href=\"edit_book_ui.php\">Add</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_tbd\">TBD</a>";
 }
 
 print("<br>");
@@ -254,6 +255,29 @@ switch($action){
 	case "list_out":
 		out_record($login_id);
 		break;
+	case "list_tbd":
+		list_book('tbd');
+		break;
+	case "push":
+		$book_id = get_bookid_by_record($record_id);
+		$borrower = get_borrower($book_id);
+		$bookname = get_bookname($book_id);
+		$to = get_user_attr($borrower, 'email');
+		$cc = get_admin_mail();
+		mail_html($to, $cc, "Timeout, Please return the book <$bookname>", "");
+		home_link("Back", 'manage');
+		break;
+	case "transfer":
+		$book_id = get_bookid_by_record($record_id);
+		$old_borrower = get_borrower($book_id);
+		$bookname = get_bookname($book_id);
+		$record_id_my = get_record($book_id);
+		$new_borrower = get_borrower_by_record($record_id);
+		dprint("trasnfer:$book_id,$old_borrower, $new_borrower, $bookname, $record_id, $record_id_my<br>");
+		if($old_borrower != $login_id){
+			print("$bookname is not owned by you currently<br>");
+			break;
+		}
 	case "push":
 		$book_id = get_bookid_by_record($record_id);
 		$borrower = get_borrower($book_id);

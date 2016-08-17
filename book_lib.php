@@ -36,7 +36,6 @@ function out_record()
 	list_record($login_id, 'out');
 }
 
-
 function list_record($login_id, $format='self')
 {
 	$table_name = "id_table_record";
@@ -155,7 +154,9 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
     $hasmore = false;
     $hasprev = false;
 
-	$cond = "where name != 'TBD' ";
+	$cond = "where (name != 'TBD' and name != '') ";
+	if($format == 'tbd')
+		$cond = "where (name = 'TBD' or name = '') ";
 	if($class == 100)
 		$cond .= "";
 	else
@@ -200,6 +201,8 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 		print_tdlist(array('编号', '书名','作者','分类', '状态', '操作'));
 	else if($format == 'class')
 		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','咱分类','状态', '操作'));
+	else if($format == 'tbd')
+		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','咱分类','状态', '操作'));
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date','sponsor','status', 'action'));
 
@@ -209,8 +212,6 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 	while($row=mysql_fetch_array($res)){
 		$book_id = $row['book_id']; 
 		$name = $row['name'];
-		if($name == "TBD" || $name == "")
-			continue;
 		$name = "<a href='book.php?action=show_borrower&book_id=$book_id'>$name</a>";
 		$author= $row['author'];
 		$author = substr($author, 0, 64);
@@ -230,6 +231,7 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 			$desc .= "<a href='book.php?action=show_borrower&book_id=$book_id'>...</a>";
 		$comments=  $row['comments'];
 		$comments = mb_substr($comments, 0, 100);
+		$sc_class = "";
 		if($role > 0){
 			$sc_desc = "ondblclick='show_edit_col(this,$book_id,1)'";
 			$sc_comments = "ondblclick='show_edit_col(this,$book_id,2)'";
@@ -268,8 +270,6 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 				$bcolor = 'white';
 			}
 		}
-		if($name == "TBD" || $name == "")
-			continue;
 		print("<tr style='background:$bcolor;'>");
 		if($format == 'normal'){
 			print_td($id,10);
@@ -280,7 +280,7 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 			print_td($class_text, 35, '', '', $sc_class);
 			print_td($status_text,35);
 			print_td($blink,35);
-		}else if($format == 'class'){
+		}else if($format == 'class' || $format == 'tbd'){
 			print_td($id,10);
 			print_td($name);
 			print_td($author);
