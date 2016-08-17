@@ -68,7 +68,8 @@ home_link();
 <?php print_table_style();?>
 <tbody>
 <input type="hidden" name="op" value="<?php echo $op?>">
-<tr class="odd noclick"><th>ID:</th><td><input name="book_id" readonly type="text" value="<?php echo $book_id; ?>"></td></tr>
+<input name="book_id" type="hidden" value="<?php echo $book_id; ?>">
+<tr class="odd noclick"><th>ID:</th><td><?php echo $book_id?></td></tr>
 <tr><th>Name:</th><td><input name="name" type="text" value='<?php echo $name;?>' ></td></tr>
 <tr><th>Author:</th><td><input name="author" type="text" value='<?php echo $author;?>'></td></tr>
 <tr><th>ISBN:</th><td><input name="ISBN" type="text" value='<?php  echo $isbn;?>'></td></tr>
