@@ -61,7 +61,7 @@ function list_record($login_id, $format='self')
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower order by bdate desc";
 	}else if($format == 'history'){
-		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
+		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期' ));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by sdate desc ";
 	}	
 
@@ -108,6 +108,8 @@ function list_record($login_id, $format='self')
 			}else{
 				$status_text = "取消";
 			}
+			if($role < 2)
+				$blink = '';
 		}else if($format == 'self'){
 			if($status == 1){
 				$status_text = "借阅中";
@@ -136,6 +138,8 @@ function list_record($login_id, $format='self')
 		$i++;
 		if($format == 'out')
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $status_text, $blink)); 
+		else if($format == 'history')
+			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $rdate,$sdate)); 
 		else
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $rdate,$sdate, $status_text, $blink)); 
 		print("</tr>\n");

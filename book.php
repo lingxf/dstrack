@@ -107,9 +107,9 @@ else
 	$role_text = "Non-member";
 
 if($login_id == 'NoLogin')
-	$login_text = "<a href=book_user_login.php>Login<a/>";
+	$login_text = "<a href=book_user_login.php>登录<a/>";
 else
-	$login_text = "<a href=book_user_setting.php>$login_id($role_text)<a/> &nbsp;&nbsp;<a href=\"book.php?action=logout\">Logout</a>";
+	$login_text = "<a href=book_user_setting.php>$login_id($role_text)<a/> &nbsp;&nbsp;<a href=\"book.php?action=logout\">注销</a>";
 
 
 $action="home";
@@ -127,14 +127,20 @@ if(isset($_GET['book_id'])) $book_id=$_GET['book_id'];
 if(isset($_GET['record_id'])) $record_id=$_GET['record_id'];
 
 
-print "<a href=\"book.php\">Home</a> &nbsp;&nbsp;$login_text ";
+print "<a href=\"book.php\">首页</a> &nbsp;&nbsp;$login_text ";
 if($role == 2){
-	print "&nbsp;&nbsp;<a href=\"book.php?action=manage\">Manage</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">Lent</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">History</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=log\">Log</a>";
-	print "&nbsp;&nbsp;<a href=\"edit_book_ui.php\">Add</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_tbd\">TBD</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=manage\">管理</a>";
+}
+
+if($role >= 1){
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
+}
+
+if($role == 2){
+	print "&nbsp;&nbsp;<a href=\"book.php?action=log\">日志</a>";
+	print "&nbsp;&nbsp;<a href=\"edit_book_ui.php\">新书</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_tbd\">待定</a>";
 }
 
 print("<br>");
@@ -155,8 +161,13 @@ if(isset($_POST['list_all']))$action="list_all";
 
 dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage setting:$setting<br>");
 
-if($role != 2 && preg_match("/manager|approve|history|stock|push|list_out|lend|reject_wait/",$action)){
+if($role != 2 && preg_match("/manager|approve|stock|push|log|reject_wait/",$action)){
 	print("You are not administrator!");
+	return;
+}
+
+if($role < 1 && preg_match("/lend|history/",$action)){
+	print("You are not member!");
 	return;
 }
 
