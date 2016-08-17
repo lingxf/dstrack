@@ -65,7 +65,7 @@ function list_record($login_id, $format='self')
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期' ));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by sdate desc ";
 	}else if($format == 'timeout'){	
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.status = 2 and (to_days(now())  - to_days(bdate)) > 28 and  t1.book_id = t2.book_id and t3.user = t1.borrower order by bdate asc ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.status = 2 and (to_days(now())  - to_days(bdate)) >= 28 and  t1.book_id = t2.book_id and t3.user = t1.borrower order by bdate asc ";
 	}
 	$i = 0;
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
