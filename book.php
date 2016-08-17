@@ -139,6 +139,7 @@ if($role >= 1){
 
 if($role == 2){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=log\">日志</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
 	print "&nbsp;&nbsp;<a href=\"edit_book_ui.php\">新书</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_tbd\">待定</a>";
 }
@@ -269,6 +270,10 @@ switch($action){
 	case "list_tbd":
 		list_book('tbd');
 		break;
+	case "list_timeout":
+		list_record('', 'timeout');
+		break;
+	case "push":
 	case "push":
 		$book_id = get_bookid_by_record($record_id);
 		$borrower = get_borrower($book_id);
