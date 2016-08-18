@@ -28,7 +28,7 @@ function mail_tbd_list(){
 	<body>
 	<table style='font-size:14pt; color:#800000;'>
 	<tr><th style='text-align: left;'>Date:</th><td >$date</td></tr>
-	<tr><th style='text-align: left;'>Link:</th><td><a href='http://cedump-sh.ap.qualcomm.com/book/?action=manage'>Manage</a></td></tr>
+	<tr><th style='text-align: left;'>Link:</th><td><a href='http://cedump-sh.ap.qualcomm.com/book/book.php?action=manage'>Manage</a></td></tr>
 	</table>";
 
 	exec("php mail_notify.php gen", $output);
