@@ -23,10 +23,10 @@ if(isset($_POST['save'])){
 	$perpage=$_POST['perpage'];
 	$setting = ($setting & ~1) | $view;
 	$sql1 = "update user.user set name='$name',email='$email' where user_id ='$login_id'";
-	$res1=mysql_query($sql1) or die("invalid query:" . mysql_error());
+	$res1=update_mysql_query($sql1);
 
 	$sql = "update member set user_name='$name',email='$email', setting=$setting, perpage=$perpage where user='$login_id'";
-	$res=mysql_query($sql) or die("invalid query:$sql" . mysql_error());
+	$res=update_mysql_query($sql);
 	printf("<br>Update successfully!");
 	return;
 }else if(isset($_POST['change_password'])){
@@ -42,7 +42,7 @@ if(isset($_POST['save'])){
 				return;
 			}
 			$sql1 = "update user.user set password=ENCRYPT('$newpassword1', 'ab') where user_id ='$login_id'";
-			$res1=mysql_query($sql1) or die("invalid query:" . mysql_error());
+			$res1=update_mysql_query($sql1);
 			printf("<br>Change password successfully!");
 			home_link("Back");
 			return;

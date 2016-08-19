@@ -51,7 +51,7 @@ if($book_id && $op=="modify"){
 	else
 		$sql = "UPDATE books set `$col`='$intext'";
 	$sql .= " where `book_id`=$book_id";
-	$res1=mysql_query($sql) or die("Invalid query1:" . $sql . mysql_error());
+	$res1=update_mysql_query($sql);
 	$text = str_replace("''", "'", $intext);
 	if($col == 'class')
 		print(get_class_name($text));
@@ -70,7 +70,7 @@ if($book_id && $op=="modify"){
 	$desc = str_replace("'", "''", $desc);
 	$note = str_replace("'", "''", $note);
 	$sql = "UPDATE books set `name`='$name', author='$author', ISBN='$isbn', `index`='$index', price='$price', buy_date='$buy_date', sponsor='$sponsor', note='$note', `desc`='$desc' where book_id = $book_id";
-	$res=mysql_query($sql) or die("Invalid query1:" . $sql . mysql_error());
+	$res=update_mysql_query($sql);
 	$rows = mysql_affected_rows();
 	print("Update $rows<br>");
 	home_link();
@@ -78,7 +78,7 @@ if($book_id && $op=="modify"){
 }else if($op=="add"){
 	
 	$sql = "insert into books set `name`='$name', author='$author', ISBN='$isbn', `index`='$index', price='$price', buy_date='$buy_date', sponsor='$sponsor', note='$note', `desc`='$desc'";
-	$res=mysql_query($sql) or die("Invalid query1:" . $sql . mysql_error());
+	$res=update_mysql_query($sql);
 	$rows = mysql_affected_rows();
 
 	$sql = "select book_id from books where `name`='$name' and author='$author' and buy_date='$buy_date' and sponsor='$sponsor'";

@@ -630,7 +630,7 @@ function add_record($book_id, $user_id, $status=1)
 	$time = time();
 	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
 	$sql = " insert into history set `borrower`='$user_id', book_id=$book_id, adate= '$time_start', status=$status";
-	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$res = update_mysql_query($sql);
 	return true;
 }
 
@@ -639,7 +639,7 @@ function add_record_full($book_id, $user_id, $bdate, $sdate, $status=1)
 	$time = time();
 	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
 	$sql = " insert into history set `borrower`='$user_id', book_id=$book_id, adate='$bdate', bdate= '$bdate', rdate='$sdate', sdate='$sdate', status=$status";
-	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$res = update_mysql_query($sql);
 	return true;
 }
 
@@ -676,6 +676,25 @@ function get_borrower_by_record($record_id)
 	}
 	return 0;
 }
+
+function update_mysql_query($sql)
+{
+
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	return $res;
+
+	$link=mysql_connect("localhost","bookweb","book2web");
+	mysql_query("set character set 'utf8'");//..
+	mysql_query("set names 'utf8'");//.. 
+	$db=mysql_select_db("testbook",$link);
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+
+	$link=mysql_connect("cedump-sh.ap.qualcomm.com","bookweb","book2web");
+	$db=mysql_select_db("testbook",$link);
+	mysql_query("set character set 'utf8'");//..
+	mysql_query("set names 'utf8'");//.. 
+}
+
 function set_record_status($record_id, $status)
 {
 	dprint("set_record_status:$record_id:$status<br>");
@@ -690,7 +709,7 @@ function set_record_status($record_id, $status)
 	else
 		$sql = " update history set sdate= '$time_start', status=$status where `record_id` = $record_id";
 	dprint("$sql<br>");
-	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$res = update_mysql_query($sql);
 	if($status < 0x100){
 		$book_id = get_bookid_by_record($record_id);
 		set_book_status($book_id, $status);
@@ -709,7 +728,7 @@ function get_book_status($book_id)
 function set_book_status($book_id, $status)
 {
 	$sql = "update books set `status` = $status where book_id=$book_id";
-	$res = mysql_query($sql) or die("Invalid query:".$sql.mysql_error());
+	$res = update_mysql_query($sql);
 	$rows = mysql_affected_rows();
 	if($rows != 0){
 		return true;
@@ -775,7 +794,7 @@ function add_log($login_id, $borrower, $book_id, $status)
 {
 	$sql = " insert into log set `operator`='$login_id', book_id=$book_id, member_id = '$borrower', status=$status";
 	dprint("add_log:$sql <br>");
-	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$res = update_mysql_query($sql);
 	$rows = mysql_affected_rows();
 	dprint("rows:$rows<br>");
 	return true;
