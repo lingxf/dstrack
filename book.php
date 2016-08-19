@@ -82,12 +82,21 @@ if(isset($_POST['login'])){
 	        unset($_SESSION['user']);
 			home_link();
 			exit;
-	    }else
-	        $_SESSION['user'] = $login_id;
+	    }else{
+			$_SESSION = array();
+			session_destroy();
+			session_name('book');
+			session_start();
+			$_SESSION['user'] = $login_id;
+		}
+
 	}
 }else if(isset($_POST['register'])){
     header("Location: book_user_register.php");
     exit;
+}else{
+	$view = 'class';
+	$_SESSION['view'] = $view;
 }
 
 
@@ -119,8 +128,8 @@ if($action == "logout"){
 	session_destroy();
 	print "You are logout now";
 	sleep(5);
-    header("Location: book_user_login.php");
-	exit;
+    header("Location: book.php");
+   # header("Location: book_user_login.php");
 }
 $book_id=0;
 if(isset($_GET['book_id'])) $book_id=$_GET['book_id'];
@@ -189,6 +198,7 @@ $_SESSION['class'] = $class;
 if(isset($_GET['view'])) $view=$_GET['view'];
 else if(isset($_SESSION['view'])) $view=$_SESSION['view'];
 else $view = $setting & 1 ? 'normal':'brief';
+dprint("view:$view, setting:$setting");
 $_SESSION['view'] = $view;
 $_SESSION['setting'] = $setting;
 
@@ -394,13 +404,14 @@ switch($action){
 function show_home()
 {
 	global $login_id, $view, $start, $items_perpage;
-	global $class_list, $class, $comment_type;
-	print("<div>我的借阅");
-	list_record($login_id);
-	print("<div>我的等候人");
-	list_record($login_id, 'waityou');
-	print("</div>");
-
+	global $class_list, $class, $comment_type, $role;
+	if($role > 0){
+		print("<div>我的借阅");
+		list_record($login_id);
+		print("<div>我的等候人");
+		list_record($login_id, 'waityou');
+		print("</div>");
+	}
 	$view_op = $view == 'brief'?'normal':'brief';
 	$view_ch = $view_op == 'brief'?'简略':'完整';
 	print("<div'>书库列表 <a href='book.php?view=$view_op'>$view_ch</a>");
