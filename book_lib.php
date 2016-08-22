@@ -75,6 +75,7 @@ function list_record($login_id, $format='self', $out_days=28)
 		$borrower = $row['user_name']; 
 		$book_id = $row['book_id']; 
 		$name = $row['name']; 
+		$name = "<a href='book.php?action=show_borrower&book_id=$book_id'>$name</a>";
 		$adate= $row['adate']; 
 		$bdate= $row['bdate']; 
 		$rdate= $row['rdate']; 
