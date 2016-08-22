@@ -11,26 +11,41 @@
 -->
 <style type="text/css">
 @media screen {
-.print_ignore {
-    display: none;
-}
+	.print_ignore {
+display: none;
+	}
 
-body, table, th, td {
-    font-size:         12pt;
-}
+	body, table, th, td {
+		font-size:         12pt;
+	}
 
-table, th, td {
-    border-width:      1px;
-    border-color:      #0000f0;
-    border-style:      solid;
-}
-th, td {
-    padding:           0.2em;
-}
+	table, th, td {
+		border-width:      1px;
+		border-color:      #0000f0;
+		border-style:      solid;
+	}
+	th, td {
+padding:           0.2em;
+	}
 }
 </style>
-<body onload="show_filter()">
+<body onload="load_intro()">
 <script type="text/javascript">
+function load_intro(){
+	document.getElementById("div_homeintro").innerHTML="Please wait...";
+	url = "brqclub.htm";
+	loadXMLDoc(url,function() {
+			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+				document.getElementById("div_homeintro").innerHTML=xmlhttp.responseText;
+			}else{
+			if(xmlhttp.status=='0')
+				document.getElementById("div_homeintro").innerHTML="Please wait...";
+			else
+				document.getElementById("div_homeintro").innerHTML=xmlhttp.status+xmlhttp.responseText;
+			}
+			});
+
+}
 function change_class(bookclass, view){
 	url = "show_book.php?";
 	url = url + "class="+bookclass;
@@ -39,23 +54,23 @@ function change_class(bookclass, view){
 
 	document.getElementById("div_booklist").innerHTML="Please wait...";
 	loadXMLDoc(url,function() {
-	  	if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
 			document.getElementById("div_booklist").innerHTML=xmlhttp.responseText;
-	  	}else{
+			}else{
 			if(xmlhttp.status=='0')
-				document.getElementById("div_booklist").innerHTML="Please wait...";
+			document.getElementById("div_booklist").innerHTML="Please wait...";
 			else
-				document.getElementById("div_booklist").innerHTML=xmlhttp.status+xmlhttp.responseText;
-		}
-		});
+			document.getElementById("div_booklist").innerHTML=xmlhttp.status+xmlhttp.responseText;
+			}
+			});
 };
 </script>
 
 <?php
 include 'book_lib.php';
 /*
-	copyright Xiaofeng(Daniel) Ling<lingxf@gmail.com>, 2016, Aug.
-*/
+   copyright Xiaofeng(Daniel) Ling<lingxf@gmail.com>, 2016, Aug.
+ */
 
 include 'debug.php';
 include 'db_connect.php';
@@ -69,20 +84,20 @@ $sid=session_id();
 $login_id = "NoLogin";
 if(isset($_POST['login'])){
 	if(isset($_POST['user'])){
-	    $login_id=$_POST['user'];
-	    if(isset($_POST['password'])) $password=$_POST['password'];
-	    $ret = check_passwd($login_id, $password);
-	    if($ret == 1){
-	        print("No user $login_id exist");
-	        unset($_SESSION['user']); 
+		$login_id=$_POST['user'];
+		if(isset($_POST['password'])) $password=$_POST['password'];
+		$ret = check_passwd($login_id, $password);
+		if($ret == 1){
+			print("No user $login_id exist");
+			unset($_SESSION['user']); 
 			home_link();
 			exit;
-	    }else if($ret == 2){
-	        print("wrong password");
-	        unset($_SESSION['user']);
+		}else if($ret == 2){
+			print("wrong password");
+			unset($_SESSION['user']);
 			home_link();
 			exit;
-	    }else{
+		}else{
 			$_SESSION = array();
 			session_destroy();
 			session_name('book');
@@ -92,8 +107,8 @@ if(isset($_POST['login'])){
 
 	}
 }else if(isset($_POST['register'])){
-    header("Location: book_user_register.php");
-    exit;
+	header("Location: book_user_register.php");
+	exit;
 }else{
 	$view = 'class';
 	$_SESSION['view'] = $view;
@@ -102,8 +117,8 @@ if(isset($_POST['login'])){
 
 if(isset($_SESSION['user'])) $login_id=$_SESSION['user'];
 else{
-//    header("Location: book_user_login.php");
-//  exit;
+	//    header("Location: book_user_login.php");
+	//  exit;
 }
 $max_books = 1;
 $items_perpage = 50;
@@ -112,25 +127,24 @@ if($role == 2)
 	$role_text = "Admin";
 else if($role == 1)
 	$role_text = "Member";
-else
+	else
 	$role_text = "Non-member";
 
-if($login_id == 'NoLogin')
-	$login_text = "<a href=book_user_login.php>登录<a/>";
-else
+	if($login_id == 'NoLogin')
+	$login_text = "<a href=book_user_login.php>登录</a>";
+	else
 	$login_text = "<a href=book_user_setting.php>$login_id($role_text)<a/> &nbsp;&nbsp;<a href=\"book.php?action=logout\">注销</a>";
 
-
-$action="home";
-if(isset($_GET['action']))$action=$_GET['action'];
-if($action == "logout"){
-	$_SESSION = array();
-	session_destroy();
-	print "You are logout now";
-	sleep(5);
-    header("Location: book.php");
-   # header("Location: book_user_login.php");
-}
+	$action="home";
+	if(isset($_GET['action']))$action=$_GET['action'];
+	if($action == "logout"){
+		$_SESSION = array();
+		session_destroy();
+		print "You are logout now";
+		sleep(5);
+		header("Location: book.php");
+# header("Location: book_user_login.php");
+	}
 $book_id=0;
 if(isset($_GET['book_id'])) $book_id=$_GET['book_id'];
 if(isset($_GET['record_id'])) $record_id=$_GET['record_id'];
@@ -154,6 +168,18 @@ if($role == 2){
 }
 
 print("<br>");
+
+if($role < 1){
+	print('<div>');
+	$lines = file("QClubIntroduction.htm");
+	foreach ($lines as $line_num => $line) {
+	    #print(htmlspecialchars($line) . "<br/>\n");
+	    print($line);
+	}
+	print('</div>');
+}
+#print('<div id="div_homeintro" ></div>');
+
 
 if(isset($_GET['items_perpage'])) $items_perpage=$_GET['items_perpage'];
 else if(isset($_SESSION['items_perpage'])) $items_perpage = $_SESSION['items_perpage'];
@@ -198,7 +224,7 @@ $_SESSION['class'] = $class;
 if(isset($_GET['view'])) $view=$_GET['view'];
 else if(isset($_SESSION['view'])) $view=$_SESSION['view'];
 else $view = $setting & 1 ? 'normal':'brief';
-dprint("view:$view, setting:$setting");
+dprint("view:$view, setting:$setting<br>");
 $_SESSION['view'] = $view;
 $_SESSION['setting'] = $setting;
 
