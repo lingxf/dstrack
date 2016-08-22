@@ -309,7 +309,10 @@ switch($action){
 		list_book('tbd');
 		break;
 	case "list_timeout":
-		list_record('', 'timeout');
+		print(">8 week<br>");
+		list_record('', 'timeout', 56);
+		print(">4 week<br>");
+		list_record('', 'timeout', 28);
 		break;
 	case "push":
 	case "push":
