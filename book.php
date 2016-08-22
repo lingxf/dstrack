@@ -109,6 +109,8 @@ if(isset($_POST['login'])){
 }else if(isset($_POST['register'])){
 	header("Location: book_user_register.php");
 	exit;
+}else if(isset($_SESSION['user'])){
+	$login_id=$_SESSION['user'];
 }else{
 	$view = 'class';
 	$_SESSION['view'] = $view;
