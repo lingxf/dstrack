@@ -42,9 +42,16 @@ if($book_id && $op=="modify"){
 	if($col == 'comments'){
 		$cm = "[$login_id]$intext<br>";
 		$tt =  read_book_column($book_id, $col);
+		$bookname = read_book_column($book_id, 'name');
 		if($tt != -1)
 			$cm .= $tt;
 		$intext = $cm;
+		$to = 'QClub.BJ.Reading@qti.qualcomm.com';
+		#$to = 'xling@qti.qualcomm.com';
+		$user = get_user_attr($login_id, 'name');
+		$cc = get_user_attr($login_id, 'email');
+		$cc = '';
+		mail_html($to, $cc, "$user is adding comments for book <$bookname>", $text);
 	}
 	if($col == 'class')
 		$sql = "UPDATE books set `$col`=$intext ";
