@@ -158,8 +158,8 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 	$tr_width = 800;
 	$background = '#efefef';
 
-    $hasmore = false;
-    $hasprev = false;
+	$hasmore = false;
+	$hasprev = false;
 
 	$cond = "where (name != 'TBD' and name != '') ";
 	if($format == 'tbd')
@@ -176,9 +176,9 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 	$rows = mysql_num_rows($res1);
 	if($start >= $rows){
 		$start = $rows - $items;
-        if($start < 0)
-            $start = 0;
-        $_SESSION['start'] = $start;
+		if($start < 0)
+			$start = 0;
+		$_SESSION['start'] = $start;
 	}
 
 	dprint("$start, $rows, $items");
@@ -186,18 +186,18 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 	$ns = $start+$items;
 
 	if($ns < $rows){
-        $hasmore = true;
-    }
+		$hasmore = true;
+	}
 
 	if($start > 0)
-        $hasprev = true;
+		$hasprev = true;
 
-    print('<form enctype="multipart/form-data" action="book.php" method="POST">');
+	print('<form enctype="multipart/form-data" action="book.php" method="POST">');
 	print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
-    print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
-    print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
-    print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
-    print('<input type="submit"');  print(' name="end" value="End" />   ');
+	print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
+	print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
+	print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
+	print('<input type="submit"');  print(' name="end" value="End" />   ');
 	print("&nbsp;共 $rows 本&nbsp;");
 	print('</span>');
 
@@ -311,10 +311,10 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 	print("</table>");
 
 	print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
-    print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
-    print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
-    print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
-    print('<input type="submit"');  print(' name="end" value="End" />   ');
+	print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
+	print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
+	print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
+	print('<input type="submit"');  print(' name="end" value="End" />   ');
 	print('</form');
 }
 
