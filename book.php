@@ -234,31 +234,31 @@ switch($action){
 	case "home":
 		show_home();
 		break;
-    case "next":
-        $start += $items_perpage;
-        $_SESSION['start'] = $start;
+	case "next":
+		$start += $items_perpage;
+		$_SESSION['start'] = $start;
 		show_home();
-        break;
-    case "begin":
-        $start = 0;
-        $_SESSION['start'] = $start;
+		break;
+	case "begin":
+		$start = 0;
+		$_SESSION['start'] = $start;
 		show_home();
-        break;
-    case "end":
-        $end = get_total_books();
+		break;
+	case "end":
+		$end = get_total_books();
 		$start = $end - $items_perpage - 1;
-        if($start < 0)
-            $start = 0;
-        $_SESSION['start'] = $start;
+		if($start < 0)
+			$start = 0;
+		$_SESSION['start'] = $start;
 		show_home();
-        break;
-    case "prev":
-        $start -= $items_perpage;
-        if($start < 0)
-            $start = 0;
-        $_SESSION['start'] = $start;
+		break;
+	case "prev":
+		$start -= $items_perpage;
+		if($start < 0)
+			$start = 0;
+		$_SESSION['start'] = $start;
 		show_home();
-        break;
+		break;
 
 	case "borrow":
 		borrow_book($book_id, $login_id);
@@ -295,7 +295,7 @@ switch($action){
 		show_borrower($book_id, 'borrow');
 		break;
 
-	/*admin*/
+		/*admin*/
 	case "migrate":
 		migrate_record($login_id);
 		break;
