@@ -246,7 +246,7 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 		}
 		$id = $book_id;
 		if($role > 1){
-			$id = "<a href='edit_book_ui.php?book_id=$book_id'>$id</a>";
+			$id = "<a href='book.php?action=edit_book&book_id=$book_id'>$id</a>";
 		}
 
 		$status=$row['status'];	

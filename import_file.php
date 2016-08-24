@@ -1,6 +1,6 @@
 <html>
 <Title>Import Sharing PPT</Title>
-Import Sharing PPT:
+已分享PPT:
 <?php 
 global $login_id;	
 $login_id="";
@@ -23,7 +23,7 @@ if(isset($_POST['upload'])){
 	if (move_uploaded_file($_FILES['userfile']['tmp_name'], $uploadfile)) {
 		dprint("File is valid, and was successfully uploaded.\n");
 	} else {
-		print("Move {$_FILES['userfile']['tmp_name']} to $uploadfile failed<br>");
+		dprint("Move {$_FILES['userfile']['tmp_name']} to $uploadfile failed<br>");
 		return;
 	}
 }
@@ -38,9 +38,9 @@ if ($handle = opendir('share/')) {
 }
 
 ?>
-<form enctype="multipart/form-data" action="import_ui.php" method="POST">
+<form enctype="multipart/form-data" action="import_file.php" method="POST">
     <input type="hidden" name="MAX_FILE_SIZE" value="128000000" />
-    File: <input name="userfile" type="file" />
+    文件: <input name="userfile" type="file" />
     <input name='upload' type="submit" value="Upload" />
 </form>
 

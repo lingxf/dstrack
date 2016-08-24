@@ -62,7 +62,6 @@ if(isset($_GET['book_id'])){
 	$op = 'add';
 }
 
-home_link();
 ?>
 <form method="post" action="edit_book.php">
 <?php print_table_style();?>

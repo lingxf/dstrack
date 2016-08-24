@@ -158,6 +158,7 @@ if($role == 2){
 }
 
 if($role >= 1){
+	print "&nbsp;&nbsp;<a href=\"book.php?action=share\">分享</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
 }
@@ -165,7 +166,7 @@ if($role >= 1){
 if($role == 2){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=log\">日志</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
-	print "&nbsp;&nbsp;<a href=\"edit_book_ui.php\">新书</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=add_newbook\">新书</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_tbd\">待定</a>";
 }
 
@@ -294,6 +295,15 @@ switch($action){
 		print("历史借阅记录<br>");
 		show_borrower($book_id, 'borrow');
 		break;
+	case "share":
+		show_share($login_id);
+		break;
+	case "list_out":
+		out_record($login_id);
+		break;
+	case "list_tbd":
+		list_book('tbd');
+		break;
 
 		/*admin*/
 	case "migrate":
@@ -302,11 +312,11 @@ switch($action){
 	case "manage":
 		manage_record($login_id);
 		break;
-	case "list_out":
-		out_record($login_id);
+	case "add_newbook":
+		add_newbook($login_id);
 		break;
-	case "list_tbd":
-		list_book('tbd');
+	case "edit_book":
+		edit_book($book_id);
 		break;
 	case "list_timeout":
 		print(">8 week<br>");
@@ -314,27 +324,6 @@ switch($action){
 		print(">4 week<br>");
 		list_record('', 'timeout', 28);
 		break;
-	case "push":
-	case "push":
-		$book_id = get_bookid_by_record($record_id);
-		$borrower = get_borrower($book_id);
-		$bookname = get_bookname($book_id);
-		$to = get_user_attr($borrower, 'email');
-		$cc = get_admin_mail();
-		mail_html($to, $cc, "Timeout, Please return the book <$bookname>", "");
-		home_link("Back", 'manage');
-		break;
-	case "transfer":
-		$book_id = get_bookid_by_record($record_id);
-		$old_borrower = get_borrower($book_id);
-		$bookname = get_bookname($book_id);
-		$record_id_my = get_record($book_id);
-		$new_borrower = get_borrower_by_record($record_id);
-		dprint("trasnfer:$book_id,$old_borrower, $new_borrower, $bookname, $record_id, $record_id_my<br>");
-		if($old_borrower != $login_id){
-			print("$bookname is not owned by you currently<br>");
-			break;
-		}
 	case "push":
 		$book_id = get_bookid_by_record($record_id);
 		$borrower = get_borrower($book_id);
@@ -470,6 +459,22 @@ function show_home()
 	print("</div>");
 }
 
+function show_share()
+{
+
+	print("<iframe height=1920 width=800 src='import_file.php'></iframe>");
+}
+
+function add_newbook()
+{
+
+	print("<iframe height=1920 width=800 src='edit_book_ui.php'></iframe>");
+}
+
+function edit_book($book_id)
+{
+	print("<iframe height=1920 width=800 src='edit_book_ui.php?book_id=$book_id'></iframe>");
+}
 ?>
 
 </body>
