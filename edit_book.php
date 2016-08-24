@@ -51,7 +51,7 @@ if($book_id && $op=="modify"){
 		$user = get_user_attr($login_id, 'name');
 		$cc = get_user_attr($login_id, 'email');
 		$cc = '';
-		mail_html($to, $cc, "$user is adding comments for book <$bookname>", $text);
+		#mail_html($to, $cc, "$user is adding comments for book <$bookname>", $text);
 	}
 	if($col == 'class')
 		$sql = "UPDATE books set `$col`=$intext ";
