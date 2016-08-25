@@ -152,7 +152,7 @@ function list_record($login_id, $format='self', $out_days=28)
 
 function list_book($format='normal', $start=0, $items=50, $get_count=0)
 {
-	global $login_id, $role, $class, $comment_type;
+	global $login_id, $role, $class, $comment_type, $book_sname;
 
 	$table_name = "book";
 	$tr_width = 800;
@@ -168,6 +168,9 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 		$cond .= "";
 	else
 		$cond .= " and class = $class";
+	if(isset($book_sname))
+		$cond .= " and name like '%$book_sname%' ";
+
 	if($comment_type != 0)
 		$cond .= " and comments != '' ";
 

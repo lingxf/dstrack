@@ -64,6 +64,23 @@ function change_class(bookclass, view){
 			}
 			});
 };
+function book_search(){
+	url = "show_book.php?";
+	bookname = document.getElementById("id_book_name").value;
+	url = url + "book_sname="+bookname;
+	document.getElementById("div_booklist").innerHTML="Please wait...";
+	loadXMLDoc(url,function() {
+			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+			document.getElementById("div_booklist").innerHTML=xmlhttp.responseText;
+			}else{
+			if(xmlhttp.status=='0')
+			document.getElementById("div_booklist").innerHTML="Please wait...";
+			else
+			document.getElementById("div_booklist").innerHTML=xmlhttp.status+xmlhttp.responseText;
+			}
+			});
+};
+
 </script>
 
 <?php
@@ -78,7 +95,11 @@ include 'db_connect.php';
 global $login_id, $max_book, $setting;	
 
 session_name('book');
+session_set_cookie_params(60*60*18);
 session_start();
+foreach(session_get_cookie_params() as $a=>$b){
+#	dprint("$a=>$b<br>");
+};
 
 $sid=session_id();
 $login_id = "NoLogin";
@@ -191,6 +212,7 @@ $_SESSION['items_perpage'] = $items_perpage;
 if(!isset($_SESSION['start'])) $_SESSION['start'] = 0;
 $start = $_SESSION['start'];
 
+if(isset($_GET['book_sname'])) $book_sname = $_GET['book_sname'];
 
 if(isset($_POST['prev'])) $action="prev";
 if(isset($_POST['next']))$action="next";
@@ -198,7 +220,7 @@ if(isset($_POST['begin'])) $action="begin";
 if(isset($_POST['end']))$action="end";
 if(isset($_POST['list_all']))$action="list_all";
 
-dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage setting:$setting<br>");
+dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage bookname:$book_sname setting:$setting<br>");
 
 if($role != 2 && preg_match("/manager|approve|stock|push|log|reject_wait/",$action)){
 	print("You are not administrator!");
@@ -452,6 +474,8 @@ function show_home()
 		print("&nbsp;<a href='book.php?comment_type=1'>只看评论</a>");
 	else
 		print("&nbsp;<a href='book.php?comment_type=0'>全部</a>");
+	print("&nbsp;书名检索&nbsp;<input id='id_book_name' name='book_name' type='text' value=''>");
+	print("<input class='btn' type='button' name='search' value='检索' onclick='book_search()'>");
 	print("</div>");
 
 	print("<div id='div_booklist'>");

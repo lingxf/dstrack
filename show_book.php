@@ -14,6 +14,8 @@ session_start();
 if(isset($_GET['view'])) $view=$_GET['view'];
 else $view=$_SESSION['view'];
 
+if(isset($_GET['book_sname'])) $book_sname = $_GET['book_sname'];
+
 $class=$_SESSION['class'];
 if(isset($_GET['class'])) $class=$_GET['class'];
 $_SESSION['class'] = $class;
