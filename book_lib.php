@@ -27,7 +27,12 @@ function print_tdlist($tdlist)
 function manage_record()
 {
 	global $login_id;
-	list_record($login_id, 'approve');
+	print("&nbsp;&nbsp;申请：");
+	list_record($login_id, 'approve', " status = 3 ");
+	print("&nbsp;&nbsp;归还：");
+	list_record($login_id, 'approve', " status = 1 ");
+	print("&nbsp;&nbsp;等候：");
+	list_record($login_id, 'approve', " status = 4 ");
 }
 
 function out_record()
@@ -36,7 +41,7 @@ function out_record()
 	list_record($login_id, 'out');
 }
 
-function list_record($login_id, $format='self', $out_days=28)
+function list_record($login_id, $format='self', $condition='')
 {
 	global $role;
 	$table_name = "id_table_record";
@@ -45,7 +50,8 @@ function list_record($login_id, $format='self', $out_days=28)
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'approve'){
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status < 0x100 and t1.status != 0 and t1.status != 2 and t3.user = t1.borrower order by adate asc";
+		$condition = " and t1.status < 0x100 " . " and t1.$condition "; 
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t3.user = t1.borrower $condition order by adate asc ";
 	}else if($format == 'self'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.borrower='$login_id' and t1.book_id = t2.book_id and t3.user = t1.borrower order by adate desc ";
@@ -65,8 +71,14 @@ function list_record($login_id, $format='self', $out_days=28)
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期' ));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by sdate desc ";
 	}else if($format == 'timeout'){	
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.status = 2 and (to_days(now())  - to_days(bdate)) >= $out_days and  t1.book_id = t2.book_id and t3.user = t1.borrower order by bdate asc ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.status = 2 and  t1.book_id = t2.book_id and t3.user = t1.borrower ";
+		if($sql_cond != ''){
+			$condition = " (to_days(now())  - to_days(bdate)) >= $condition ";
+			$sql .= "and $condition";
+		}
+		$sql .= " order by bdate asc";
 	}
+
 	$i = 0;
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
@@ -565,6 +577,8 @@ function list_log($format='normal')
 		if($status == 0){
 			$status_text = "还入";
 		}else if($status == 10){
+			$status_text = "新加";
+		}else if($status == 11){
 			$status_text = "新购";
 		}else{
 			$status_text = "借出";

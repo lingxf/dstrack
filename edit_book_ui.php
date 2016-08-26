@@ -68,6 +68,7 @@ if(isset($_GET['book_id'])){
 <tbody>
 <input type="hidden" name="op" value="<?php echo $op?>">
 <input name="book_id" type="hidden" value="<?php echo $book_id; ?>">
+<input name="old_date" type="hidden" value="<?php echo $buy_date; ?>">
 <tr class="odd noclick"><th>ID:</th><td><?php echo $book_id?></td></tr>
 <tr><th>Name:</th><td><input name="name" type="text" value='<?php echo $name;?>' ></td></tr>
 <tr><th>Author:</th><td><input name="author" type="text" value='<?php echo $author;?>'></td></tr>

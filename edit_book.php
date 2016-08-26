@@ -31,6 +31,7 @@ if($op == 'read' || $op == 'write' || $op=='modify'){
 	$sponsor = $_POST['sponsor'];
 	$note = $_POST['note'];
 	$buy_date = $_POST['buy_date'];
+	$old_date = $_POST['old_date'];
 	$desc =  $_POST['desc'];
 }
 
@@ -85,6 +86,11 @@ if($book_id && $op=="modify"){
 	$sql .= "where book_id = $book_id";
 	$res=update_mysql_query($sql);
 	$rows = mysql_affected_rows();
+	if($old_date == '0000-00-00' && $buy_date != ''){
+		add_log($login_id, $login_id, $book_id, 11);
+		print("Buy New Book $name <br>");
+	}
+	dprint("$old_date: $buy_date<br>");
 	print("Update $rows<br>");
 	return;
 }else if($op=="add"){
@@ -96,7 +102,7 @@ if($book_id && $op=="modify"){
 	$res=update_mysql_query($sql);
 	$rows = mysql_affected_rows();
 
-	$sql = "select book_id from books where `name`='$name' and author='$author' and buy_date='$buy_date' and sponsor='$sponsor'";
+	$sql = "select book_id from books where `name`='$name' and author='$author' and sponsor='$sponsor'";
 	$res=mysql_query($sql) or die("Invalid query1:" . $sql . mysql_error());
 	if($row1=mysql_fetch_array($res))
 		$book_id = $row1['book_id'];
