@@ -76,15 +76,23 @@ if($book_id && $op=="modify"){
 
 	$desc = str_replace("'", "''", $desc);
 	$note = str_replace("'", "''", $note);
-	$sql = "UPDATE books set `name`='$name', author='$author', ISBN='$isbn', `index`='$index', price='$price', buy_date='$buy_date', sponsor='$sponsor', note='$note', `desc`='$desc' where book_id = $book_id";
+	$sql = "UPDATE books set `name`='$name', author='$author', ISBN='$isbn', `index`='$index', price='$price', buy_date='$buy_date', sponsor='$sponsor', note='$note', `desc`='$desc' ";
+	$class = get_class_no($book_id);
+	if($index != '' and $class == 0){
+		$class_no = get_class_by_index(substr($index, 0, 1));
+		$sql .= ", `class` = $class_no ";
+	}
+	$sql .= "where book_id = $book_id";
 	$res=update_mysql_query($sql);
 	$rows = mysql_affected_rows();
 	print("Update $rows<br>");
-	home_link();
 	return;
 }else if($op=="add"){
-	
 	$sql = "insert into books set `name`='$name', author='$author', ISBN='$isbn', `index`='$index', price='$price', buy_date='$buy_date', sponsor='$sponsor', note='$note', `desc`='$desc'";
+	if($index != ""){
+		$class_no = get_class_by_index(substr($index, 0, 1));
+		$sql .= ", `class` = $class_no ";
+	}
 	$res=update_mysql_query($sql);
 	$rows = mysql_affected_rows();
 

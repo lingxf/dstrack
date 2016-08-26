@@ -520,6 +520,13 @@ function get_record($book_id)
 	return $r[0];
 }
 
+function get_class_no($book_id)
+{
+	$r = array();
+	$r = get_record_by_bookid($book_id);
+	return $r[2];
+}
+
 function get_record_by_bookid($book_id)
 {
 
@@ -528,9 +535,10 @@ function get_record_by_bookid($book_id)
 	while($row=mysql_fetch_array($res)){
 		$borrower = $row['borrower'];
 		$record_id = $row['record_id'];
-		return array($record_id, $borrower);
+		$class = $row['class'];
+		return array($record_id, $borrower, $class);
 	}
-	return array('', '');
+	return array('', '', 0);
 }
 
 function list_log($format='normal')
@@ -787,6 +795,19 @@ function check_login(){
 		exit();
 	}
 }
+
+function get_class_by_index($index)
+{
+	$sql = " select class_no from class_name where `index` = '$index'";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	while($row=mysql_fetch_array($res)){
+		$class_no = $row['class_no'];
+		return $class_no;
+	}
+	return 0;
+}
+
+
 function get_admin_mail()
 {
 	global $debug;
