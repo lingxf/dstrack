@@ -1,8 +1,8 @@
 <?php
 function dprint($str)
 {
-	global $debug;
-	if($debug)
+	global $debug_print, $debug;
+	if(isset($debug_print) && $debug_print == 1)
 		print($str);
 }
 function print_td($text, $width='', $color='', $background='', $script='')
@@ -242,6 +242,7 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 		$comments=  $row['comments'];
 		$comments = mb_substr($comments, 0, 100);
 		$sc_class = "";
+		$sc_desc = "";
 		if($role > 0){
 			$sc_desc = "ondblclick='show_edit_col(this,$book_id,1)'";
 			$sc_comments = "ondblclick='show_edit_col(this,$book_id,2)'";
@@ -442,7 +443,7 @@ function read_book_column($book_id, $col)
 	return -1;
 }
 
-$class_list = array('未分','小说', '历史', '技术', '科普', '社会', '传记', '管理', '文学','经济', '教育', '艺术');
+$class_list = array('0-未分','1-小说', '2-历史', '3-技术', '4-科普', '5-社会', '6-传记', '7-管理', '8-文学','9-经济', '10-教育', '11-艺术', '12-心理');
 function get_class_name($class=0)
 {
 	global $class_list;
@@ -806,14 +807,16 @@ function add_log($login_id, $borrower, $book_id, $status)
 
 function mail_html($to, $cc, $subject, $message)
 {
-	$headers = 'From: weekly@cedump-sh.ap.qualcomm.com' . "\r\n" .
+	global $debug_mail;
+	$headers = 'From: book@cedump-sh.ap.qualcomm.com' . "\r\n" .
 	    'Reply-To: xling@qti.qualcomm.com' . "\r\n" .
 	    'X-Mailer: PHP/' . phpversion();
 	$headers  = 'MIME-Version: 1.0' . "\r\n";
 	$headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
 	if($cc)
 		$headers .= "Cc: $cc" . "\r\n";
-	$headers .= "Bcc: xling@qti.qualcomm.com" . "\r\n";
+	if(isset($debug_mail) && $debug_mail == 1)
+		$headers .= "Bcc: xling@qti.qualcomm.com" . "\r\n";
 
 	dprint("mail|to:$to|cc:$cc|". htmlentities($subject, ENT_COMPAT, 'utf-8') . "<br>\n");
 //	print("$message\n");

@@ -98,7 +98,7 @@ session_name('book');
 session_set_cookie_params(60*60*18);
 session_start();
 foreach(session_get_cookie_params() as $a=>$b){
-#	dprint("$a=>$b<br>");
+	#dprint("$a=>$b<br>");
 };
 
 $sid=session_id();
@@ -220,7 +220,8 @@ if(isset($_POST['begin'])) $action="begin";
 if(isset($_POST['end']))$action="end";
 if(isset($_POST['list_all']))$action="list_all";
 
-dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage bookname:$book_sname setting:$setting<br>");
+
+dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage setting:$setting<br>");
 
 if($role != 2 && preg_match("/manager|approve|stock|push|log|reject_wait/",$action)){
 	print("You are not administrator!");
