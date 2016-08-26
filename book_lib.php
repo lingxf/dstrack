@@ -28,9 +28,9 @@ function manage_record()
 {
 	global $login_id;
 	print("&nbsp;&nbsp;申请：");
-	list_record($login_id, 'approve', " status = 3 ");
-	print("&nbsp;&nbsp;归还：");
 	list_record($login_id, 'approve', " status = 1 ");
+	print("&nbsp;&nbsp;归还：");
+	list_record($login_id, 'approve', " status = 3 ");
 	print("&nbsp;&nbsp;等候：");
 	list_record($login_id, 'approve', " status = 4 ");
 }
@@ -72,7 +72,7 @@ function list_record($login_id, $format='self', $condition='')
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by sdate desc ";
 	}else if($format == 'timeout'){	
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.status = 2 and  t1.book_id = t2.book_id and t3.user = t1.borrower ";
-		if($sql_cond != ''){
+		if($condition != ''){
 			$condition = " (to_days(now())  - to_days(bdate)) >= $condition ";
 			$sql .= "and $condition";
 		}
