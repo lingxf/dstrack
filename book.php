@@ -468,7 +468,7 @@ function show_home()
 	foreach($class_list as $key => $class_text) {
 		print("<option value='$key' ");
 		if($class == $key) print("selected");
-		print(" >$class_text</option>");
+		print(" >$key-$class_text</option>");
 	}
 	print("</select>");
 	if($comment_type == 0)
