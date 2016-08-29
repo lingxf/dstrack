@@ -114,6 +114,7 @@ function list_record($login_id, $format='self', $condition='')
 				$status_text = "归还中";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
 				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_return\">拒绝</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_return\">催还</a>";
 			}else if($status == 4){
 				$status_text = "等候";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">批准</a>";
