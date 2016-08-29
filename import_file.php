@@ -29,9 +29,14 @@ if(isset($_POST['upload'])){
 }
 
 if ($handle = opendir('share/')) {
+	$booklist = array();
 	while (false !== ($file = readdir($handle))) {
 		if($file == '..' || $file == '.')
 			continue;
+		$booklist[] = $file;
+	}
+	sort($booklist);
+	foreach($booklist as $file){
 		print("<a href='share/$file'>$file</a>\n<br>");
 	}
 	closedir($handle);
