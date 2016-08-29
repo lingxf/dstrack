@@ -92,6 +92,8 @@ function list_record($login_id, $format='self', $condition='')
 		$bdate= $row['bdate']; 
 		$rdate= $row['rdate']; 
 		$sdate= $row['sdate']; 
+		$time = time();
+		$nowdate = strftime("%Y-%m-%d", $time);
 		if($format == 'self'){
 			$adate = substr($adate, 0, 10);
 			$bdate = substr($bdate, 0, 10);
@@ -109,12 +111,15 @@ function list_record($login_id, $format='self', $condition='')
 			}else if($status == 2){
 				$status_text = "借出";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=push\">催还</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
+				if(substr($bdate, 0, 10) == $nowdate)
+					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=cancel\">取消</a>";
+				else
+					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
 			}else if($status == 3){
 				$status_text = "归还中";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
 				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_return\">拒绝</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_return\">催还</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=push\">催还</a>";
 			}else if($status == 4){
 				$status_text = "等候";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">批准</a>";
