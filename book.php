@@ -419,6 +419,18 @@ switch($action){
 		set_record_status($record_id, 0);
 		manage_record($login_id);
 		break;
+	case "reject_return":
+		$book_id = get_bookid_by_record($record_id);
+		$borrower = get_borrower($book_id);
+		$bookname = get_bookname($book_id);
+		$to = get_user_attr($borrower, 'email');
+		$user = get_user_attr($borrower, 'name');
+		$cc = get_admin_mail();
+		mail_html($to, $cc, "Your return for <$bookname> is rejected", "");
+		set_record_status($record_id, 0x102);
+		set_book_status($book_id, 2);
+		manage_record($login_id);
+		break;
 	case "reject":
 		$book_id = get_bookid_by_record($record_id);
 		$borrower = get_borrower($book_id);
