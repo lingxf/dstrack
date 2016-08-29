@@ -427,7 +427,7 @@ switch($action){
 		$user = get_user_attr($borrower, 'name');
 		$cc = get_admin_mail();
 		mail_html($to, $cc, "Your return for <$bookname> is rejected", "");
-		set_record_status($record_id, 0x102);
+		set_record_status($record_id, 0x2);
 		set_book_status($book_id, 2);
 		manage_record($login_id);
 		break;
