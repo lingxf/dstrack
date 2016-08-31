@@ -406,7 +406,7 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 			print_td($comments, '150','','',$sc_comments);
 			print_td($class_text, 35, '', '', $sc_class);
 			print_td($status_text,35);
-			print_td($blink,35);
+			print_td($blink,70);
 		}else if($format == 'class' || $format == 'tbd'){
 			print_td($id,10);
 			print_td($name);
@@ -416,14 +416,14 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 			print_td($class_name);
 			print_td($class_text, 35, '', '', $sc_class);
 			print_td($status_text,35);
-			print_td($blink,35);
+			print_td($blink,70);
 		}else if($format == 'brief'){
 			print_td($id,10);
 			print_td($name);
 			print_td($author);
 			print_td($class_text, 35, '', '', $sc_class);
 			print_td($status_text,35);
-			print_td($blink,80);
+			print_td($blink,70);
 		}else
 			print_tdlist(array($id, $name, $author, $isbn, $index, $price, $buy_date, $sponsor, $status_text, $blink)); 
 		print("</tr>\n");

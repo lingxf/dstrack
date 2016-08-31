@@ -78,7 +78,7 @@ if(isset($_POST['save'])){
 <table id='id_setting' width=150 class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 style='width:200pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>
 <tr class="odd noclick"><th width=100>User ID:</th><td><input name="user_id" readonly type="text" value="<?php  echo $user1; ?>"></td></tr>
 <tr><th>Name:</th><td><input name="name" type="text" value='<?php  echo $name1;?>'></td></tr>
-<tr><th>email:</th><td><input name="email" type="text" value='<?php  echo $email1;?>'></td></tr>
+<tr><th>email:</th><td><input name="email" readonly type="text" value='<?php  echo $email1;?>'></td></tr>
 <tr><th>default view:</th><td><input type='radio' name="view" value=0 <?php if(!$setting&1) print'checked'; ?> >简略<input type='radio' name="view" value=1 <?php if($setting&1) print'checked';?> >完整</td></tr>
 <tr><th>book/page:</th><td><input type='text' name="perpage" value='<?php echo $perpage;?>'></td></tr>
 </table>

@@ -147,11 +147,11 @@ $max_books = 1;
 $items_perpage = 50;
 $role = is_member($login_id);
 if($role == 2)
-	$role_text = "Admin";
+	$role_text = "管理员";
 else if($role == 1)
-	$role_text = "Member";
+	$role_text = "会员";
 else
-	$role_text = "Non-member";
+	$role_text = "非会员";
 
 if($login_id == 'NoLogin')
 	$login_text = "<a href=book_user_login.php>登录</a>";
@@ -201,7 +201,7 @@ if($role == 2){
 
 print("<br>");
 
-if($role < 1){
+if($role < 1 && $login_id == 'NoLogin'){
 	print('<div>');
 	$lines = file("QClubIntroduction.htm");
 	foreach ($lines as $line_num => $line) {
