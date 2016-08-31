@@ -189,11 +189,11 @@ if($role >= 1){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_share\">分享</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
 }
 
 if($role == 2){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=log\">日志</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_member\">会员</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=add_newbook\">新书</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_tbd\">待定</a>";

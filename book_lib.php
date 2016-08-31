@@ -81,7 +81,8 @@ function list_record($login_id, $format='self', $condition='')
 		print_tdlist(array('序号','帐号','申请人','申请日期', '批准日期', '操作'));
 		$sql = " select record_id, borrower, t1.status, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower order by adate desc ";
 	}else if($format == 'timeout'){	
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.status = 2 and  t1.book_id = t2.book_id and t3.user = t1.borrower ";
+		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3) and  t1.book_id = t2.book_id and t3.user = t1.borrower ";
 		if($condition != ''){
 			$condition = " (to_days(now())  - to_days(bdate)) >= $condition ";
 			$sql .= "and $condition";
@@ -244,7 +245,7 @@ function list_member()
 		}
 		if($role >= 1) {
 			$status_text = "会员";
-			$blink = "<a href=book.php?action=remove_member&borrower=$user_id>开除</a>";
+			$blink = "<a href=book.php?action=remove_member&borrower=$user_id>离会</a>";
 		} else { 
 			$status_text = "非会员";
 			$blink = "<a href=book.php?action=approve_member&borrower=$user_id>入会</a>";
