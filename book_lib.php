@@ -214,13 +214,6 @@ function list_member()
 	$hasprev = false;
 
 	print('<form enctype="multipart/form-data" action="book.php" method="POST">');
-	print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
-	print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
-	print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
-	print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
-	print('<input type="submit"');  print(' name="end" value="End" />   ');
-	print("&nbsp;共 $rows 本&nbsp;");
-	print('</span>');
 
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	print_tdlist(array('序号', '帐号', '姓名','邮件', '身份','已借','曾借', '操作'));
@@ -265,10 +258,10 @@ function list_member()
 	print("</table>");
 
 	print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
-	print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
+	print('<input type="submit"'); print(' disabled name="begin" value="Begin" />   ');
 	print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
 	print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
-	print('<input type="submit"');  print(' name="end" value="End" />   ');
+	print('<input type="submit"');  print(' disabled name="end" value="End" />   ');
 	print('</form');
 }
 
