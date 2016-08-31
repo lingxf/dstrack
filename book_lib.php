@@ -1019,9 +1019,9 @@ function mail_html($to, $cc, $subject, $message)
 	$headers  = 'MIME-Version: 1.0' . "\r\n";
 	$headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
 	if($debug == 1){
+		$message .= "\r\n To:$to, CC:$cc";
 		$cc = 'xling@qti.qualcomm.com';
 		$to = 'xling@qti.qualcomm.com';
-		$message .= "\r\n To:$to, CC:$cc";
 	}
 	if($cc)
 		$headers .= "Cc: $cc" . "\r\n";
