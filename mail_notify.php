@@ -14,12 +14,7 @@ if($action == 'mail')
 	mail_tbd_list();
 else if($action == 'gen'){
 	$login_id = 'xling';
-	print("&nbsp;&nbsp;申请：");
-	list_record($login_id, 'approve', " status = 1 ");
-	print("&nbsp;&nbsp;归还：");
-	list_record($login_id, 'approve', " status = 3 ");
-	print("&nbsp;&nbsp;等候：");
-	list_record($login_id, 'approve', " status = 4 ");
+	manage_record();
 }
 else if($action == 'check')
 	check_timeout();
