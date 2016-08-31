@@ -621,6 +621,7 @@ function show_book($book_id)
 	while($row=mysql_fetch_array($res)){
 		$desc= $row['desc'];
 		$name= $row['name'];
+		$status = $row['status'];
 		$id= $row['book_id'];
 		$comments= $row['comments'];
 		$isbn = $row['ISBN'];
