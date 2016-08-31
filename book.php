@@ -298,6 +298,12 @@ switch($action){
 		list_record($login_id);
 		//show_home();
 		break;
+	case "renew":
+		$book_id = get_bookid_by_record($record_id);
+		renew_book($book_id, $record_id, $login_id);
+		list_record($login_id);
+		//show_home();
+		break;
 	case "cancel":
 		set_record_status($record_id, 0x100);
 		list_record($login_id);
@@ -345,37 +351,7 @@ switch($action){
 		break;
 
 		/*admin*/
-	case "list_member":
-		list_member();
-		break;
-		/*admin*/
-	case "migrate":
-		migrate_record($login_id);
-		break;
-	case "manage":
-		manage_record($login_id);
-		break;
-	case "add_newbook":
-		add_newbook($login_id);
-		break;
-	case "edit_book":
-		edit_book($book_id);
-		break;
-	case "list_timeout":
-		print(">8 week<br>");
-		list_record('', 'timeout', 56);
-		print(">4 week<br>");
-		list_record('', 'timeout', 28);
-		break;
-	case "push":
-		$book_id = get_bookid_by_record($record_id);
-		$borrower = get_borrower($book_id);
-		$bookname = get_bookname($book_id);
-		$to = get_user_attr($borrower, 'email');
-		$cc = get_admin_mail();
-		mail_html($to, $cc, "Timeout, Please return the book <$bookname>", "");
-		home_link("Back", 'manage');
-		break;
+
 	case "transfer":
 		$book_id = get_bookid_by_record($record_id);
 		$old_borrower = get_borrower($book_id);
@@ -410,6 +386,56 @@ switch($action){
 		show_home($login_id);
 		break;
 
+	/*admin*/
+	case "migrate":
+		migrate_record($login_id);
+		break;
+
+	case "list_member":
+		list_member();
+		break;
+	case "manage":
+		manage_record($login_id);
+		break;
+	case "add_newbook":
+		add_newbook($login_id);
+		break;
+	case "edit_book":
+		edit_book($book_id);
+		break;
+	case "list_timeout":
+		print(">8 week<br>");
+		list_record('', 'timeout', 56);
+		print(">4 week<br>");
+		list_record('', 'timeout', 28);
+		break;
+	case "push":
+		$book_id = get_bookid_by_record($record_id);
+		$borrower = get_borrower($book_id);
+		$bookname = get_bookname($book_id);
+		$to = get_user_attr($borrower, 'email');
+		$cc = get_admin_mail();
+		mail_html($to, $cc, "Timeout, Please return the book <$bookname>", "");
+		home_link("Back", 'manage');
+		break;
+
+	case "approve_renew":
+		$book_id = get_bookid_by_record($record_id);
+		$borrower = get_borrower($book_id);
+		$bookname = get_bookname($book_id);
+		$to = get_user_attr($borrower, 'email');
+		$user = get_user_attr($borrower, 'name');
+		$cc = get_admin_mail();
+		set_record_status($record_id, 0);
+		add_log($login_id, $borrower, $book_id, 0);
+		mail_html($to, $cc, "<$bookname> is returned by <$borrower:$user>", "");
+
+		add_record($book_id, $borrower, 1);
+		set_record_status($book_id, 2);
+		add_log($login_id, $borrower, $book_id, 2);
+		mail_html($to, $cc, "<$bookname> is lent to <$borrower:$user>", "");
+		manage_record($login_id);
+		break;
 	case "lend":
 		$book_id = get_bookid_by_record($record_id);
 		$borrower = get_borrower($book_id);
