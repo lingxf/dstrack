@@ -33,6 +33,10 @@ function manage_record()
 	list_record($login_id, 'approve', " status = 3 ");
 	print("&nbsp;&nbsp;等候：");
 	list_record($login_id, 'approve', " status = 4 ");
+	print("&nbsp;&nbsp;分享：");
+	list_record($login_id, 'approve', " status = 0x105 ");
+	print("&nbsp;&nbsp;申请入会：");
+	list_record($login_id, 'member');
 }
 
 function out_record()
@@ -50,7 +54,7 @@ function list_record($login_id, $format='self', $condition='')
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'approve'){
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
-		$condition = " and t1.status < 0x100 " . " and t1.$condition "; 
+		$condition = " and t1.$condition "; 
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t3.user = t1.borrower $condition order by adate asc ";
 	}else if($format == 'self'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
@@ -70,6 +74,12 @@ function list_record($login_id, $format='self', $condition='')
 	}else if($format == 'history'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期' ));
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by sdate desc ";
+	}else if($format == 'share'){
+		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '完成日期' ));
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0x105 and t3.user = t1.borrower order by adate desc ";
+	}else if($format == 'member'){
+		print_tdlist(array('序号','帐号','申请人','申请日期', '批准日期', '操作'));
+		$sql = " select record_id, borrower, t1.status, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower order by adate desc ";
 	}else if($format == 'timeout'){	
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.status = 2 and  t1.book_id = t2.book_id and t3.user = t1.borrower ";
 		if($condition != ''){
@@ -84,6 +94,7 @@ function list_record($login_id, $format='self', $condition='')
 	while($row=mysql_fetch_array($res)){
 		print("<tr>");
 		$record_id = $row['record_id']; 
+		$borrower_id = $row['borrower']; 
 		$borrower = $row['user_name']; 
 		$book_id = $row['book_id']; 
 		$name = $row['name']; 
@@ -124,6 +135,9 @@ function list_record($login_id, $format='self', $condition='')
 				$status_text = "等候";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">批准</a>";
 				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_wait\">拒绝</a>";
+			}else if($status == 0x105){
+				$status_text = "分享";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=share_done\">完成</a>";
 			}else if($status == 0){
 				$status_text = "已还";
 			}else{
@@ -155,18 +169,101 @@ function list_record($login_id, $format='self', $condition='')
 				$status_text = "等候";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=transfer\">转移</a>";
 			}
+		}else if($format == 'member'){
+			if($status == 0x107){
+				$status_text = "申请";
+				$blink = "<a href=\"book.php?record_id=$record_id&borrower=$borrower_id&action=approve_member\">批准</a>";
+			}
 		}
+
 		$i++;
+
 		if($format == 'out')
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $status_text, $blink)); 
 		else if($format == 'history')
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $rdate,$sdate)); 
+		else if($format == 'share')
+			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $sdate)); 
+		else if($format == 'member')
+			print_tdlist(array($i,$borrower_id, $borrower,$adate, $sdate, $blink)); 
 		else
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $rdate,$sdate, $status_text, $blink)); 
 		print("</tr>\n");
 	}
 	print("</table>");
 }
+
+function list_member()
+{
+
+	global $login_id, $role, $class, $comment_type, $book_sname;
+
+	$table_name = "book";
+	$tr_width = 500;
+	$background = '#efefef';
+
+	$hasmore = false;
+	$hasprev = false;
+
+	print('<form enctype="multipart/form-data" action="book.php" method="POST">');
+	print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+	print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
+	print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
+	print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
+	print('<input type="submit"');  print(' name="end" value="End" />   ');
+	print("&nbsp;共 $rows 本&nbsp;");
+	print('</span>');
+
+	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	print_tdlist(array('序号', '帐号', '姓名','邮件', '身份','已借','曾借', '操作'));
+
+	$sql = "  select user,user_name, email, role,  ";
+	$sql .= "COUNT( CASE WHEN `status` = 0 THEN 1 ELSE NULL END ) AS `books_his`,  COUNT( CASE WHEN `status` = 2 THEN 1 ELSE NULL END ) AS `books_borrow`";
+	$sql .= " from `member` left join `history` on member.user = history.borrower group by user ";
+
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$i = 0;
+	while($row=mysql_fetch_array($res)){
+		$user_id = $row['user']; 
+		$user_name = $row['user_name'];
+		$email = $row['email'];
+		$role = $row['role'];
+		$books = $row['books_borrow'];
+		$books_his = $row['books_his'];
+		if($role > 0){
+			$sc_desc = "ondblclick='show_edit_col(this,$book_id,1)'";
+			$sc_comments = "ondblclick='show_edit_col(this,$book_id,2)'";
+			$sc_class = "ondblclick='show_edit_col(this,$book_id,3)'";
+		}
+		if($role >= 1) {
+			$status_text = "会员";
+			$blink = "<a href=book.php?action=remove_member&borrower=$user_id>开除</a>";
+		} else { 
+			$status_text = "非会员";
+			$blink = "<a href=book.php?action=approve_member&borrower=$user_id>入会</a>";
+		}
+		print("<tr>\n");
+		$i++;
+		print_td($i,5);
+		print_td($user_id,10);
+		print_td($user_name, 150);
+		print_td($email);
+		print_td($status_text,65);
+		print_td($books, 20);
+		print_td($books_his, 20);
+		print_td($blink,60);
+		print("</tr>\n");
+	}
+	print("</table>");
+
+	print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+	print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
+	print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
+	print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
+	print('<input type="submit"');  print(' name="end" value="End" />   ');
+	print('</form');
+}
+
 
 function list_book($format='normal', $start=0, $items=50, $get_count=0)
 {
@@ -299,6 +396,7 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 				$bcolor = 'white';
 			}
 		}
+		$blink .= "&nbsp;<a href=book.php?action=share&book_id=\"$book_id\">分享</a>";
 		print("<tr style='background:$bcolor;'>");
 		if($format == 'normal'){
 			print_td($id,10);
@@ -325,7 +423,7 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 			print_td($author);
 			print_td($class_text, 35, '', '', $sc_class);
 			print_td($status_text,35);
-			print_td($blink,35);
+			print_td($blink,80);
 		}else
 			print_tdlist(array($id, $name, $author, $isbn, $index, $price, $buy_date, $sponsor, $status_text, $blink)); 
 		print("</tr>\n");
@@ -428,6 +526,20 @@ function borrow_book($book_id, $login_id)
 	}
 	add_record($book_id, $login_id, 1);
 	set_book_status($book_id, 1);
+	return true;
+}
+
+function apply_share($book_id, $login_id)
+{
+	$sql = " select * from history where book_id = $book_id and borrower='$login_id' and (status = 0x105)";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$rows = mysql_num_rows($res);
+	if($rows > 0){
+		print ("You already apply share!");
+		return false;
+	}
+	add_record($book_id, $login_id, 0x105);
+	print ("申请分享成功!");
 	return true;
 }
 
@@ -790,11 +902,37 @@ function check_passwd($login_id, $login_passwd){
 	return 0;
 }
 
+
+function add_member($user, $name, $email, $role) {
+	$sql1 = "replace member set user = '$user', user_name= '$name', email='$email', role = $role ";
+	$res1=mysql_query($sql1) or die("Invalid query:" . $sql1 . mysql_error());
+	if($row1=mysql_affected_rows($res1))
+		return true;
+	return false;
+}
+
+function set_member_attr($user, $prop, $value) {
+	$sql = "update member set `$prop` = '$value' where `user` = '$user' ";
+	print $sql;
+	$res=mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	if($rows=mysql_affected_rows() > 0)
+		return true;
+	return false;
+}
+
 function get_user_attr($user, $prop) {
 	$sql1 = "select * from user.user where user_id ='$user'";
 	$res1=mysql_query($sql1) or die("Invalid query:" . $sql1 . mysql_error());
 	if($row1=mysql_fetch_array($res1))
 		return $row1["$prop"];
+	return false;
+}
+
+function set_user_attr($user, $prop, $value) {
+	$sql1 = "update user.user set `$prop` = '$value' where user_id ='$user'";
+	$res1=mysql_query($sql1) or die("Invalid query:" . $sql1 . mysql_error());
+	if($row1=mysql_affected_rows($res1) > 0)
+		return true;
 	return false;
 }
 
@@ -849,12 +987,17 @@ function add_log($login_id, $borrower, $book_id, $status)
 
 function mail_html($to, $cc, $subject, $message)
 {
-	global $debug_mail;
+	global $debug_mail, $debug;
 	$headers = 'From: book@cedump-sh.ap.qualcomm.com' . "\r\n" .
 	    'Reply-To: xling@qti.qualcomm.com' . "\r\n" .
 	    'X-Mailer: PHP/' . phpversion();
 	$headers  = 'MIME-Version: 1.0' . "\r\n";
 	$headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
+	if($debug == 1){
+		$cc = 'xling@qti.qualcomm.com';
+		$to = 'xling@qti.qualcomm.com';
+		$message .= "\r\n To:$to, CC:$cc";
+	}
 	if($cc)
 		$headers .= "Cc: $cc" . "\r\n";
 	if(isset($debug_mail) && $debug_mail == 1)
@@ -862,7 +1005,6 @@ function mail_html($to, $cc, $subject, $message)
 
 	dprint("mail|to:$to|cc:$cc|". htmlentities($subject, ENT_COMPAT, 'utf-8') . "<br>\n");
 //	print("$message\n");
-//	$to = 'xling@qti.qualcomm.com';
 	mail($to,$subject, $message, $headers);
 
 }

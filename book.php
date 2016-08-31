@@ -150,36 +150,43 @@ if($role == 2)
 	$role_text = "Admin";
 else if($role == 1)
 	$role_text = "Member";
-	else
+else
 	$role_text = "Non-member";
 
-	if($login_id == 'NoLogin')
+if($login_id == 'NoLogin')
 	$login_text = "<a href=book_user_login.php>登录</a>";
-	else
+else
 	$login_text = "<a href=book_user_setting.php>$login_id($role_text)<a/> &nbsp;&nbsp;<a href=\"book.php?action=logout\">注销</a>";
 
-	$action="home";
-	if(isset($_GET['action']))$action=$_GET['action'];
-	if($action == "logout"){
-		$_SESSION = array();
-		session_destroy();
-		print "You are logout now";
-		sleep(5);
-		header("Location: book.php");
+$action="home";
+if(isset($_GET['action']))$action=$_GET['action'];
+if($action == "logout"){
+	$_SESSION = array();
+	session_destroy();
+	print "You are logout now";
+	sleep(5);
+	header("Location: book.php");
 # header("Location: book_user_login.php");
-	}
+}
+
 $book_id=0;
 if(isset($_GET['book_id'])) $book_id=$_GET['book_id'];
 if(isset($_GET['record_id'])) $record_id=$_GET['record_id'];
+if(isset($_GET['borrower'])) $borrower =$_GET['borrower'];
 
 
 print "<a href=\"book.php\">首页</a> &nbsp;&nbsp;$login_text ";
+
+if($role == 0){
+	print "&nbsp;&nbsp;<a href=\"book.php?action=join\">入会</a>";
+}
+
 if($role == 2){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=manage\">管理</a>";
 }
 
 if($role >= 1){
-	print "&nbsp;&nbsp;<a href=\"book.php?action=share\">分享</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_share\">分享</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
 }
@@ -187,6 +194,7 @@ if($role >= 1){
 if($role == 2){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=log\">日志</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_member\">会员</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=add_newbook\">新书</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_tbd\">待定</a>";
 }
@@ -232,6 +240,7 @@ if($role < 1 && preg_match("/lend|history/",$action)){
 	print("You are not member!");
 	return;
 }
+
 
 if(isset($_GET['comment_type'])) $comment_type=$_GET['comment_type'];
 else if(isset($_SESSION['comment_type'])) $comment_type=$_SESSION['comment_type'];
@@ -297,6 +306,13 @@ switch($action){
 		set_record_status($record_id, 3);
 		list_record($login_id);
 		break;
+	case "share":
+		apply_share($book_id, $login_id);
+		break;
+	case "share_done":
+		set_record_status($record_id, 0x106);
+		manage_record($login_id);
+		break;
 	case "wait":
 		if(wait_book($book_id, $login_id)){
 			$bookname = get_bookname($book_id);
@@ -318,7 +334,7 @@ switch($action){
 		print("历史借阅记录<br>");
 		show_borrower($book_id, 'borrow');
 		break;
-	case "share":
+	case "list_share":
 		show_share($login_id);
 		break;
 	case "list_out":
@@ -328,6 +344,10 @@ switch($action){
 		list_book('tbd');
 		break;
 
+		/*admin*/
+	case "list_member":
+		list_member();
+		break;
 		/*admin*/
 	case "migrate":
 		migrate_record($login_id);
@@ -419,6 +439,36 @@ switch($action){
 		set_record_status($record_id, 0);
 		manage_record($login_id);
 		break;
+	case "remove_member":
+		dprint("remove $borrower");
+		set_member_attr($borrower, 'role', 0);
+		list_member();
+		break;
+	case "approve_member":
+		$to = get_user_attr($borrower, 'email');
+		$user = get_user_attr($borrower, 'name');
+		$cc = get_admin_mail();
+		mail_html($to, $cc, "$user is approved to join reading club", "");
+		add_log($login_id, $borrower, 0, 0x108);
+		if(isset($record_id))
+			set_record_status($record_id, 0x108);
+		set_member_attr($borrower, 'role', 0x1);
+		manage_record($login_id);
+		break;
+	case "join":
+		if($login_id == 'NoLogin'){
+			print("please register first!");
+			break;
+		}
+		$borrower = $login_id;
+		$cc = get_user_attr($borrower, 'email');
+		$user = get_user_attr($borrower, 'name');
+		$to = get_admin_mail();
+		add_member($borrower, $user, $cc, 0x0);
+		add_record(0, $login_id, 0x107);
+		mail_html($to, $cc, "$user is applying to join reading club", "");
+		manage_record($login_id);
+		break;
 	case "reject_return":
 		$book_id = get_bookid_by_record($record_id);
 		$borrower = get_borrower($book_id);
@@ -499,7 +549,7 @@ function show_home()
 function show_share()
 {
 
-	print("<iframe height=1920 width=800 src='import_file.php'></iframe>");
+	print("<iframe height=1920 width=1024 src='import_file.php'></iframe>");
 }
 
 function add_newbook()
