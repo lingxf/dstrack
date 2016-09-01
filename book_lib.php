@@ -126,7 +126,6 @@ function list_record($login_id, $format='self', $condition='')
 			$sdate = substr($sdate, 0, 10);
 		}
 		$status = $row['status'];
-		$bstatus = $row['bstatus'];
 		$status_text = "";
 		$blink = "";
 		if($format == 'approve' || $format == 'out' || $format == 'timeout'){
@@ -165,6 +164,7 @@ function list_record($login_id, $format='self', $condition='')
 			if($role < 2)
 				$blink = '';
 		}else if($format == 'self'){
+			$bstatus = $row['bstatus'];
 			if($status == 0){
 				$status_text = "已还";
 			}else if($status == 1){
@@ -809,7 +809,7 @@ function show_borrower($book_id, $format="wait")
 		$name= $row['name'];
 		$user_name= $row['user_name'];
 		$status=$row['status'];	
-		if($status == 4){
+		if($status == 4 || $status == 0x104){
 			$status_text = "等候";
 			$date = $row['adate'];
 		}else if($status == 2){
