@@ -548,7 +548,7 @@ function renew_book($book_id, $record_id, $login_id)
 	global $max_books;
 	$sql = " select * from history where record_id =$record_id";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
-	if($row = mysql_fetch_row($res)){
+	if($row = mysql_fetch_array($res)){
 		#print ("Exceed maximum days, Can not renew!");
 	}
 	set_record_status($record_id, 5); 
@@ -695,7 +695,7 @@ function get_class_no($book_id)
 function get_record_by_bookid($book_id)
 {
 
-	$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status != 0 and t1.status < 6 and t1.status != 4 order by `adate` asc";
+	$sql = " select record_id, borrower, t1.status, class, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status != 0 and t1.status < 6 and t1.status != 4 order by `adate` asc";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
 		$borrower = $row['borrower'];
@@ -1002,6 +1002,19 @@ function get_class_by_index($index)
 	return 0;
 }
 
+function get_first_wait_mail($book_id)
+{
+	$sql = "select * from history where book_id = $book_id and status = 4 order by adate asc";
+	$res=mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$to = false;
+	while($row = mysql_fetch_array($res)){
+		$borrower = $row['borrower'];
+		dprint("waiter $borrower");
+		$to .= get_user_attr($borrower, 'email');
+		$to .= ";";
+	}
+	return $to;
+}
 
 function get_admin_mail()
 {
