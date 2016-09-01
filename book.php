@@ -439,7 +439,7 @@ switch($action){
 		break;
 	case "lend":
 		$book_id = get_bookid_by_record($record_id);
-		$borrower = get_borrower($book_id);
+		$borrower = get_borrower_by_record($record_id);
 		$bookname = get_bookname($book_id);
 		$old_status = get_book_status($book_id);
 		if($old_status != 0 && $old_status != 1){
@@ -450,7 +450,8 @@ switch($action){
 		$user = get_user_attr($borrower, 'name');
 		$cc = get_admin_mail();
 		set_record_status($record_id, 2);
-		mail_html($to, $cc, "<$bookname> is lent to <$borrower:$user>", "");
+		$message = "book:$book_id $bookname, record:$record_id, $user";
+		mail_html($to, $cc, "<$bookname> is lent to <$borrower:$user>", "$message");
 		add_log($login_id, $borrower, $book_id, 2);
 		manage_record($login_id);
 		break;
