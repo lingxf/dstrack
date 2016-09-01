@@ -294,7 +294,10 @@ switch($action){
 		break;
 
 	case "borrow":
-		borrow_book($book_id, $login_id);
+		if(isset($record_id)){
+			borrow_wait_book($record_id, $login_id);
+		}else
+			borrow_book($book_id, $login_id);
 		show_my($login_id);
 		break;
 	case "renew":
@@ -535,11 +538,13 @@ switch($action){
 function show_my($login_id)
 {
 		print("<div>我的借阅");
-		list_record($login_id, 'self', ' history.status != 4');
+		list_record($login_id, 'self', ' (history.status = 2 or history.status = 3 or history.status = 1 ) ');
 		print("<div>我的等候");
-		list_record($login_id, 'self', ' history.status = 4');
+		list_record($login_id, 'self', ' (history.status = 4 or history.status = 0x100 or history.status = 0x101 or history.status = 0x104)  ');
 		print("<div>等我的人");
 		list_record($login_id, 'waityou');
+		print("<div>我的借阅记录");
+		list_record($login_id, 'self', ' history.status = 0 ');
 		print("</div>");
 }
 

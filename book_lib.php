@@ -32,7 +32,7 @@ function manage_record()
 	print("&nbsp;&nbsp;归还：");
 	list_record($login_id, 'approve', " history.status = 3 ");
 	print("&nbsp;&nbsp;等候：");
-	list_record($login_id, 'approve', " history.status = 4 ");
+	list_record($login_id, 'approve', " (history.status = 4 or history.status = 0x104) ");
 	print("&nbsp;&nbsp;分享：");
 	list_record($login_id, 'approve', " history.status = 0x105 ");
 	print("&nbsp;&nbsp;申请入会：");
@@ -47,6 +47,7 @@ function out_record()
 /* 0x100 cancel 
    0x101 reject
    0x105 share 
+   0x104 wait
    0x106 share_done
    0x107 apply_join
    0x108 approve_member
@@ -145,13 +146,14 @@ function list_record($login_id, $format='self', $condition='')
 				$blink = "<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
 				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_return\">拒绝</a>";
 				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=push\">催还</a>";
-			}else if($status == 4){
+			}else if($status == 4 || $status == 0x104 ){
 				$status_text = "等候";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">批准</a>";
 				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_wait\">拒绝</a>";
 			}else if($status == 5){
 				$status_text = "续借";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=approve_renew\">批准</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_wait\">拒绝</a>";
 			}else if($status == 0x105){
 				$status_text = "分享";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=share_done\">完成</a>";
@@ -175,16 +177,20 @@ function list_record($login_id, $format='self', $condition='')
 			}else if($status == 3){
 				$status_text = "归还中";
 				$blink = "";
-			}else if($status == 4){
+			}else if($status == 4 || $status == 0x104){
 				$status_text = get_book_status_name($bstatus);
 				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel\">取消</a>";
+				if($bstatus == 0)
+					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=borrow\">借阅</a>";
 			}else if($status == 5){
 				$status_text = "续借中";
 				#$blink = "<a href=\"book.php?record_id=$record_id&action=cancel\">取消</a>";
-			}else if($status == 101){
+			}else if($status == 0x100){
+				$status_text = "取消";
+			}else if($status == 0x101){
 				$status_text = "拒绝";
 			}else{
-				$status_text = "取消";
+				$status_text = "其它";
 			}
 		}else if($format == 'waityou'){
 			if($status == 4){
@@ -472,7 +478,7 @@ function is_member($login_id)
 function check_wait($book_id)
 {
 
-	$sql = " select * from history where book_id=$book_id and status = 4 ";
+	$sql = " select * from history where book_id=$book_id and (status = 4 || status = 0x104)";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	if($row = mysql_fetch_array($res)){
 		return true;
@@ -539,6 +545,29 @@ function migrate_record($login_id)
 	}
 }
 
+function borrow_wait_book($record_id, $login_id)
+{
+	global $max_books;
+	$sql = " select * from history where borrower='$login_id' and (status = 1 or status = 2)";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$rows = mysql_num_rows($res);
+	if($rows >= $max_books){
+		print ("You already reached the maximum books:$rows >= $max_books !");
+		return false;
+	}
+
+	$sql = " select * from history left join books using (book_id) where record_id = $record_id and borrower='$login_id' and books.status = 0 ";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	if($row = mysql_fetch_array($res)){
+		$name = $row['name'];
+		set_record_status($record_id, 1);
+		print ("Applied for Book <$name>");
+		return true;
+	}
+	print ("Book not return or not found!");
+	return false;
+}
+
 function borrow_book($book_id, $login_id)
 {
 	global $max_books;
@@ -559,10 +588,11 @@ function borrow_book($book_id, $login_id)
 function renew_book($book_id, $record_id, $login_id)
 {
 	global $max_books;
-	$sql = " select * from history where record_id =$record_id";
+	$sql = " select * from history left join books using (book_id) where book_id = $book_id and history.status = 0x104 ";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	if($row = mysql_fetch_array($res)){
-		#print ("Exceed maximum days, Can not renew!");
+		print ("Someone wait, Can not renew!");
+		return false;
 	}
 	set_record_status($record_id, 5); 
 	return true;
@@ -660,14 +690,14 @@ function show_book($book_id)
 			$blink = "<a href=book.php?action=wait&book_id=\"$book_id\">等候</a>";
 
 		$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
-
+		print("[" . get_book_status_name($status) . "]&nbsp;");
 		print("$blink");
 		print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
 		print("<tr>");
-		print_tdlist(array('编号', 'ISBN','索引','价格','中图分类', '咱分类', 'Sponsor', '购买日期'));
+		print_tdlist(array('编号', 'ISBN','索引','价格','中图分类', '咱分类', 'Sponsor', '购买日期', '状态'));
 		print("</tr>");
 		print("<tr>");
-		print_tdlist(array($id, $isbn, $index, $price, $class_name, $class_text, $sponsor, $buy_date)); 
+		print_tdlist(array($id, $isbn, $index, $price, $class_name, $class_text, $sponsor, $buy_date, get_book_status_name($status))); 
 		print("</tr>");
 		print("</table>");
 		print("<br/>");
@@ -769,7 +799,7 @@ function show_borrower($book_id, $format="wait")
 	if($format == 'out')
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status != 0 and t1.status != 4 and t1.status < 0x100 order by `adate` asc";
 	else if($format == 'wait')
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status = 4 order by `adate` asc";
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and (t1.status = 4 or t1.status = 0x104 ) order by `adate` asc";
 	else
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status = 0 order by `adate` asc";
 
@@ -894,16 +924,21 @@ function set_record_status($record_id, $status)
 	dprint("set_record_status:$record_id:$status<br>");
 	$time = time();
 	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
-	if($status == 2)
+	if($status == 0)
+		$sql = " update history set sdate= '$time_start', status=$status where `record_id` = $record_id";
+	else if($status == 1)
+		$sql = " update history set bdate= '$time_start', status=$status where `record_id` = $record_id";
+	else if($status == 2)
 		$sql = " update history set bdate= '$time_start', status=$status where `record_id` = $record_id";
 	else if($status == 3)
 		$sql = " update history set rdate= '$time_start', status=$status where `record_id` = $record_id";
+	else if($status == 4)
+		$sql = " update history set adate= '$time_start', status=$status where `record_id` = $record_id";
 	else if($status == 5)
 		$sql = " update history set rdate= '$time_start', status=$status where `record_id` = $record_id";
-	else if($status == 0)
-		$sql = " update history set sdate= '$time_start', status=$status where `record_id` = $record_id";
 	else
-		$sql = " update history set sdate= '$time_start', status=$status where `record_id` = $record_id";
+		$sql = " update history set adate= '$time_start', status=$status where `record_id` = $record_id";
+
 	dprint("$sql<br>");
 	$res = update_mysql_query($sql);
 	if($status < 0x100){
@@ -1017,7 +1052,7 @@ function get_class_by_index($index)
 
 function get_first_wait_mail($book_id)
 {
-	$sql = "select * from history where book_id = $book_id and status = 4 order by adate asc";
+	$sql = "select * from history where book_id = $book_id and (status = 4 or status = 0x104)  order by adate asc";
 	$res=mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	$to = false;
 	while($row = mysql_fetch_array($res)){
