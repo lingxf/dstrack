@@ -157,7 +157,8 @@ function list_record($login_id, $format='self', $condition='')
 			}else if($status == 2){
 				$status_text = "借出";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=returning\">归还</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=renew\">续借</a>";
+				if(!check_wait($book_id))
+					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=renew\">续借</a>";
 			}else if($status == 3){
 				$status_text = "归还中";
 				$blink = "";
@@ -453,6 +454,17 @@ function is_member($login_id)
 		return $role;
 	}
 	return 0;
+}
+
+function check_wait($book_id)
+{
+
+	$sql = " select * from history where book_id=$book_id and status = 4 ";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	if($row = mysql_fetch_array($res)){
+		return true;
+	}
+	return false;
 }
 
 function wait_book($book_id, $login_id)
