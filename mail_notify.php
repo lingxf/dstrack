@@ -64,7 +64,7 @@ function mail_reminder_day($remain_days)
 	else
 		$cond = "(to_days(now())  - to_days(bdate)) >= 28";
 
-	$sql = " select record_id, borrower, t1.status, name, email, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3) and $cond and  t1.book_id = t2.book_id and t3.user = t1.borrower order by bdate asc ";
+	$sql = " select record_id, borrower, t1.status, name, email, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3 or t1.status = 5) and $cond and  t1.book_id = t2.book_id and t3.user = t1.borrower order by bdate asc ";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	$i = 0;
 	while($row=mysql_fetch_array($res)){

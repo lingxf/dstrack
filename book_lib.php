@@ -95,7 +95,7 @@ function list_record($login_id, $format='self', $condition='')
 		$sql = " select record_id, borrower, t1.status, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower order by adate desc ";
 	}else if($format == 'timeout'){	
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3) and  t1.book_id = t2.book_id and t3.user = t1.borrower ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3 or t1.status = 5) and  t1.book_id = t2.book_id and t3.user = t1.borrower ";
 		if($condition != ''){
 			$condition = " (to_days(now())  - to_days(bdate)) >= $condition ";
 			$sql .= "and $condition";
