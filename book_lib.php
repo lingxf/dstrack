@@ -44,6 +44,18 @@ function out_record()
 	global $login_id;
 	list_record($login_id, 'out');
 }
+/* 0x100 cancel 
+   0x101 reject
+   0x105 share 
+   0x106 share_done
+   0x107 apply_join
+   0x108 approve_member
+ */
+function get_book_status_name($status)
+{
+	$status_name = array('在库', '借阅中','借出','归还中', '待购', '续借中');
+	return $status_name[$status];
+}
 
 function list_record($login_id, $format='self', $condition='')
 {
@@ -58,7 +70,7 @@ function list_record($login_id, $format='self', $condition='')
 		$sql = " select record_id, borrower, history.status, name, user_name, adate, bdate,rdate,sdate, history.book_id from history left join `books` as t2 using (`book_id`) left join member on member.user = history.borrower  where $condition order by adate asc ";
 	}else if($format == 'self'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.borrower='$login_id' and t1.book_id = t2.book_id and t3.user = t1.borrower order by adate desc ";
+		$sql = " select record_id, borrower, history.status, books.status as bstatus, name, user_name, adate, bdate,rdate,sdate, history.book_id from history, books, member  where history.borrower='$login_id' and history.book_id = books.book_id and member.user = history.borrower and $condition order by adate desc ";
 	}else if( $format == 'waityou'){
 		print_tdlist(array('序号','等候人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$book_ids = get_bookid_by_borrower($login_id);
@@ -113,6 +125,7 @@ function list_record($login_id, $format='self', $condition='')
 			$sdate = substr($sdate, 0, 10);
 		}
 		$status = $row['status'];
+		$bstatus = $row['bstatus'];
 		$status_text = "";
 		$blink = "";
 		if($format == 'approve' || $format == 'out' || $format == 'timeout'){
@@ -163,7 +176,7 @@ function list_record($login_id, $format='self', $condition='')
 				$status_text = "归还中";
 				$blink = "";
 			}else if($status == 4){
-				$status_text = "等候";
+				$status_text = get_book_status_name($bstatus);
 				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel\">取消</a>";
 			}else if($status == 5){
 				$status_text = "续借中";

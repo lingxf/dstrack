@@ -295,22 +295,20 @@ switch($action){
 
 	case "borrow":
 		borrow_book($book_id, $login_id);
-		list_record($login_id);
-		//show_home();
+		show_my($login_id);
 		break;
 	case "renew":
 		$book_id = get_bookid_by_record($record_id);
 		renew_book($book_id, $record_id, $login_id);
-		list_record($login_id);
-		//show_home();
+		show_my($login_id);
 		break;
 	case "cancel":
 		set_record_status($record_id, 0x100);
-		list_record($login_id);
+		show_my($login_id);
 		break;
 	case "returning":
 		set_record_status($record_id, 3);
-		list_record($login_id);
+		show_my($login_id);
 		break;
 	case "share":
 		apply_share($book_id, $login_id);
@@ -534,16 +532,23 @@ switch($action){
 
 }
 
+function show_my($login_id)
+{
+		print("<div>我的借阅");
+		list_record($login_id, 'self', ' history.status != 4');
+		print("<div>我的等候");
+		list_record($login_id, 'self', ' history.status = 4');
+		print("<div>等我的人");
+		list_record($login_id, 'waityou');
+		print("</div>");
+}
+
 function show_home()
 {
 	global $login_id, $view, $start, $items_perpage;
 	global $class_list, $class, $comment_type, $role;
 	if($role > 0){
-		print("<div>我的借阅");
-		list_record($login_id);
-		print("<div>我的等候人");
-		list_record($login_id, 'waityou');
-		print("</div>");
+		show_my($login_id);
 	}
 	$view_op = $view == 'brief'?'normal':'brief';
 	$view_ch = $view_op == 'brief'?'简略':'完整';
