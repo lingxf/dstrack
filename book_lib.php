@@ -490,7 +490,7 @@ function wait_book($book_id, $login_id)
 {
 	if(!check_record($book_id, $login_id))
 		return false;
-	add_record($book_id, $login_id, 4);
+	add_record($book_id, $login_id, 0x104);
 	print("Add to waiting list successfully<br>");
 	return true;
 }
