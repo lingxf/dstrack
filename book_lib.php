@@ -137,7 +137,7 @@ function list_record($login_id, $format='self', $condition='')
 				$status_text = "借出";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=push\">催还</a>";
 				if(substr($bdate, 0, 10) == $nowdate)
-					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=cancel\">取消</a>";
+					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
 				else
 					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
 			}else if($status == 3){
