@@ -675,35 +675,37 @@ function show_book($book_id)
 			$blink = "<a href=book.php?action=borrow&book_id=$book_id>借阅</a>";
 		else
 			$blink = "<a href=book.php?action=wait&book_id=\"$book_id\">等候</a>";
-		dprint("member: $member_id, $login_id");
-		if($member_id == $login_id)
+		dprint("member: $member_id, $login_id<br>");
+
+		if($member_id == $login_id){
 			$blink .= "&nbsp;<a href='book.php?action=remove_favor&book_id=$book_id' >去藏</a>";
-		else
-			$blink .= "&nbsp;<a href='book.php?action=add_favor&book_id=$book_id' >收藏</a>";
-
-		$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
-		print("[" . get_book_status_name($status) . "]&nbsp;");
-		print("$blink");
-		print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
-		print("<tr>");
-		print_tdlist(array('编号', 'ISBN','索引','价格','中图分类', '咱分类', 'Sponsor', '购买日期', '状态'));
-		print("</tr>");
-		print("<tr>");
-		print_tdlist(array($id, $isbn, $index, $price, $class_name, $class_text, $sponsor, $buy_date, get_book_status_name($status))); 
-		print("</tr>");
-		print("</table>");
-		print("<br/>");
-
-		print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
-		print("<tr><td>$desc</td></tr>");
-		print("</table>");
-
-		print("评论<br>");
-		print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
-		print("<tr><td>$comments</td></tr>");
-		print("</table>");
-		return;
+			break;
+		}
 	}
+	if($member_id != $login_id)
+		$blink .= "&nbsp;<a href='book.php?action=add_favor&book_id=$book_id' >收藏</a>";
+	$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
+	print("[" . get_book_status_name($status) . "]&nbsp;");
+	print("$blink");
+	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
+	print("<tr>");
+	print_tdlist(array('编号', 'ISBN','索引','价格','中图分类', '咱分类', 'Sponsor', '购买日期', '状态'));
+	print("</tr>");
+	print("<tr>");
+	print_tdlist(array($id, $isbn, $index, $price, $class_name, $class_text, $sponsor, $buy_date, get_book_status_name($status))); 
+	print("</tr>");
+	print("</table>");
+	print("<br/>");
+
+	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
+	print("<tr><td>$desc</td></tr>");
+	print("</table>");
+
+	print("评论<br>");
+	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
+	print("<tr><td>$comments</td></tr>");
+	print("</table>");
+	return;
 }
 
 function get_borrower($book_id)
