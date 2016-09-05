@@ -348,9 +348,13 @@ switch($action){
 		break;
 	case "add_favor":
 		add_favor($login_id, $book_id);
+		$favor = true;
+		list_book();
 		break;
 	case "remove_favor":
 		remove_favor($login_id, $book_id);
+		$favor = true;
+		list_book();
 		break;
 	case "list_favor":
 		$favor = true;
