@@ -186,6 +186,7 @@ if($role == 2){
 }
 
 if($role >= 1){
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_favor\">收藏</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_share\">分享</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
@@ -262,6 +263,7 @@ else $view = $setting & 1 ? 'normal':'brief';
 dprint("view:$view, setting:$setting<br>");
 $_SESSION['view'] = $view;
 $_SESSION['setting'] = $setting;
+$favor = false;
 
 switch($action){
 	case "home":
@@ -343,6 +345,17 @@ switch($action){
 		break;
 	case "list_share":
 		show_share($login_id);
+		break;
+	case "add_favor":
+		add_favor($login_id, $book_id);
+		break;
+	case "remove_favor":
+		remove_favor($login_id, $book_id);
+		break;
+	case "list_favor":
+		$favor = true;
+		list_book();
+		//show_home($login_id);
 		break;
 	case "list_out":
 		out_record($login_id);

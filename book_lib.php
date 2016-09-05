@@ -288,7 +288,7 @@ function list_member()
 
 function list_book($format='normal', $start=0, $items=50, $get_count=0)
 {
-	global $login_id, $role, $class, $comment_type, $book_sname;
+	global $login_id, $role, $class, $comment_type, $book_sname, $favor;
 
 	$table_name = "book";
 	$tr_width = 800;
@@ -310,7 +310,11 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 	if($comment_type != 0)
 		$cond .= " and comments != '' ";
 
-	$sql = "select * from books $cond ";
+	if($favor)
+		$sql = "select * from favor left join books using (book_id) $cond and member_id = '$login_id'";
+	else
+		$sql = "select * from books $cond ";
+	dprint("$sql<br>");
 	$res1 = mysql_query($sql) or die("Invalid query:" .$sql. mysql_error());
 	$rows = mysql_num_rows($res1);
 	if($start >= $rows){
@@ -352,7 +356,10 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date','sponsor','status', 'action'));
 
-	$sql = " select * from books $cond order by book_id asc limit $start, $items";
+	if($favor)
+		$sql = "select * from favor left join books using (book_id) $cond and member_id = '$login_id'";
+	else
+		$sql = " select * from books $cond order by book_id asc limit $start, $items";
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
@@ -665,7 +672,8 @@ function get_class_name($class=0)
 
 function show_book($book_id)
 {
-	$sql = " select * from books where book_id=$book_id";
+	global $login_id;
+	$sql = " select * from books left join favor on books.book_id = favor.book_id where books.book_id=$book_id";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
 		$desc= $row['desc'];
@@ -682,12 +690,18 @@ function show_book($book_id)
 		$sponsor = $row['sponsor'];
 		$class = $row['class'];
 		$class_text = get_class_name($class);
+		$member_id = $row['member_id'];
 
 		print("《" . $name . "》");
 		if($status == 0)
 			$blink = "<a href=book.php?action=borrow&book_id=$book_id>借阅</a>";
 		else
 			$blink = "<a href=book.php?action=wait&book_id=\"$book_id\">等候</a>";
+		dprint("member: $member_id, $login_id");
+		if($member_id == $login_id)
+			$blink .= "&nbsp;<a href='book.php?action=remove_favor&book_id=$book_id' >去藏</a>";
+		else
+			$blink .= "&nbsp;<a href='book.php?action=add_favor&book_id=$book_id' >收藏</a>";
 
 		$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
 		print("[" . get_book_status_name($status) . "]&nbsp;");
@@ -1082,6 +1096,26 @@ function add_log($login_id, $borrower, $book_id, $status)
 	dprint("rows:$rows<br>");
 	return true;
 }
+
+function add_favor($member_id, $book_id)
+{
+	$sql = " insert into favor set `member_id`='$member_id', book_id=$book_id" ;
+	$res = update_mysql_query($sql);
+	$rows = mysql_affected_rows();
+	dprint("add favor rows:$member_id, $book_id, $rows<br>");
+	return true;
+}
+
+function remove_favor($member_id, $book_id)
+{
+	$sql = "delete from favor where `member_id`='$member_id' and book_id=$book_id";
+	$res = update_mysql_query($sql);
+	$rows = mysql_affected_rows();
+	dprint("$sql");
+	dprint("remove favor $member_id, $book_id, rows:$rows<br>");
+	return true;
+}
+
 
 function mail_html($to, $cc, $subject, $message)
 {
