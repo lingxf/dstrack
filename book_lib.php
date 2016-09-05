@@ -286,7 +286,7 @@ function list_member()
 }
 
 
-function list_book($format='normal', $start=0, $items=50, $get_count=0)
+function list_book($format='normal', $start=0, $items=50, $condition='')
 {
 	global $login_id, $role, $class, $comment_type, $book_sname, $favor;
 
@@ -310,21 +310,19 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 	if($comment_type != 0)
 		$cond .= " and comments != '' ";
 
-	if($favor)
-		$sql = "select * from favor left join books using (book_id) $cond and member_id = '$login_id'";
-	else
-		$sql = "select * from books $cond ";
-	dprint("$sql<br>");
-	$res1 = mysql_query($sql) or die("Invalid query:" .$sql. mysql_error());
-	$rows = mysql_num_rows($res1);
-	if($start >= $rows){
-		$start = $rows - $items;
-		if($start < 0)
-			$start = 0;
-		$_SESSION['start'] = $start;
-	}
 
-	dprint("$start, $rows, $items");
+	if($condition == ''){
+		$sql = "select * from books $cond ";
+		$res1 = mysql_query($sql) or die("Invalid query:" .$sql. mysql_error());
+		$rows = mysql_num_rows($res1);
+		if($start >= $rows){
+			$start = $rows - $items;
+			if($start < 0)
+				$start = 0;
+			$_SESSION['start'] = $start;
+		}
+		dprint("$start, $rows, $items");
+	}
 
 	$ns = $start+$items;
 
@@ -334,16 +332,16 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 
 	if($start > 0)
 		$hasprev = true;
-
-	print('<form enctype="multipart/form-data" action="book.php" method="POST">');
-	print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
-	print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
-	print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
-	print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
-	print('<input type="submit"');  print(' name="end" value="End" />   ');
-	print("&nbsp;共 $rows 本&nbsp;");
-	print('</span>');
-
+	if($condition == ''){
+		print('<form enctype="multipart/form-data" action="book.php" method="POST">');
+		print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+		print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
+		print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
+		print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
+		print('<input type="submit"');  print(' name="end" value="End" />   ');
+		print("&nbsp;共 $rows 本&nbsp;");
+		print('</span>');
+	}
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'normal')
 		print_tdlist(array('编号', '书名','作者', '描述','评论','分类', '状态', '操作'));
@@ -356,8 +354,10 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date','sponsor','status', 'action'));
 
-	if($favor)
-		$sql = "select * from favor left join books using (book_id) $cond and member_id = '$login_id'";
+	if($condition == 'favor')
+		$sql = "select * from favor left join books using (book_id) where member_id = '$login_id'";
+	else if($condition == 'history')
+		$sql = "select * from history left join books using (book_id) where borrower = '$login_id' and (history.status < 6) ";
 	else
 		$sql = " select * from books $cond order by book_id asc limit $start, $items";
 
@@ -458,13 +458,14 @@ function list_book($format='normal', $start=0, $items=50, $get_count=0)
 		print("</tr>\n");
 	}
 	print("</table>");
-
-	print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
-	print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
-	print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
-	print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
-	print('<input type="submit"');  print(' name="end" value="End" />   ');
-	print('</form');
+	if($condition == ''){
+		print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+		print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
+		print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
+		print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
+		print('<input type="submit"');  print(' name="end" value="End" />   ');
+		print('</form');
+	}
 }
 
 function is_member($login_id)
@@ -527,30 +528,7 @@ function get_user_id($user_name)
 	//print("$user_name not matched:");
 	return '';
 }
-function migrate_record($login_id)
-{
-	global $max_books;
-	$sql = " select book_id,bdate,rdate,t1.name, t1.user_name from old_record t1, books t2 where t1.index = t2.index ";
-	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
-	while($row=mysql_fetch_array($res)){
-		$book_id = $row['book_id'];
-		$name= $row['name'];
-		$bdate = $row['bdate'];
-		$rdate = $row['rdate'];
-		$user_name= $row['user_name'];
-		if($rdate == '')
-			$status = 2;
-		else
-			$status = 0;
-		$id = get_user_id($user_name);
-		if($id == '')
-			print(" $user_name, $book_id, $name, $bdate, $rdate<br>");
-		else{
-			add_record_full($book_id, $id, $bdate, $rdate, $status);
-			set_book_status($book_id, $status);
-		}
-	}
-}
+
 
 function borrow_wait_book($record_id, $login_id)
 {
@@ -1099,6 +1077,12 @@ function add_log($login_id, $borrower, $book_id, $status)
 
 function add_favor($member_id, $book_id)
 {
+	$sql = " select * from favor where `member_id`='$member_id' and book_id=$book_id" ;
+	$res = update_mysql_query($sql);
+	if($row = mysql_fetch_array($res)){
+		dprint("Already in favorate list");
+		return false;
+	}
 	$sql = " insert into favor set `member_id`='$member_id', book_id=$book_id" ;
 	$res = update_mysql_query($sql);
 	$rows = mysql_affected_rows();
@@ -1116,6 +1100,16 @@ function remove_favor($member_id, $book_id)
 	return true;
 }
 
+
+function clear_favor($member_id)
+{
+	$sql = "delete from favor where `member_id`='$member_id'";
+	$res = update_mysql_query($sql);
+	$rows = mysql_affected_rows();
+	dprint("$sql");
+	dprint("remove favor $member_id, rows:$rows<br>");
+	return true;
+}
 
 function mail_html($to, $cc, $subject, $message)
 {
@@ -1140,4 +1134,41 @@ function mail_html($to, $cc, $subject, $message)
 	mail($to,$subject, $message, $headers);
 
 }
+
+/* only used once*/
+function import_favor_from_history()
+{
+	$sql =  "select borrower, book_id, status from history where status = 0 or status = 2 or status = 0x104";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	while($row=mysql_fetch_array($res)){
+		add_favor($row['borrower'], $row['book_id']);
+	}
+
+}
+
+function migrate_record($login_id)
+{
+	global $max_books;
+	$sql = " select book_id,bdate,rdate,t1.name, t1.user_name from old_record t1, books t2 where t1.index = t2.index ";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	while($row=mysql_fetch_array($res)){
+		$book_id = $row['book_id'];
+		$name= $row['name'];
+		$bdate = $row['bdate'];
+		$rdate = $row['rdate'];
+		$user_name= $row['user_name'];
+		if($rdate == '')
+			$status = 2;
+		else
+			$status = 0;
+		$id = get_user_id($user_name);
+		if($id == '')
+			print(" $user_name, $book_id, $name, $bdate, $rdate<br>");
+		else{
+			add_record_full($book_id, $id, $bdate, $rdate, $status);
+			set_book_status($book_id, $status);
+		}
+	}
+}
+
 ?>

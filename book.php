@@ -348,18 +348,23 @@ switch($action){
 		break;
 	case "add_favor":
 		add_favor($login_id, $book_id);
-		$favor = true;
-		list_book();
+		list_book($view, $start, $items_perpage, 'favor');
 		break;
 	case "remove_favor":
 		remove_favor($login_id, $book_id);
-		$favor = true;
-		list_book();
+		list_book($view, $start, $items_perpage, 'favor');
+		break;
+	case "clear_favor":
+		clear_favor($login_id);
+		list_book($view, $start, $items_perpage, 'favor');
 		break;
 	case "list_favor":
+		$login_id = 'yingwang';
 		$favor = true;
-		list_book();
-		//show_home($login_id);
+		print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
+		list_book($view, $start, $items_perpage, 'favor');
+		print("曾借书本");
+		list_book($view, $start, $items_perpage, 'history');
 		break;
 	case "list_out":
 		out_record($login_id);
@@ -407,6 +412,9 @@ switch($action){
 	/*admin*/
 	case "migrate":
 		migrate_record($login_id);
+		break;
+	case "import_favor":
+		import_favor_from_history();
 		break;
 
 	case "list_member":
