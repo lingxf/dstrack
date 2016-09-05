@@ -670,7 +670,6 @@ function show_book($book_id)
 		$class_text = get_class_name($class);
 		$member_id = $row['member_id'];
 
-		print("《" . $name . "》");
 		if($status == 0)
 			$blink = "<a href=book.php?action=borrow&book_id=$book_id>借阅</a>";
 		else
@@ -682,6 +681,8 @@ function show_book($book_id)
 			break;
 		}
 	}
+
+	print("《" . $name . "》");
 	if($member_id != $login_id)
 		$blink .= "&nbsp;<a href='book.php?action=add_favor&book_id=$book_id' >收藏</a>";
 	$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
