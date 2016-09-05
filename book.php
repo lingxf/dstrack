@@ -359,7 +359,6 @@ switch($action){
 		list_book($view, $start, $items_perpage, 'favor');
 		break;
 	case "list_favor":
-		$login_id = 'yingwang';
 		$favor = true;
 		print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
 		list_book($view, $start, $items_perpage, 'favor');
