@@ -455,8 +455,8 @@ switch($action){
 		add_log($login_id, $borrower, $book_id, 0);
 		mail_html($to, $cc, "<$bookname> is returned by <$borrower:$user>", "");
 
-		add_record($book_id, $borrower, 1);
-		set_record_status($book_id, 2);
+		$record_id = add_record($book_id, $borrower, 1, true);
+		set_record_status($record_id, 2);
 		add_log($login_id, $borrower, $book_id, 2);
 		mail_html($to, $cc, "<$bookname> is lent to <$borrower:$user>", "");
 		manage_record($login_id);

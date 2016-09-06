@@ -844,13 +844,21 @@ function check_record($book_id, $login_id)
 	return true;
 }
 
-function add_record($book_id, $user_id, $status=1)
+function add_record($book_id, $user_id, $status=1, $record_id=false)
 {
 	$time = time();
 	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
 	$sql = " insert into history set `borrower`='$user_id', book_id=$book_id, adate= '$time_start', status=$status";
 	$res = update_mysql_query($sql);
-	return true;
+	if($record_id){
+		$sql = " select * from history where `borrower`='$user_id' and book_id=$book_id and adate= '$time_start' and status=$status";
+		$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+		while($row = mysql_fetch_array($res)){
+			return $row['record_id'];
+		}
+		return $record_id;
+	}
+	return 0;
 }
 
 function add_record_full($book_id, $user_id, $bdate, $sdate, $status=1)
