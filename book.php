@@ -32,18 +32,21 @@ padding:           0.2em;
 <body onload="load_intro()">
 <script type="text/javascript">
 function load_intro(){
-	document.getElementById("div_homeintro").innerHTML="Please wait...";
-	url = "brqclub.htm";
-	loadXMLDoc(url,function() {
+	intr = document.getElementById("div_homeintro");
+	if(intr){
+		intr.innerHTML="Please wait...";
+		url = "brqclub.htm";
+		loadXMLDoc(url,function() {
 			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-				document.getElementById("div_homeintro").innerHTML=xmlhttp.responseText;
+				intr.innerHTML=xmlhttp.responseText;
 			}else{
-			if(xmlhttp.status=='0')
-				document.getElementById("div_homeintro").innerHTML="Please wait...";
-			else
-				document.getElementById("div_homeintro").innerHTML=xmlhttp.status+xmlhttp.responseText;
-			}
+				if(xmlhttp.status=='0')
+				intr.innerHTML="Please wait...";
+				else
+				intr.innerHTML=xmlhttp.status+xmlhttp.responseText;
+				}
 			});
+	}
 
 }
 function change_class(bookclass, view){
@@ -203,7 +206,7 @@ if($role == 2){
 print("<br>");
 
 if($role < 1 && $login_id == 'NoLogin'){
-	print('<div>');
+	print("<div id='div_homentro'>");
 	$lines = file("QClubIntroduction.htm");
 	foreach ($lines as $line_num => $line) {
 	    #print(htmlspecialchars($line) . "<br/>\n");
