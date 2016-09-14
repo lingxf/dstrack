@@ -288,7 +288,7 @@ function list_member()
 
 function list_book($format='normal', $start=0, $items=50, $condition='')
 {
-	global $login_id, $role, $class, $comment_type, $book_sname, $favor;
+	global $login_id, $role, $class, $comment_type, $book_sname, $favor, $order;
 
 	$table_name = "book";
 	$tr_width = 800;
@@ -346,7 +346,7 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 	if($format == 'normal')
 		print_tdlist(array('编号', '书名','作者', '描述','评论','分类', '状态', '操作'));
 	else if($format == 'brief')
-		print_tdlist(array('编号', '书名','作者','分类', '状态', '操作'));
+		print_tdlist(array('编号', '书名','作者','分类','次数','状态', '操作'));
 	else if($format == 'class')
 		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','咱分类','状态', '操作'));
 	else if($format == 'tbd')
@@ -358,8 +358,11 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 		$sql = "select * from favor left join books using (book_id) where member_id = '$login_id'";
 	else if($condition == 'history')
 		$sql = "select * from history left join books using (book_id) where borrower = '$login_id' and (history.status < 6) ";
-	else
+	else if($condition == 'order' and $order == 1){
+			$sql = " select * from books $cond order by times desc limit $start, $items";
+	}else{
 		$sql = " select * from books $cond order by book_id asc limit $start, $items";
+	}
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
@@ -374,6 +377,7 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 		$sponsor = $row['sponsor'];
 		$buy_date = substr($row['buy_date'], 0, 10);
 		$class =  $row['class'];
+		$times = $row['times'];
 		$class_name = get_class_name($index);
 		$class_text = get_class_name($class);
 
@@ -451,6 +455,7 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 			print_td($name);
 			print_td($author);
 			print_td($class_text, 35, '', '', $sc_class);
+			print_td($times,35);
 			print_td($status_text,35);
 			print_td($blink,80);
 		}else
@@ -661,6 +666,7 @@ function show_book($book_id)
 		$comments= $row['comments'];
 		$isbn = $row['ISBN'];
 		$index = $row['index'];
+		$times = $row['times'];
 		$class_name = get_class_name($index);
 		$price = $row['price'];
 		$buy_date= $row['buy_date'];
@@ -680,6 +686,8 @@ function show_book($book_id)
 			$blink .= "&nbsp;<a href='book.php?action=remove_favor&book_id=$book_id' >去藏</a>";
 			break;
 		}
+
+		$blink = "<a href=book.php?action=benchmark&book_id=\"$book_id\">打分</a>";
 	}
 
 	print("《" . $name . "》");
@@ -690,10 +698,10 @@ function show_book($book_id)
 	print("$blink");
 	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
 	print("<tr>");
-	print_tdlist(array('编号', 'ISBN','索引','价格','中图分类', '咱分类', 'Sponsor', '购买日期', '状态'));
+	print_tdlist(array('编号', 'ISBN','索引','价格','中图分类', '咱分类', 'Sponsor', '购买日期', '次数', '状态'));
 	print("</tr>");
 	print("<tr>");
-	print_tdlist(array($id, $isbn, $index, $price, $class_name, $class_text, $sponsor, $buy_date, get_book_status_name($status))); 
+	print_tdlist(array($id, $isbn, $index, $price, $class_name, $class_text, $sponsor, $buy_date, $times, get_book_status_name($status))); 
 	print("</tr>");
 	print("</table>");
 	print("<br/>");
@@ -962,6 +970,8 @@ function get_book_status($book_id)
 function set_book_status($book_id, $status)
 {
 	$sql = "update books set `status` = $status where book_id=$book_id";
+	if($status == 2)
+		$sql = "update books set `status` = $status, `times` = `times` + 1 where book_id=$book_id";
 	$res = update_mysql_query($sql);
 	$rows = mysql_affected_rows();
 	if($rows != 0){

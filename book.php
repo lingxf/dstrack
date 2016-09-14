@@ -221,6 +221,11 @@ if(isset($_GET['items_perpage'])) $items_perpage=$_GET['items_perpage'];
 else if(isset($_SESSION['items_perpage'])) $items_perpage = $_SESSION['items_perpage'];
 $_SESSION['items_perpage'] = $items_perpage;
 
+$order = 0;
+if(isset($_GET['order'])) $order=$_GET['order'];
+else if(isset($_SESSION['order'])) $order = $_SESSION['order'];
+$_SESSION['order'] = $order;
+
 if(!isset($_SESSION['start'])) $_SESSION['start'] = 0;
 $start = $_SESSION['start'];
 
@@ -415,6 +420,9 @@ switch($action){
 	case "migrate":
 		migrate_record($login_id);
 		break;
+	case "update_borrow_times":
+		update_borrow_times();
+		break;
 	case "import_favor":
 		import_favor_from_history();
 		break;
@@ -579,7 +587,7 @@ function show_my($login_id)
 function show_home()
 {
 	global $login_id, $view, $start, $items_perpage;
-	global $class_list, $class, $comment_type, $role;
+	global $class_list, $class, $comment_type, $role, $order;
 	if($role > 0){
 		show_my($login_id);
 	}
@@ -605,10 +613,15 @@ function show_home()
 		print("&nbsp;<a href='book.php?comment_type=0'>全部</a>");
 	print("&nbsp;书名检索&nbsp;<input id='id_book_name' name='book_name' type='text' value=''>");
 	print("<input class='btn' type='button' name='search' value='检索' onclick='book_search()'>");
+	if($order == 0)
+		print("&nbsp;<a href='book.php?order=1'>次数排序</a>");
+	else
+		print("&nbsp;<a href='book.php?order=0'>书号排序</a>");
+
 	print("</div>");
 
 	print("<div id='div_booklist'>");
-	list_book($view, $start, $items_perpage);
+	list_book($view, $start, $items_perpage, "order");
 	print("</div>");
 }
 
@@ -628,6 +641,15 @@ function edit_book($book_id)
 {
 	print("<iframe height=1920 width=800 src='edit_book_ui.php?book_id=$book_id'></iframe>");
 }
+
+function update_borrow_times()
+{
+	$sql = " update books as b inner join ( select book_id, count(status) as cnt from history where status = 0 or status = 2 or status = 3 or status = 4 group by book_id) as x using(book_id) set b.times = x.cnt";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$rows = mysql_affected_rows();
+	print("<br>update $rows lines");
+}
+
 ?>
 
 </body>
