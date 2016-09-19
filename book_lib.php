@@ -1023,6 +1023,12 @@ function get_user_attr($user, $prop) {
 	$res1=mysql_query($sql1) or die("Invalid query:" . $sql1 . mysql_error());
 	if($row1=mysql_fetch_array($res1))
 		return $row1["$prop"];
+	$sql1 = "select * from member where user ='$user'";
+	if($prop == 'name')
+		$prop = 'user_name';
+	$res1=mysql_query($sql1) or die("Invalid query:" . $sql1 . mysql_error());
+	if($row1=mysql_fetch_array($res1))
+		return $row1["$prop"];
 	return false;
 }
 
