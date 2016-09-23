@@ -843,10 +843,14 @@ function check_record($book_id, $login_id)
 		print("You are not a member!");
 		return false;
 	}
-	$sql = " select * from history where borrower='$login_id' and book_id=$book_id and status < 0x100 and status !=0";
+	$sql = " select * from history where borrower='$login_id' and book_id=$book_id and (status < 0x100 and status !=0 or status = 0x104) ";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	if($row = mysql_fetch_array($res)){
-		print ("You already borrowed this book!");
+		print_r($row);
+		if($row['status'] == 0x104)
+			print ("You already wait this book, please borrow from the old record!");
+		else
+			print ("You already borrowed this book!");
 		return false;
 	}
 	return true;
