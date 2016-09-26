@@ -311,8 +311,15 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 		$cond .= " and comments != '' ";
 
 
-	if($condition == ''){
-		$sql = "select * from books $cond ";
+	if($condition == ''||$condition == 'order'){
+		if($order == 1){
+			$sql_time = "select book_id, count( distinct history.borrower) as btimes from history left join books using (book_id) where history.status<6 group by book_id ";
+			$sql = " select * from books left join ($sql_time) btime using (book_id) $cond order by btime.btimes desc"; 
+		}else{
+			$sql_time = "select book_id, count( distinct history.borrower) as btimes from history left join books using (book_id) where history.status<6 group by book_id ";
+			$sql = " select * from books left join ($sql_time) btime using (book_id) $cond order by book_id asc"; 
+		}
+
 		$res1 = mysql_query($sql) or die("Invalid query:" .$sql. mysql_error());
 		$rows = mysql_num_rows($res1);
 		if($start >= $rows){
@@ -332,7 +339,18 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 
 	if($start > 0)
 		$hasprev = true;
-	if($condition == ''){
+
+	if($condition == 'favor')
+		$sql = "select * from favor left join books using (book_id) where member_id = '$login_id'";
+	else if($condition == 'history')
+		$sql = "select * from history left join books using (book_id) where borrower = '$login_id' and (history.status < 6) ";
+	else if($condition == 'order' && $order == 1){
+		$sql .= " limit $start, $items";
+	}else{
+		$sql .= " limit $start, $items";
+	}
+
+	if($condition == '' || $condition == 'order'){
 		print('<form enctype="multipart/form-data" action="book.php" method="POST">');
 		print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
 		print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
@@ -354,15 +372,7 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date','sponsor','status', 'action'));
 
-	if($condition == 'favor')
-		$sql = "select * from favor left join books using (book_id) where member_id = '$login_id'";
-	else if($condition == 'history')
-		$sql = "select * from history left join books using (book_id) where borrower = '$login_id' and (history.status < 6) ";
-	else if($condition == 'order' and $order == 1){
-			$sql = " select * from books $cond order by times desc limit $start, $items";
-	}else{
-		$sql = " select * from books $cond order by book_id asc limit $start, $items";
-	}
+
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
@@ -377,7 +387,10 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 		$sponsor = $row['sponsor'];
 		$buy_date = substr($row['buy_date'], 0, 10);
 		$class =  $row['class'];
-		$times = $row['times'];
+		if($condition == 'order')
+			$times = $row['btimes'];
+		else
+			$times = $row['times'];
 		$class_name = get_class_name($index);
 		$class_text = get_class_name($class);
 

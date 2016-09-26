@@ -142,6 +142,12 @@ function cont_edit_col(tdc, id, col, txt)
 	ctdc = tdc;
 };
 
+function show_share_choice(tdc, book_id)
+{
+	tdc.innerHTML = "Hello";
+	MessageBox("What do you choose?");
+}
+
 function show_edit_col(tdc, id, col)
 {
 	if(col == 2)
