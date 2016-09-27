@@ -142,18 +142,6 @@ function cont_edit_col(tdc, id, col, txt)
 	ctdc = tdc;
 };
 
-function show_share_choice(tdc, book_id)
-{
-	var result = confirm("Do you want to share your reading feelings for this book in seminar?");
-	var url = "book.php?action=share&book_id="+book_id;
-	if(result)
-	loadXMLDoc(url, function() {
-			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-				document.getElementById("div_booklist").innerHTML=xmlhttp.responseText;
-			}
-		});
-}
-
 function show_edit_col(tdc, id, col)
 {
 	if(col == 2)

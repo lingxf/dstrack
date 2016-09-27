@@ -84,6 +84,34 @@ function book_search(){
 			});
 };
 
+function show_share_choice(tdc, book_id)
+{
+	var result = confirm("Do you want to share your reading feelings for this book in seminar?");
+	var url = "book_action.php?action=share&book_id="+book_id;
+	if(result)
+	loadXMLDoc(url, function() {
+			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+				document.getElementById("div_booklist").innerHTML=xmlhttp.responseText;
+			}
+		});
+};
+
+function add_score(tdc, book_id)
+{
+	var result = prompt("Please input score 1-5:");
+	if(result < 1 || result > 5){
+		alert("score shall be 1-5");
+		return;
+	}
+	var url = "book_action.php?action=add_score&book_id="+book_id+"&score="+result;
+	loadXMLDoc(url, function() {
+			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+				//tdc.innerHTML = result;
+				document.getElementById("div_booklist").innerHTML=xmlhttp.responseText;
+			}
+	});
+};
+
 </script>
 
 <?php
@@ -350,6 +378,8 @@ switch($action){
 		show_borrower($book_id, 'wait');
 		print("历史借阅记录<br>");
 		show_borrower($book_id, 'borrow');
+		print("评分记录<br>");
+		show_borrower($book_id, 'score');
 		break;
 	case "list_share":
 		show_share($login_id);

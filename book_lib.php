@@ -1,4 +1,5 @@
 <?php
+include 'common.php';
 function dprint($str)
 {
 	global $debug_print, $debug;
@@ -51,6 +52,7 @@ function out_record()
    0x106 share_done
    0x107 apply_join
    0x108 approve_member
+   0x109 add score
  */
 function get_book_status_name($status)
 {
@@ -329,26 +331,20 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 			$_SESSION['start'] = $start;
 		}
 		dprint("$start, $rows, $items");
-	}
+		$ns = $start+$items;
 
-	$ns = $start+$items;
+		if($ns < $rows){
+			$hasmore = true;
+		}
 
-	if($ns < $rows){
-		$hasmore = true;
-	}
+		if($start > 0)
+			$hasprev = true;
 
-	if($start > 0)
-		$hasprev = true;
-
-	if($condition == 'favor')
+		$sql .= " limit $start, $items";
+	}else if($condition == 'favor')
 		$sql = "select * from favor left join books using (book_id) where member_id = '$login_id'";
 	else if($condition == 'history')
 		$sql = "select * from history left join books using (book_id) where borrower = '$login_id' and (history.status < 6) ";
-	else if($condition == 'order' && $order == 1){
-		$sql .= " limit $start, $items";
-	}else{
-		$sql .= " limit $start, $items";
-	}
 
 	if($condition == '' || $condition == 'order'){
 		print('<form enctype="multipart/form-data" action="book.php" method="POST">');
@@ -371,8 +367,6 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','咱分类','状态', '操作'));
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date','sponsor','status', 'action'));
-
-
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
@@ -442,6 +436,7 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 			}
 		}
 		$blink .= "&nbsp;<a href='javascript:show_share_choice(this,$book_id);' >分享</a>";
+		$blink .= "&nbsp;<a href='javascript:add_score(this,$book_id);' >评分</a>";
 		#$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
 		print("<tr style='background:$bcolor;'>");
 		if($format == 'normal'){
@@ -470,7 +465,7 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 			print_td($class_text, 35, '', '', $sc_class);
 			print_td($times,35);
 			print_td($status_text,35);
-			print_td($blink,80);
+			print_td($blink,120);
 		}else
 			print_tdlist(array($id, $name, $author, $isbn, $index, $price, $buy_date, $sponsor, $status_text, $blink)); 
 		print("</tr>\n");
@@ -601,6 +596,22 @@ function renew_book($book_id, $record_id, $login_id)
 	return true;
 }
 
+function add_score($book_id, $login_id, $score=0)
+{
+	$sql = " select * from history where book_id = $book_id and borrower='$login_id' and (status = 0x109)";
+	$res = read_mysql_query($sql);
+	$rows = mysql_num_rows($res);
+	if($rows > 0){
+		print ("You already add score, update score");
+		$sql = " update history set data = $score where book_id = $book_id and borrower='$login_id' and (status = 0x109)";
+		$res = update_mysql_query($sql);
+		return;
+	}
+	add_record($book_id, $login_id, 0x109, false, $score);
+	print ("add score ok!");
+	return true;
+}
+
 function apply_share($book_id, $login_id)
 {
 	$sql = " select * from history where book_id = $book_id and borrower='$login_id' and (status = 0x105)";
@@ -669,8 +680,16 @@ function get_class_name($class=0)
 function show_book($book_id)
 {
 	global $login_id;
+	$sql = " select * from (select count(distinct(borrower)) as btimes from history where book_id = $book_id and status < 6) as a, " .
+	" (select round(avg(data), 1) as score from history where book_id = $book_id and status = 0x109) as b ";
+	$res = read_mysql_query($sql);
+	while($row=mysql_fetch_array($res)){
+		$times = $row['btimes'];
+		$score = $row['score'];
+	}
+
 	$sql = " select * from books left join favor on books.book_id = favor.book_id where books.book_id=$book_id";
-	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$res = read_mysql_query($sql);
 	while($row=mysql_fetch_array($res)){
 		$desc= $row['desc'];
 		$name= $row['name'];
@@ -679,7 +698,6 @@ function show_book($book_id)
 		$comments= $row['comments'];
 		$isbn = $row['ISBN'];
 		$index = $row['index'];
-		$times = $row['times'];
 		$class_name = get_class_name($index);
 		$price = $row['price'];
 		$buy_date= $row['buy_date'];
@@ -694,13 +712,12 @@ function show_book($book_id)
 		else
 			$blink = "<a href=book.php?action=wait&book_id=\"$book_id\">等候</a>";
 		dprint("member: $member_id, $login_id<br>");
-
+		
 		if($member_id == $login_id){
 			$blink .= "&nbsp;<a href='book.php?action=remove_favor&book_id=$book_id' >去藏</a>";
 			break;
 		}
-
-		$blink = "<a href=book.php?action=benchmark&book_id=\"$book_id\">打分</a>";
+		$blink .= "&nbsp;<a href='javascript:add_score(this,$book_id);'>打分</a>";
 	}
 
 	print("《" . $name . "》");
@@ -708,6 +725,7 @@ function show_book($book_id)
 		$blink .= "&nbsp;<a href='book.php?action=add_favor&book_id=$book_id' >收藏</a>";
 	$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
 	print("[" . get_book_status_name($status) . "]&nbsp;");
+	print("得分:$score&nbsp");
 	print("$blink");
 	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
 	print("<tr>");
@@ -811,11 +829,16 @@ function show_borrower($book_id, $format="wait")
 {
 	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
 
-	print_tdlist(array('编号', '书名','借阅人','日期', '状态'));
+	if($format == 'score')
+		print_tdlist(array('编号', '书名','借阅人','日期', '评分'));
+	else
+		print_tdlist(array('编号', '书名','借阅人','日期', '状态'));
 	if($format == 'out')
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status != 0 and t1.status != 4 and t1.status < 0x100 order by `adate` asc";
 	else if($format == 'wait')
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and (t1.status = 4 or t1.status = 0x104 ) order by `adate` asc";
+	else if($format == 'score')
+		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id, data from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status = 0x109 order by `adate` asc";
 	else
 		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id=$book_id and t1.book_id = t2.book_id and t3.user = t1.borrower and t1.status = 0 order by `adate` asc";
 
@@ -825,6 +848,7 @@ function show_borrower($book_id, $format="wait")
 		$name= $row['name'];
 		$user_name= $row['user_name'];
 		$status=$row['status'];	
+		$date = $row['adate'];
 		if($status == 4 || $status == 0x104){
 			$status_text = "等候";
 			$date = $row['adate'];
@@ -840,6 +864,9 @@ function show_borrower($book_id, $format="wait")
 		}else if($status == 0){
 			$status_text = "已还";
 			$date = $row['rdate'];
+		}else if($status == 0x109){
+			$score = $row['data'];
+			$status_text = "$score";
 		}else
 			continue;
 		print("<tr>");
@@ -868,11 +895,11 @@ function check_record($book_id, $login_id)
 	return true;
 }
 
-function add_record($book_id, $user_id, $status=1, $record_id=false)
+function add_record($book_id, $user_id, $status=1, $record_id=false, $data=0)
 {
 	$time = time();
 	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
-	$sql = " insert into history set `borrower`='$user_id', book_id=$book_id, adate= '$time_start', status=$status";
+	$sql = " insert into history set `borrower`='$user_id', book_id=$book_id, adate= '$time_start', status=$status, data=$data";
 	$res = update_mysql_query($sql);
 	if($record_id){
 		$sql = " select * from history where `borrower`='$user_id' and book_id=$book_id and adate= '$time_start' and status=$status";
@@ -926,24 +953,6 @@ function get_borrower_by_record($record_id)
 		return $borrower;
 	}
 	return 0;
-}
-
-function update_mysql_query($sql)
-{
-
-	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
-	return $res;
-
-	$link=mysql_connect("localhost","bookweb","book2web");
-	mysql_query("set character set 'utf8'");//..
-	mysql_query("set names 'utf8'");//.. 
-	$db=mysql_select_db("testbook",$link);
-	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
-
-	$link=mysql_connect("cedump-sh.ap.qualcomm.com","bookweb","book2web");
-	$db=mysql_select_db("testbook",$link);
-	mysql_query("set character set 'utf8'");//..
-	mysql_query("set names 'utf8'");//.. 
 }
 
 function set_record_status($record_id, $status)
