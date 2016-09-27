@@ -32,7 +32,7 @@ padding:           0.2em;
 <body onload="load_intro()">
 <script type="text/javascript">
 function load_intro(){
-	intr = document.getElementById("div_homeintro");
+	var intr = document.getElementById("div_homeintro");
 	if(intr){
 		intr.innerHTML="Please wait...";
 		url = "brqclub.htm";

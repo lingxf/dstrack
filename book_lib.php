@@ -441,8 +441,8 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 				$bcolor = 'white';
 			}
 		}
-		#$blink .= "&nbsp;<a href='javascript:show_share_choice(this,$book_id);' >分享</a>";
-		$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
+		$blink .= "&nbsp;<a href='javascript:show_share_choice(this,$book_id);' >分享</a>";
+		#$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
 		print("<tr style='background:$bcolor;'>");
 		if($format == 'normal'){
 			print_td($id,10);
