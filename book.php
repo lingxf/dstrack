@@ -65,8 +65,28 @@ function change_class(bookclass, view){
 			else
 			document.getElementById("div_booklist").innerHTML=xmlhttp.status+xmlhttp.responseText;
 			}
-			});
+	});
 };
+
+function change_order(order, view){
+	url = "show_book.php?";
+	url = url + "order="+order;
+	if(view != 0)
+		url = url + "&view="+view;
+
+	document.getElementById("div_booklist").innerHTML="Please wait...";
+	loadXMLDoc(url,function() {
+			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+				document.getElementById("div_booklist").innerHTML=xmlhttp.responseText;
+			}else{
+				if(xmlhttp.status=='0')
+				document.getElementById("div_booklist").innerHTML="Please wait...";
+				else
+				document.getElementById("div_booklist").innerHTML=xmlhttp.status+xmlhttp.responseText;
+			}
+	});
+};
+
 function book_search(){
 	url = "show_book.php?";
 	bookname = document.getElementById("id_book_name").value;
@@ -386,22 +406,22 @@ switch($action){
 		break;
 	case "add_favor":
 		add_favor($login_id, $book_id);
-		list_book($view, $start, $items_perpage, 'favor');
+		list_book($view, $start, $items_perpage, 0, 'favor');
 		break;
 	case "remove_favor":
 		remove_favor($login_id, $book_id);
-		list_book($view, $start, $items_perpage, 'favor');
+		list_book($view, $start, $items_perpage,0, 'favor');
 		break;
 	case "clear_favor":
 		clear_favor($login_id);
-		list_book($view, $start, $items_perpage, 'favor');
+		list_book($view, $start, $items_perpage,0, 'favor');
 		break;
 	case "list_favor":
 		$favor = true;
 		print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
-		list_book($view, $start, $items_perpage, 'favor');
+		list_book($view, $start, $items_perpage,0, 'favor');
 		print("曾借书本");
-		list_book($view, $start, $items_perpage, 'history');
+		list_book($view, $start, $items_perpage,0, 'history');
 		break;
 	case "list_out":
 		out_record($login_id);
@@ -643,15 +663,20 @@ function show_home()
 		print("&nbsp;<a href='book.php?comment_type=0'>全部</a>");
 	print("&nbsp;书名检索&nbsp;<input id='id_book_name' name='book_name' type='text' value=''>");
 	print("<input class='btn' type='button' name='search' value='检索' onclick='book_search()'>");
-	if($order == 0)
-		print("&nbsp;<a href='book.php?order=1'>次数排序</a>");
-	else
-		print("&nbsp;<a href='book.php?order=0'>书号排序</a>");
+
+	print("<select id='sel_class' onchange='change_order(this.value, 0)'>");
+	$order_list = array("编号","次数","评分");
+	foreach($order_list as $key => $order_text) {
+		print("<option value='$key'");
+		if($key == $order) print("selected");
+		print(">$order_text</option>");
+	}
+	print("</select>");
 
 	print("</div>");
 
 	print("<div id='div_booklist'>");
-	list_book($view, $start, $items_perpage, "order");
+	list_book($view, $start, $items_perpage, $order, "");
 	print("</div>");
 }
 

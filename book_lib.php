@@ -288,9 +288,9 @@ function list_member()
 }
 
 
-function list_book($format='normal', $start=0, $items=50, $condition='')
+function list_book($format='normal', $start=0, $items=50, $order = 0, $condition='')
 {
-	global $login_id, $role, $class, $comment_type, $book_sname, $favor, $order;
+	global $login_id, $role, $class, $comment_type, $book_sname, $favor;
 
 	$table_name = "book";
 	$tr_width = 800;
@@ -312,16 +312,22 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 	if($comment_type != 0)
 		$cond .= " and comments != '' ";
 
+	if($order == 1){
+		$sql_time = "select book_id, count( distinct history.borrower) as btimes from history left join books using (book_id) where history.status<6 group by book_id ";
+		$sql = " select * from books left join ($sql_time) btime using (book_id) $cond order by btime.btimes desc"; 
+	}else if($order == 2){
+		$sql_time = "select book_id, round(avg( history.data),1) as score from history left join books using (book_id) where history.status = 0x109 group by book_id ";
+		$sql = " select * from books left join ($sql_time) score using (book_id) $cond order by score.score desc"; 
+	}else{
+		$sql_time = "select book_id, count( distinct history.borrower) as btimes from history left join books using (book_id) where history.status<6 group by book_id ";
+		$sql = " select * from books left join ($sql_time) btime using (book_id) $cond order by book_id asc"; 
+	}
 
-	if($condition == ''||$condition == 'order'){
-		if($order == 1){
-			$sql_time = "select book_id, count( distinct history.borrower) as btimes from history left join books using (book_id) where history.status<6 group by book_id ";
-			$sql = " select * from books left join ($sql_time) btime using (book_id) $cond order by btime.btimes desc"; 
-		}else{
-			$sql_time = "select book_id, count( distinct history.borrower) as btimes from history left join books using (book_id) where history.status<6 group by book_id ";
-			$sql = " select * from books left join ($sql_time) btime using (book_id) $cond order by book_id asc"; 
-		}
-
+	if($condition == 'favor')
+		$sql = "select * from favor left join books using (book_id) where member_id = '$login_id'";
+	else if($condition == 'history')
+		$sql = "select * from history left join books using (book_id) where borrower = '$login_id' and (history.status < 6) ";
+	else{
 		$res1 = mysql_query($sql) or die("Invalid query:" .$sql. mysql_error());
 		$rows = mysql_num_rows($res1);
 		if($start >= $rows){
@@ -341,12 +347,7 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 			$hasprev = true;
 
 		$sql .= " limit $start, $items";
-	}else if($condition == 'favor')
-		$sql = "select * from favor left join books using (book_id) where member_id = '$login_id'";
-	else if($condition == 'history')
-		$sql = "select * from history left join books using (book_id) where borrower = '$login_id' and (history.status < 6) ";
 
-	if($condition == '' || $condition == 'order'){
 		print('<form enctype="multipart/form-data" action="book.php" method="POST">');
 		print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
 		print('<input type="submit"'); print(' name="begin" value="Begin" />   ');
@@ -356,17 +357,22 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 		print("&nbsp;共 $rows 本&nbsp;");
 		print('</span>');
 	}
+
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'normal')
 		print_tdlist(array('编号', '书名','作者', '描述','评论','分类', '状态', '操作'));
-	else if($format == 'brief')
-		print_tdlist(array('编号', '书名','作者','分类','次数','状态', '操作'));
-	else if($format == 'class')
+	else if($format == 'brief'){
+		if($order == 1 || $order == 0)
+			print_tdlist(array('编号', '书名','作者','分类','次数','状态', '操作'));
+		else if($order == 2)
+			print_tdlist(array('编号', '书名','作者','分类','评分','状态', '操作'));
+	}else if($format == 'class')
 		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','咱分类','状态', '操作'));
 	else if($format == 'tbd')
 		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','咱分类','状态', '操作'));
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date','sponsor','status', 'action'));
+
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
@@ -381,10 +387,13 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 		$sponsor = $row['sponsor'];
 		$buy_date = substr($row['buy_date'], 0, 10);
 		$class =  $row['class'];
-		if($condition == 'order')
-			$times = $row['btimes'];
+		if($order == 1)
+			$data= $row['btimes'];
+		else if($order == 2)
+			$data= $row['score'];
 		else
-			$times = $row['times'];
+			$data = $row['btimes'];
+
 		$class_name = get_class_name($index);
 		$class_text = get_class_name($class);
 
@@ -463,7 +472,7 @@ function list_book($format='normal', $start=0, $items=50, $condition='')
 			print_td($name);
 			print_td($author);
 			print_td($class_text, 35, '', '', $sc_class);
-			print_td($times,35);
+			print_td($data,35);
 			print_td($status_text,35);
 			print_td($blink,120);
 		}else
