@@ -269,7 +269,7 @@ if(isset($_GET['items_perpage'])) $items_perpage=$_GET['items_perpage'];
 else if(isset($_SESSION['items_perpage'])) $items_perpage = $_SESSION['items_perpage'];
 $_SESSION['items_perpage'] = $items_perpage;
 
-$order = 0;
+$order = 2;
 if(isset($_GET['order'])) $order=$_GET['order'];
 else if(isset($_SESSION['order'])) $order = $_SESSION['order'];
 $_SESSION['order'] = $order;
@@ -664,8 +664,9 @@ function show_home()
 	print("&nbsp;书名检索&nbsp;<input id='id_book_name' name='book_name' type='text' value=''>");
 	print("<input class='btn' type='button' name='search' value='检索' onclick='book_search()'>");
 
+	print("&nbsp;排序&nbsp;");
 	print("<select id='sel_class' onchange='change_order(this.value, 0)'>");
-	$order_list = array("编号","次数","评分");
+	$order_list = array("编号","次数", "评分");
 	foreach($order_list as $key => $order_text) {
 		print("<option value='$key'");
 		if($key == $order) print("selected");
