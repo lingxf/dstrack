@@ -356,20 +356,20 @@ switch($action){
 			borrow_wait_book($record_id, $login_id);
 		}else
 			borrow_book($book_id, $login_id);
-		show_my($login_id);
+		show_my_hot($login_id);
 		break;
 	case "renew":
 		$book_id = get_bookid_by_record($record_id);
 		renew_book($book_id, $record_id, $login_id);
-		show_my($login_id);
+		show_my_hot($login_id);
 		break;
 	case "cancel":
 		set_record_status($record_id, 0x100);
-		show_my($login_id);
+		show_my_hot($login_id);
 		break;
 	case "returning":
 		set_record_status($record_id, 3);
-		show_my($login_id);
+		show_my_hot($login_id);
 		break;
 	case "share":
 		apply_share($book_id, $login_id);
@@ -418,10 +418,7 @@ switch($action){
 		break;
 	case "list_favor":
 		$favor = true;
-		print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
-		list_book($view, $start, $items_perpage,0, 'favor');
-		print("曾借书本");
-		list_book($view, $start, $items_perpage,0, 'history');
+		show_my($login_id);
 		break;
 	case "list_out":
 		out_record($login_id);
@@ -620,18 +617,31 @@ switch($action){
 		break;
 
 }
-
 function show_my($login_id)
 {
+		print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
+		list_book($view, $start, $items_perpage,0, 'favor');
+		print("曾借书本");
+		list_book($view, $start, $items_perpage,0, 'history');
 		print("<div>我的借阅");
 		list_record($login_id, 'self', ' (history.status = 2 or history.status = 3 or history.status = 1 ) ');
-		print("<div>我的等候");
+		print("我的等候");
 		list_record($login_id, 'self', ' (history.status = 4 or history.status = 0x100 or history.status = 0x101 or history.status = 0x104)  ');
-		print("<div>等我的人");
+		print("等我的人");
 		list_record($login_id, 'waityou');
-		print("<div>我的借阅记录");
+		print("我的借阅记录");
 		list_record($login_id, 'self', ' history.status = 0 ');
 		print("</div>");
+}
+
+function show_my_hot($login_id)
+{
+		print("我的借阅");
+		list_record($login_id, 'self', ' (history.status = 2 or history.status = 3 or history.status = 1 ) ');
+		print("我的等候");
+		list_record($login_id, 'self', ' (history.status = 4 or history.status = 0x100 or history.status = 0x101 or history.status = 0x104)  ');
+		print("等我的人");
+		list_record($login_id, 'waityou');
 }
 
 function show_home()
@@ -639,7 +649,7 @@ function show_home()
 	global $login_id, $view, $start, $items_perpage;
 	global $class_list, $class, $comment_type, $role, $order;
 	if($role > 0){
-		show_my($login_id);
+		show_my_hot($login_id);
 	}
 	$view_op = $view == 'brief'?'normal':'brief';
 	$view_ch = $view_op == 'brief'?'简略':'完整';
