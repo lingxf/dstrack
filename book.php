@@ -145,12 +145,10 @@ include 'db_connect.php';
 
 global $login_id, $max_book, $setting;	
 
+session_set_cookie_params(7*24*3600);
 session_name('book');
-session_set_cookie_params(60*60*18);
 session_start();
-foreach(session_get_cookie_params() as $a=>$b){
-	#dprint("$a=>$b<br>");
-};
+//foreach(session_get_cookie_params() as $a=>$b){ print("$a=>$b<br>");}
 
 $sid=session_id();
 $login_id = "NoLogin";

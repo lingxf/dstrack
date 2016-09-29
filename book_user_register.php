@@ -70,7 +70,7 @@ if(isset($_POST['register']))
 				<body>
 				";
 				$message .= "Please click <a href=http://cedump-sh.ap.qualcomm.com/book/book_user_register.php?user=$user&activate=$sid>here</a> to activate your account";
-				$message .= "Please click <a href=http://linux-bug.ap.qualcomm.com/book-dev/book_user_register.php?user=$user&activate=$sid>here</a> to activate your account";
+		//		$message .= "Please click <a href=http://linux-bug.ap.qualcomm.com/book-dev/book_user_register.php?user=$user&activate=$sid>here</a> to activate your account";
 			$message .= " </body> </html> ";
 			mail_html($email, '', "$user activate mail", $message);
 			print "mail to $email for activate, please click the link in the mail<br>";
