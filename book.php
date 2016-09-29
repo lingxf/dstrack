@@ -121,15 +121,18 @@ function add_score(tdc, book_id)
 	var result = prompt("Please input score 1-5:");
 	if(result < 1 || result > 5){
 		alert("score shall be 1-5");
-		return;
+		return false;
 	}
 	var url = "book_action.php?action=add_score&book_id="+book_id+"&score="+result;
 	loadXMLDoc(url, function() {
 			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
 				//tdc.innerHTML = result;
-				document.getElementById("div_booklist").innerHTML=xmlhttp.responseText;
+				location.reload();
+				//document.getElementById("div_booklist").innerHTML=xmlhttp.responseText;
+				//setTimeout("windows.location.href="+backurl, 1000);
 			}
 	});
+	return true;
 };
 
 </script>
@@ -186,7 +189,13 @@ if(isset($_POST['login'])){
 	$_SESSION['view'] = $view;
 }
 
-
+setcookie('username','nostop',time()+3600);    //创建cookie
+if(isset($_COOKIE["username"])){    //使用isset()函数检测cookie变量是否已经被设置
+	$username = $_COOKIE["username"];    //您好！nostop     读取cookie 
+}else{
+	$username = '';
+}
+		
 if(isset($_SESSION['user'])) $login_id=$_SESSION['user'];
 else{
 	//    header("Location: book_user_login.php");
@@ -230,18 +239,17 @@ if($role == 0){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=join\">入会</a>";
 }
 
-if($role == 2){
-	print "&nbsp;&nbsp;<a href=\"book.php?action=manage\">管理</a>";
-}
-
 if($role >= 1){
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_favor\">收藏</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_favor\">我的</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_share\">分享</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
 }
 
+if($role == 2){
+	print "&nbsp;&nbsp;<a href=\"book.php?action=manage\">管理</a>";
+}
 if($role == 2){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=log\">日志</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_member\">会员</a>";
@@ -629,6 +637,9 @@ function show_my($login_id)
 		list_record($login_id, 'waityou');
 		print("我的借阅记录");
 		list_record($login_id, 'self', ' history.status = 0 ');
+		print("</div>");
+		print("我的评分记录");
+		list_record($login_id, 'score', ' history.status = 0x109 ');
 		print("</div>");
 }
 

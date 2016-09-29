@@ -74,6 +74,9 @@ function list_record($login_id, $format='self', $condition='')
 	}else if($format == 'self'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, history.status, books.status as bstatus, name, user_name, adate, bdate,rdate,sdate, history.book_id from history, books, member  where history.borrower='$login_id' and history.book_id = books.book_id and member.user = history.borrower and $condition order by adate desc ";
+	}else if($format == 'score'){
+		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '评分'));
+		$sql = " select record_id, borrower, history.status, books.status as bstatus, data, name, user_name, adate, bdate,rdate,sdate, history.book_id from history, books, member  where history.borrower='$login_id' and history.book_id = books.book_id and member.user = history.borrower and $condition order by adate desc ";
 	}else if( $format == 'waityou'){
 		print_tdlist(array('序号','等候人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$book_ids = get_bookid_by_borrower($login_id);
@@ -119,6 +122,7 @@ function list_record($login_id, $format='self', $condition='')
 		$bdate= $row['bdate']; 
 		$rdate= $row['rdate']; 
 		$sdate= $row['sdate']; 
+		$score = $row['data'];
 		$time = time();
 		$nowdate = strftime("%Y-%m-%d", $time);
 		if($format == 'self'){
@@ -169,6 +173,9 @@ function list_record($login_id, $format='self', $condition='')
 			$bstatus = $row['bstatus'];
 			if($status == 0){
 				$status_text = "已还";
+				$url = "book.php?action=list_favor";
+				$blink = "<a href='javascript:add_score(this,$book_id)'>评分</a>";
+				$blink .= "&nbsp;<a href='javascript:show_share_choice(this,$book_id)'>分享</a>";
 			}else if($status == 1){
 				$status_text = "借阅中";
 			}else if($status == 2){
@@ -216,6 +223,8 @@ function list_record($login_id, $format='self', $condition='')
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $sdate)); 
 		else if($format == 'member')
 			print_tdlist(array($i,$borrower_id, $borrower,$adate, $sdate, $blink)); 
+		else if($format == 'score')
+			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $rdate,$sdate, get_book_status_name($row['bstatus']), $score)); 
 		else
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $rdate,$sdate, $status_text, $blink)); 
 		print("</tr>\n");
