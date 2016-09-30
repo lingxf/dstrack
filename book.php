@@ -1,8 +1,13 @@
+<?php
+session_set_cookie_params(7*24*3600);
+session_name('book');
+session_start();
+?>
+
 <html>
 <title>Book</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta http-equiv="Content-Language" content="zh-CN" /> 
-
 <script type="text/javascript" src="inpage_edit.js"></script>
 <!--
 -<link rel="stylesheet" type="text/css" href="report.css" media="screen12"/>
@@ -134,7 +139,6 @@ function add_score(tdc, book_id)
 	});
 	return true;
 };
-
 </script>
 
 <?php
@@ -148,9 +152,6 @@ include 'db_connect.php';
 
 global $login_id, $max_book, $setting;	
 
-session_set_cookie_params(7*24*3600);
-session_name('book');
-session_start();
 //foreach(session_get_cookie_params() as $a=>$b){ print("$a=>$b<br>");}
 
 $sid=session_id();
@@ -189,7 +190,7 @@ if(isset($_POST['login'])){
 	$_SESSION['view'] = $view;
 }
 
-setcookie('username','nostop',time()+3600);    //创建cookie
+setcookie('username',session_name(),time()+3600);    //创建cookie
 if(isset($_COOKIE["username"])){    //使用isset()函数检测cookie变量是否已经被设置
 	$username = $_COOKIE["username"];    //您好！nostop     读取cookie 
 }else{
