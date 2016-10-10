@@ -249,9 +249,7 @@ if($role >= 1){
 }
 
 if($role == 2){
-	print "&nbsp;&nbsp;<a href=\"book.php?action=manage\">管理</a>";
-}
-if($role == 2){
+	print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"book.php?action=manage\">管理</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=log\">日志</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_member\">会员</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=add_newbook\">新书</a>";
