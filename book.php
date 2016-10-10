@@ -126,7 +126,7 @@ function add_score(tdc, book_id)
 	var result = prompt("Please input score 1-5:");
 	if(result < 1 || result > 5){
 		alert("score shall be 1-5");
-		return false;
+		return;
 	}
 	var url = "book_action.php?action=add_score&book_id="+book_id+"&score="+result;
 	loadXMLDoc(url, function() {
@@ -137,7 +137,7 @@ function add_score(tdc, book_id)
 				//setTimeout("windows.location.href="+backurl, 1000);
 			}
 	});
-	return true;
+	return;
 };
 </script>
 
