@@ -730,12 +730,12 @@ function show_book($book_id)
 			$blink .= "&nbsp;<a href='book.php?action=remove_favor&book_id=$book_id' >去藏</a>";
 			break;
 		}
-		$blink .= "&nbsp;<a href='javascript:add_score(this,$book_id);'>打分</a>";
 	}
 
 	print("《" . $name . "》");
 	if($member_id != $login_id)
 		$blink .= "&nbsp;<a href='book.php?action=add_favor&book_id=$book_id' >收藏</a>";
+	$blink .= "&nbsp;<a href='javascript:add_score(this,$book_id);'>打分</a>";
 	$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
 	print("[" . get_book_status_name($status) . "]&nbsp;");
 	print("得分:$score&nbsp");
