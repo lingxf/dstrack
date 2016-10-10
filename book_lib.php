@@ -69,18 +69,18 @@ function list_record($login_id, $format='self', $condition='')
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'approve'){
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t3.user = t1.borrower $condition order by adate asc ";
-		$sql = " select record_id, borrower, history.status, name, user_name, adate, bdate,rdate,sdate, history.book_id from history left join `books` as t2 using (`book_id`) left join member on member.user = history.borrower  where $condition order by adate asc ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t3.user = t1.borrower $condition order by adate asc ";
+		$sql = " select record_id, borrower, history.status, name, user_name, data, adate, bdate,rdate,sdate, history.book_id from history left join `books` as t2 using (`book_id`) left join member on member.user = history.borrower  where $condition order by adate asc ";
 	}else if($format == 'self'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
-		$sql = " select record_id, borrower, history.status, books.status as bstatus, name, user_name, adate, bdate,rdate,sdate, history.book_id from history, books, member  where history.borrower='$login_id' and history.book_id = books.book_id and member.user = history.borrower and $condition order by adate desc ";
+		$sql = " select record_id, borrower, history.status, books.status as bstatus, data, name, user_name, adate, bdate,rdate,sdate, history.book_id from history, books, member  where history.borrower='$login_id' and history.book_id = books.book_id and member.user = history.borrower and $condition order by adate desc ";
 	}else if($format == 'score'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '评分'));
 		$sql = " select record_id, borrower, history.status, books.status as bstatus, data, name, user_name, adate, bdate,rdate,sdate, history.book_id from history, books, member  where history.borrower='$login_id' and history.book_id = books.book_id and member.user = history.borrower and $condition order by adate desc ";
 	}else if( $format == 'waityou'){
 		print_tdlist(array('序号','等候人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$book_ids = get_bookid_by_borrower($login_id);
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.status = 4  and t1.borrower = t3.user and t1.book_id = t2.book_id and ( 0 ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.status = 4  and t1.borrower = t3.user and t1.book_id = t2.book_id and ( 0 ";
 		foreach($book_ids as $book_id){
 			$sql .= " or t1.book_id=$book_id " ;
 		}
@@ -88,19 +88,19 @@ function list_record($login_id, $format='self', $condition='')
 		$sql .= " order by adate asc ";
 	}else if($format == 'out'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower order by bdate desc";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower order by bdate desc";
 	}else if($format == 'history'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期' ));
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by sdate desc ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by sdate desc ";
 	}else if($format == 'share'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '完成日期' ));
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0x105 and t3.user = t1.borrower order by adate desc ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0x105 and t3.user = t1.borrower order by adate desc ";
 	}else if($format == 'member'){
 		print_tdlist(array('序号','帐号','申请人','申请日期', '批准日期', '操作'));
-		$sql = " select record_id, borrower, t1.status, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower order by adate desc ";
+		$sql = " select record_id, borrower, t1.status, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower order by adate desc ";
 	}else if($format == 'timeout'){	
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, user_name, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3 or t1.status = 5) and  t1.book_id = t2.book_id and t3.user = t1.borrower ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3 or t1.status = 5) and  t1.book_id = t2.book_id and t3.user = t1.borrower ";
 		if($condition != ''){
 			$condition = " (to_days(now())  - to_days(bdate)) >= $condition ";
 			$sql .= "and $condition";
@@ -262,11 +262,6 @@ function list_member()
 		$role = $row['role'];
 		$books = $row['books_borrow'];
 		$books_his = $row['books_his'];
-		if($role > 0){
-			$sc_desc = "ondblclick='show_edit_col(this,$book_id,1)'";
-			$sc_comments = "ondblclick='show_edit_col(this,$book_id,2)'";
-			$sc_class = "ondblclick='show_edit_col(this,$book_id,3)'";
-		}
 		if($role >= 1) {
 			$status_text = "会员";
 			$blink = "<a href=book.php?action=remove_member&borrower=$user_id>离会</a>";
@@ -401,7 +396,7 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		else if($order == 2)
 			$data= $row['score'];
 		else
-			$data = $row['btimes'];
+			$data = '';
 
 		$class_name = get_class_name($index);
 		$class_text = get_class_name($class);

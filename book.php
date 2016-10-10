@@ -626,22 +626,23 @@ switch($action){
 }
 function show_my($login_id)
 {
-		print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
-		list_book($view, $start, $items_perpage,0, 'favor');
-		print("曾借书本");
-		list_book($view, $start, $items_perpage,0, 'history');
-		print("<div>我的借阅");
-		list_record($login_id, 'self', ' (history.status = 2 or history.status = 3 or history.status = 1 ) ');
-		print("我的等候");
-		list_record($login_id, 'self', ' (history.status = 4 or history.status = 0x100 or history.status = 0x101 or history.status = 0x104)  ');
-		print("等我的人");
-		list_record($login_id, 'waityou');
-		print("我的借阅记录");
-		list_record($login_id, 'self', ' history.status = 0 ');
-		print("</div>");
-		print("我的评分记录");
-		list_record($login_id, 'score', ' history.status = 0x109 ');
-		print("</div>");
+	global $view, $start, $items_perpage;
+	print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
+	list_book($view, $start, $items_perpage,0, 'favor');
+	print("曾借书本");
+	list_book($view, $start, $items_perpage,0, 'history');
+	print("<div>我的借阅");
+	list_record($login_id, 'self', ' (history.status = 2 or history.status = 3 or history.status = 1 ) ');
+	print("我的等候");
+	list_record($login_id, 'self', ' (history.status = 4 or history.status = 0x100 or history.status = 0x101 or history.status = 0x104)  ');
+	print("等我的人");
+	list_record($login_id, 'waityou');
+	print("我的借阅记录");
+	list_record($login_id, 'self', ' history.status = 0 ');
+	print("</div>");
+	print("我的评分记录");
+	list_record($login_id, 'score', ' history.status = 0x109 ');
+	print("</div>");
 }
 
 function show_my_hot($login_id)
