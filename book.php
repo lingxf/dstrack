@@ -500,6 +500,11 @@ switch($action){
 		list_record('', 'timeout', 56);
 		print(">4 week<br>");
 		list_record('', 'timeout', 28);
+		print(">3.5 week<br>");
+		list_record('', 'timeout', 24);
+		print(">3 week<br>");
+		list_record('', 'timeout', 21);
+		break;
 		break;
 	case "push":
 		$book_id = get_bookid_by_record($record_id);

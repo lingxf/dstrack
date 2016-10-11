@@ -81,7 +81,7 @@ function list_record($login_id, $format='self', $condition='')
 	}else if( $format == 'waityou'){
 		print_tdlist(array('序号','等候人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$book_ids = get_bookid_by_borrower($login_id);
-		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.status = 4  and t1.borrower = t3.user and t1.book_id = t2.book_id and ( 0 ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.status = 0x104  and t1.borrower = t3.user and t1.book_id = t2.book_id and ( 0 ";
 		foreach($book_ids as $book_id){
 			$sql .= " or t1.book_id=$book_id " ;
 		}
@@ -204,7 +204,7 @@ function list_record($login_id, $format='self', $condition='')
 				$status_text = "其它";
 			}
 		}else if($format == 'waityou'){
-			if($status == 4){
+			if($status == 0x104){
 				$status_text = "等候";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=transfer\">转移</a>";
 			}
