@@ -47,12 +47,13 @@ function out_record()
 }
 /* 0x100 cancel 
    0x101 reject
-   0x105 share 
    0x104 wait
+   0x105 share 
    0x106 share_done
    0x107 apply_join
    0x108 approve_member
    0x109 add score
+   0x110 share_cancel
  */
 function get_book_status_name($status)
 {
@@ -162,6 +163,7 @@ function list_record($login_id, $format='self', $condition='')
 			}else if($status == 0x105){
 				$status_text = "分享";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=share_done\">完成</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=share_cancel\">取消</a>";
 			}else if($status == 0){
 				$status_text = "已还";
 			}else{

@@ -383,6 +383,10 @@ switch($action){
 		set_record_status($record_id, 0x106);
 		manage_record($login_id);
 		break;
+	case "share_cancel":
+		set_record_status($record_id, 0x110);
+		manage_record($login_id);
+		break;
 	case "wait":
 		if(wait_book($book_id, $login_id)){
 			$bookname = get_bookname($book_id);
