@@ -747,7 +747,7 @@ function show_book($book_id)
 	print_tdlist(array('编号', 'ISBN','索引','价格','中图分类', '咱分类', 'Sponsor', '购买日期', '次数', '状态'));
 	print("</tr>");
 	print("<tr>");
-	print_tdlist(array($id, $isbn, $index, $price, $class_name, $class_text, $sponsor, $buy_date, $times, get_book_status_name($status))); 
+	print_tdlist(array($book_id, $isbn, $index, $price, $class_name, $class_text, $sponsor, $buy_date, $times, get_book_status_name($status))); 
 	print("</tr>");
 	print("</table>");
 	print("<br/>");
