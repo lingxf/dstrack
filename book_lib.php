@@ -47,7 +47,7 @@ function out_record()
 }
 /* 0x100 cancel 
    0x101 reject
-   0x104 wait
+   0x104 wait 260
    0x105 share 
    0x106 share_done
    0x107 apply_join
@@ -100,7 +100,7 @@ function list_record($login_id, $format='self', $condition='')
 		print_tdlist(array('序号','帐号','申请人','申请日期', '批准日期', '操作'));
 		$sql = " select record_id, borrower, t1.status, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower order by adate desc ";
 	}else if($format == 'timeout'){	
-		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
+		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '到期日期','状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3 or t1.status = 5) and  t1.book_id = t2.book_id and t3.user = t1.borrower ";
 		if($condition != ''){
 			$condition = " (to_days(now())  - to_days(bdate)) >= $condition ";
@@ -147,6 +147,9 @@ function list_record($login_id, $format='self', $condition='')
 					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
 				else
 					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
+				$rdate = $bdate + 28;
+				$ldate = strtotime($bdate) + 28*24*3600; 
+				$rdate = strftime("%Y-%m-%d", $ldate);
 			}else if($status == 3){
 				$status_text = "归还中";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
@@ -185,6 +188,9 @@ function list_record($login_id, $format='self', $condition='')
 				$blink = "<a href=\"book.php?record_id=$record_id&action=returning\">归还</a>";
 				if(!check_wait($book_id))
 					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=renew\">续借</a>";
+				$rdate = $bdate + 28;
+				$ldate = strtotime($bdate) + 28*24*3600; 
+				$rdate = strftime("%Y-%m-%d", $ldate);
 			}else if($status == 3){
 				$status_text = "归还中";
 				$blink = "";
@@ -227,6 +233,8 @@ function list_record($login_id, $format='self', $condition='')
 			print_tdlist(array($i,$borrower_id, $borrower,$adate, $sdate, $blink)); 
 		else if($format == 'score')
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $rdate,$sdate, get_book_status_name($row['bstatus']), $score)); 
+		else if($format == 'timeout')
+			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $rdate,$status_text, $blink)); 
 		else
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $rdate,$sdate, $status_text, $blink)); 
 		print("</tr>\n");
