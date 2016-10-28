@@ -278,7 +278,7 @@ function list_statistic()
 		}
 	}
 	$ct_array = rsort_by_index($ct_array, 0);
-	$mm = array(8=>'Aug.', 9=>'Sep.', 10=>'Oct.');
+	$mm = array(7=>'Jul.', 8=>'Aug.', 9=>'Sep.', 10=>'Oct.', 11=>'Nov.', 12=>'Dec.');
 	print("<tr>");
 	print("<th>User</th>");
 	foreach($mm as $m=>$name){
