@@ -6,6 +6,20 @@ function dprint($str)
 	if(isset($debug_print) && $debug_print == 1)
 		print($str);
 }
+
+function rsort_by_index($array, $index)
+{
+	$new_array = Array();
+	foreach($array as $key => $data){
+		$new_array[$key] = $data[$index];
+	}
+	arsort($new_array);
+	foreach($array as $key => $data){
+		$new_array[$key] = $data;
+	}
+	return $new_array;
+}
+
 function print_td($text, $width='', $color='', $background='', $script='')
 {
     $td = "<td width=$width style='width:$width pt;".
@@ -240,6 +254,50 @@ function list_record($login_id, $format='self', $condition='')
 		print("</tr>\n");
 	}
 	print("</table>");
+}
+
+function list_statistic()
+{
+	print("评论统计");
+	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	$sql = "select * from books where comments != ''";
+	$res = read_mysql_query($sql);
+	$reg = '/\[(\D+)\]\[(\d+)\/(\d+)\][^\[]*(.*)/';
+	$ct_array = array();
+	while($row = mysql_fetch_array($res)){
+		$comment = $row['comments'];
+		$book = $row['name'];
+		while(preg_match($reg, $comment, $matches)){
+			$user = $matches[1];
+			$month = $matches[2];
+			$date = $matches[3];
+			$ct_array[$user][$month]++;
+			$ct_array[$user][0]++;
+			$comment = $matches[4];
+//			print("$book:$user $date $comment<br>");
+		}
+	}
+	$ct_array = rsort_by_index($ct_array, 0);
+	$mm = array(8=>'Aug.', 9=>'Sep.', 10=>'Oct.');
+	print("<tr>");
+	print("<th>User</th>");
+	foreach($mm as $m=>$name){
+		print("<th>$name</th>");
+	}
+	print("<th>Total</th>");
+	print("</tr>");
+	foreach($ct_array as $user=>$mct){
+		print("<tr>");
+		print("<td>$user</td>");
+		$t = 0;
+		foreach($mm as $m=>$name){
+			print("<td>${mct[$m]}</td>");
+		}
+		print("<th>$mct[0]</th>");
+		print("</tr>");
+	}
+	print("</table>");
+//	print_r($ct_array);
 }
 
 function list_member()

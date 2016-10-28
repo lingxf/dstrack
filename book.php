@@ -246,6 +246,7 @@ if($role >= 1){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_statistic\">统计</a>";
 }
 
 if($role == 2){
@@ -435,6 +436,19 @@ switch($action){
 	case "list_tbd":
 		list_book('tbd');
 		break;
+	case "list_timeout":
+		print(">8 week<br>");
+		list_record('', 'timeout', 56);
+		print(">4 week<br>");
+		list_record('', 'timeout', 28);
+		print(">3.5 week<br>");
+		list_record('', 'timeout', 24);
+		print(">3 week<br>");
+		list_record('', 'timeout', 21);
+		break;
+	case "list_statistic":
+		list_statistic();
+		break;
 
 		/*admin*/
 
@@ -494,17 +508,6 @@ switch($action){
 		break;
 	case "edit_book":
 		edit_book($book_id);
-		break;
-	case "list_timeout":
-		print(">8 week<br>");
-		list_record('', 'timeout', 56);
-		print(">4 week<br>");
-		list_record('', 'timeout', 28);
-		print(">3.5 week<br>");
-		list_record('', 'timeout', 24);
-		print(">3 week<br>");
-		list_record('', 'timeout', 21);
-		break;
 		break;
 	case "push":
 		$book_id = get_bookid_by_record($record_id);
