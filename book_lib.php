@@ -264,7 +264,6 @@ function list_statistic()
 	comment_statistic(1);
 	print("分享统计");
 	list_record('', 'share', 0x106);
-	cal_score();
 }
 
 function cal_score()
@@ -354,6 +353,7 @@ function list_member()
 
 	global $login_id, $role, $class, $comment_type, $book_sname;
 
+	cal_score();
 	$table_name = "book";
 	$tr_width = 500;
 	$background = '#efefef';

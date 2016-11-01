@@ -637,6 +637,8 @@ switch($action){
 function show_my($login_id)
 {
 	global $view, $start, $items_perpage;
+
+	cal_score();
 	$score = get_user_attr($login_id, 'score');
 	$score_used = get_user_attr($login_id, 'score_used');
 	print("我的积分:$score 已用积分:$score_used<br>");
