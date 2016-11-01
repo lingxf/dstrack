@@ -109,7 +109,7 @@ function list_record($login_id, $format='self', $condition='')
 		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by sdate desc ";
 	}else if($format == 'share'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '完成日期' ));
-		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0x105 and t3.user = t1.borrower order by adate desc ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = $condition and t3.user = t1.borrower order by adate desc ";
 	}else if($format == 'member'){
 		print_tdlist(array('序号','帐号','申请人','申请日期', '批准日期', '操作'));
 		$sql = " select record_id, borrower, t1.status, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower order by adate desc ";
@@ -259,7 +259,16 @@ function list_record($login_id, $format='self', $condition='')
 function list_statistic()
 {
 	print("评论统计");
-	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	comment_statistic(0);
+	print("大于50字评论统计");
+	comment_statistic(1);
+	print("分享统计");
+	list_record('', 'share', 0x106);
+	cal_score();
+}
+
+function cal_score()
+{
 	$sql = "select * from books where comments != ''";
 	$res = read_mysql_query($sql);
 	$reg = '/\[(\D+)\]\[(\d+)\/(\d+)\][^\[]*(.*)/';
@@ -271,9 +280,48 @@ function list_statistic()
 			$user = $matches[1];
 			$month = $matches[2];
 			$date = $matches[3];
-			$ct_array[$user][$month]++;
-			$ct_array[$user][0]++;
 			$comment = $matches[4];
+			if(strlen($comment) >= 50){
+				$ct_array[$user]+=20;
+			}
+		}
+	}
+
+	$sql = "select * from history where status = 0x106";
+	$res = read_mysql_query($sql);
+	while($row = mysql_fetch_array($res)){
+		$user = $row['borrower'];
+		$ct_array[$user]+=100;
+	}
+
+	foreach($ct_array as $user=>$score){
+		$sql = "update member set score=$score where user = '$user'";
+		$rows = update_mysql_query($sql);
+	}
+	
+}
+
+function comment_statistic($type = 0)
+{
+	$tr_width=400;
+	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	$sql = "select * from books where comments != '' ";
+	$res = read_mysql_query($sql);
+	$reg = '/\[(\D+)\]\[(\d+)\/(\d+)\][^\[]*(.*)/';
+	$ct_array = array();
+	while($row = mysql_fetch_array($res)){
+		$comment = $row['comments'];
+		$book = $row['name'];
+		while(preg_match($reg, $comment, $matches)){
+			$user = $matches[1];
+			$month = $matches[2];
+			$date = $matches[3];
+			$comment = $matches[4];
+			if(strlen($comment) >= 50 || $type == 0){
+				$ct_array[$user][$month]++;
+				$ct_array[$user][0]++;
+			}
+
 //			print("$book:$user $date $comment<br>");
 		}
 	}
@@ -282,16 +330,17 @@ function list_statistic()
 	print("<tr>");
 	print("<th>User</th>");
 	foreach($mm as $m=>$name){
-		print("<th>$name</th>");
+		print("<th >$name</th>");
 	}
 	print("<th>Total</th>");
 	print("</tr>");
 	foreach($ct_array as $user=>$mct){
 		print("<tr>");
-		print("<td>$user</td>");
+		$user_name = get_user_name($user);
+		print_td($user_name, 150);
 		$t = 0;
 		foreach($mm as $m=>$name){
-			print("<td>${mct[$m]}</td>");
+			print_td($mct[$m]);
 		}
 		print("<th>$mct[0]</th>");
 		print("</tr>");
@@ -315,10 +364,11 @@ function list_member()
 	print('<form enctype="multipart/form-data" action="book.php" method="POST">');
 
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
-	print_tdlist(array('序号', '帐号', '姓名','邮件', '身份','已借','曾借', '操作'));
+	print_tdlist(array('序号', '帐号', '姓名','邮件', '身份','已借','曾借','积分','已用积分', '操作'));
 
 	$sql = "  select user,user_name, email, role,  ";
 	$sql .= "COUNT( CASE WHEN `status` = 0 THEN 1 ELSE NULL END ) AS `books_his`,  COUNT( CASE WHEN `status` = 2 THEN 1 ELSE NULL END ) AS `books_borrow`";
+	$sql .= ", score, score_used ";
 	$sql .= " from `member` left join `history` on member.user = history.borrower group by user ";
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
@@ -330,6 +380,8 @@ function list_member()
 		$role = $row['role'];
 		$books = $row['books_borrow'];
 		$books_his = $row['books_his'];
+		$score = $row['score'];
+		$score_used = $row['score_used'];
 		if($role >= 1) {
 			$status_text = "会员";
 			$blink = "<a href=book.php?action=remove_member&borrower=$user_id>离会</a>";
@@ -346,6 +398,8 @@ function list_member()
 		print_td($status_text,65);
 		print_td($books, 20);
 		print_td($books_his, 20);
+		print_td($score, 20);
+		print_td($score_used, 20);
 		print_td($blink,60);
 		print("</tr>\n");
 	}
@@ -1053,6 +1107,8 @@ function set_record_status($record_id, $status)
 		$sql = " update history set adate= '$time_start', status=$status where `record_id` = $record_id";
 	else if($status == 5)
 		$sql = " update history set rdate= '$time_start', status=$status where `record_id` = $record_id";
+	else if($status == 0x106 || $status == 0x105)
+		$sql = " update history set sdate= '$time_start', status=$status where `record_id` = $record_id";
 	else
 		$sql = " update history set adate= '$time_start', status=$status where `record_id` = $record_id";
 
@@ -1124,11 +1180,17 @@ function set_member_attr($user, $prop, $value) {
 	return false;
 }
 
+function get_user_name($user){
+	return get_user_attr($user, 'name');
+}
+
 function get_user_attr($user, $prop) {
 	$sql1 = "select * from user.user where user_id ='$user'";
 	$res1=mysql_query($sql1) or die("Invalid query:" . $sql1 . mysql_error());
-	if($row1=mysql_fetch_array($res1))
-		return $row1["$prop"];
+	if($row1=mysql_fetch_array($res1)){
+		if(isset($row1["$prop"]))
+			return $row1[$prop];
+	}
 	$sql1 = "select * from member where user ='$user'";
 	if($prop == 'name')
 		$prop = 'user_name';

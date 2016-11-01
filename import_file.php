@@ -35,6 +35,8 @@ if(isset($_POST['upload'])){
 
 print("待分享:<br>");
 list_record($login_id, 'share', 0x105);
+print("已分享:<br>");
+list_record($login_id, 'share', 0x106);
 print("已分享PPT:<br>");
 if ($handle = opendir('share/')) {
 	$booklist = array();

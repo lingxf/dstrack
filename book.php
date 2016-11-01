@@ -637,6 +637,9 @@ switch($action){
 function show_my($login_id)
 {
 	global $view, $start, $items_perpage;
+	$score = get_user_attr($login_id, 'score');
+	$score_used = get_user_attr($login_id, 'score_used');
+	print("我的积分:$score 已用积分:$score_used<br>");
 	print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
 	list_book($view, $start, $items_perpage,0, 'favor');
 	print("曾借书本");
