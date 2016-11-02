@@ -390,7 +390,7 @@ function list_member()
 	print('<form enctype="multipart/form-data" action="book.php" method="POST">');
 
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
-	print_tdlist(array('序号', '帐号', '姓名','邮件', '身份','已借','曾借','积分','已用积分', '操作'));
+	print_tdlist(array('序号', '帐号', '姓名','邮件', '身份','已借','曾借','积分','已用积分', 'wish', '操作'));
 
 	$sql = "  select user,user_name, email, role,  ";
 	$sql .= "COUNT( CASE WHEN `status` = 0 THEN 1 ELSE NULL END ) AS `books_his`,  COUNT( CASE WHEN `status` = 2 THEN 1 ELSE NULL END ) AS `books_borrow`";
@@ -429,12 +429,15 @@ function list_member()
 		print_td($books_his, 20);
 		print_td($score, 20);
 		print_td($score_used, 20);
+		$wish = floor(($score - $score_used)/100);
+		$total_wish += $wish;
+		print_td($wish, 20);
 		print_td($blink, 160);
 		print("</tr>\n");
 	}
 	print("</table>");
-
-	print('<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+	printf("Total Wish List:%d", $total_wish);
+	print('<br><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
 	print('<input type="submit"'); print(' disabled name="begin" value="Begin" />   ');
 	print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
 	print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
