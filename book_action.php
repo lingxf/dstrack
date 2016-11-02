@@ -36,7 +36,7 @@ if(isset($_GET['book_id'])) $book_id=$_GET['book_id'];
 if(isset($_GET['record_id'])) $record_id=$_GET['record_id'];
 if(isset($_GET['borrower'])) $borrower =$_GET['borrower'];
 
-if($role != 2 && preg_match("/manager|approve|stock|push|log|reject_wait/",$action)){
+if($role != 2 && preg_match("/deduce_member_score|manager|approve|stock|push|log|reject_wait/",$action)){
 	print("You are not administrator!");
 	return;
 }
@@ -81,7 +81,10 @@ switch($action){
 	case "migrate":
 		migrate_record($login_id);
 		break;
-	case "update_borrow_times":
+	case "deduce_member_score":
+		$score = $_GET['score'];
+		deduce_member_score($borrower, $score);
+		break;
 }
 
 ?>

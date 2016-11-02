@@ -139,6 +139,21 @@ function add_score(tdc, book_id)
 	});
 	return;
 };
+
+function deduce_member_score(tdc, member)
+{
+	var result = prompt("Deduce Score:");
+	var url = "book_action.php?action=deduce_member_score&borrower="+member+"&score="+result;
+	loadXMLDoc(url, function() {
+			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+				//tdc.innerHTML = result;
+				location.reload();
+				//document.getElementById("div_booklist").innerHTML=xmlhttp.responseText;
+				//setTimeout("windows.location.href="+backurl, 1000);
+			}
+	});
+	return;
+};
 </script>
 
 <?php

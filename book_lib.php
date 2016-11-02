@@ -109,7 +109,7 @@ function list_record($login_id, $format='self', $condition='')
 		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by sdate desc ";
 	}else if($format == 'share'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '完成日期' ));
-		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = $condition and t3.user = t1.borrower order by adate desc ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = $condition and t3.user = t1.borrower order by sdate desc,adate desc ";
 	}else if($format == 'member'){
 		print_tdlist(array('序号','帐号','申请人','申请日期', '批准日期', '操作'));
 		$sql = " select record_id, borrower, t1.status, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower order by adate desc ";
@@ -290,7 +290,7 @@ function cal_score()
 	$res = read_mysql_query($sql);
 	while($row = mysql_fetch_array($res)){
 		$user = $row['borrower'];
-		$ct_array[$user]+=100;
+		$ct_array[$user]+=200;
 	}
 
 	foreach($ct_array as $user=>$score){
@@ -355,7 +355,7 @@ function list_member()
 
 	cal_score();
 	$table_name = "book";
-	$tr_width = 500;
+	$tr_width = 600;
 	$background = '#efefef';
 
 	$hasmore = false;
@@ -389,18 +389,19 @@ function list_member()
 			$status_text = "非会员";
 			$blink = "<a href=book.php?action=approve_member&borrower=$user_id>入会</a>";
 		}
+		$blink .= "&nbsp;<a href='javascript:deduce_member_score(this,\"$user_id\");' >扣分</a>";
 		print("<tr>\n");
 		$i++;
 		print_td($i,5);
 		print_td($user_id,10);
-		print_td($user_name, 150);
+		print_td($user_name, 250);
 		print_td($email);
 		print_td($status_text,65);
 		print_td($books, 20);
 		print_td($books_his, 20);
 		print_td($score, 20);
 		print_td($score_used, 20);
-		print_td($blink,60);
+		print_td($blink, 160);
 		print("</tr>\n");
 	}
 	print("</table>");
@@ -945,6 +946,8 @@ function list_log($format='normal')
 			$status_text = "新加";
 		}else if($status == 11){
 			$status_text = "新购";
+		}else if($status == 264){
+			$status_text = "入会";
 		}else{
 			$status_text = "借出";
 		}
@@ -1171,9 +1174,16 @@ function add_member($user, $name, $email, $role) {
 	return false;
 }
 
+function deduce_member_score($user, $score){
+	$sql = "update member set `score_used` = `score_used` + $score where `user` = '$user' ";
+	$res=mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	if($rows=mysql_affected_rows() > 0)
+		return true;
+	return false;
+}
+
 function set_member_attr($user, $prop, $value) {
 	$sql = "update member set `$prop` = '$value' where `user` = '$user' ";
-	print $sql;
 	$res=mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	if($rows=mysql_affected_rows() > 0)
 		return true;
