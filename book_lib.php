@@ -464,8 +464,12 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		$cond .= "";
 	else
 		$cond .= " and class = $class";
-	if(isset($book_sname))
-		$cond .= " and name like '%$book_sname%' ";
+	if(isset($book_sname)){
+		if(is_numeric($book_sname))
+			$cond .= " and book_id = '$book_sname' ";
+		else
+			$cond .= " and name like '%$book_sname%' ";
+	}
 
 	if($comment_type != 0)
 		$cond .= " and comments != '' ";
