@@ -109,7 +109,7 @@ function list_record($login_id, $format='self', $condition='')
 		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by sdate desc ";
 	}else if($format == 'share'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '完成日期' ));
-		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = $condition and t3.user = t1.borrower order by sdate desc,adate desc ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data, misc, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = $condition and t3.user = t1.borrower order by sdate desc,adate desc ";
 	}else if($format == 'member'){
 		print_tdlist(array('序号','帐号','申请人','申请日期', '批准日期', '操作'));
 		$sql = " select record_id, borrower, t1.status, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower order by adate desc ";
@@ -241,9 +241,11 @@ function list_record($login_id, $format='self', $condition='')
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $status_text, $blink)); 
 		else if($format == 'history')
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $rdate,$sdate)); 
-		else if($format == 'share')
+		else if($format == 'share'){
+			if($book_id == 0)
+				$name = $row['name'].":".$row['misc'];
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $sdate)); 
-		else if($format == 'member')
+		}else if($format == 'member')
 			print_tdlist(array($i,$borrower_id, $borrower,$adate, $sdate, $blink)); 
 		else if($format == 'score')
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $bdate, $rdate,$sdate, get_book_status_name($row['bstatus']), $score)); 
@@ -263,8 +265,30 @@ function list_statistic()
 	print("大于50字评论统计");
 	comment_statistic(1);
 	print("分享统计");
-	list_record('', 'share', 0x106);
+	share_statistic();
 }
+function share_statistic($type = 0)
+{
+	$tr_width=400;
+	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	print("<tr>");
+	print("<th>User</th>");
+	print("<th >分享次数</th>");
+	print("</tr>");
+
+	$sql = "select borrower, user_name, count(*) as ct from history, member where status = 0x106 and history.borrower = member.user group by borrower";
+	$res = read_mysql_query($sql);
+	while($row = mysql_fetch_array($res)){
+		$borrower = $row['borrower'];
+		$name = $row['user_name'];
+		$count = $row['ct'];
+		print("<tr>");
+		print_td($name);
+		print_td($count);
+		print("</tr>");
+	}
+}
+
 
 function cal_score()
 {
@@ -391,6 +415,8 @@ function list_member()
 		}
 		$blink .= "&nbsp;<a href='javascript:deduce_member_score(this,\"$user_id\");' >扣分</a>";
 		print("<tr>\n");
+		if(preg_match("/^test/", $user_id))
+			continue;
 		$i++;
 		print_td($i,5);
 		print_td($user_id,10);
