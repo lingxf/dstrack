@@ -294,7 +294,7 @@ function cal_score()
 {
 	$sql = "select * from books where comments != ''";
 	$res = read_mysql_query($sql);
-	$reg = '/\[(\D+)\]\[(\d+)\/(\d+)\][^\[]*(.*)/';
+	$reg = '/\[(\D+)\]\[(\d+)\/(\d+)\]([^\[]*)([\d\D\n.]*)/';
 	$ct_array = array();
 	while($row = mysql_fetch_array($res)){
 		$comment = $row['comments'];
@@ -303,8 +303,10 @@ function cal_score()
 			$user = $matches[1];
 			$month = $matches[2];
 			$date = $matches[3];
-			$comment = $matches[4];
-			if(strlen($comment) >= 50){
+			$this_comment = $matches[4];
+			$comment = $matches[5];
+			//print("<br>:$user:". $this_comment.":".mb_strlen($this_comment, "UTF-8"));
+			if(mb_strlen($this_comment, "UTF-8") >= 50){
 				$ct_array[$user]+=20;
 			}
 		}
@@ -330,7 +332,7 @@ function comment_statistic($type = 0)
 	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	$sql = "select * from books where comments != '' ";
 	$res = read_mysql_query($sql);
-	$reg = '/\[(\D+)\]\[(\d+)\/(\d+)\][^\[]*(.*)/';
+	$reg = '/\[(\D+)\]\[(\d+)\/(\d+)\]([^\[]*)([\d\D\n.]*)/';
 	$ct_array = array();
 	while($row = mysql_fetch_array($res)){
 		$comment = $row['comments'];
@@ -339,12 +341,12 @@ function comment_statistic($type = 0)
 			$user = $matches[1];
 			$month = $matches[2];
 			$date = $matches[3];
-			$comment = $matches[4];
-			if(strlen($comment) >= 50 || $type == 0){
+			$this_comment = $matches[4];
+			$comment = $matches[5];
+			if(mb_strlen($this_comment, "UTF-8") >= 50 || $type == 0){
 				$ct_array[$user][$month]++;
 				$ct_array[$user][0]++;
 			}
-
 //			print("$book:$user $date $comment<br>");
 		}
 	}
