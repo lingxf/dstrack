@@ -381,7 +381,7 @@ function list_member()
 
 	cal_score();
 	$table_name = "book";
-	$tr_width = 600;
+	$tr_width = 700;
 	$background = '#efefef';
 
 	$hasmore = false;
@@ -432,7 +432,7 @@ function list_member()
 		$wish = floor(($score - $score_used)/100);
 		$total_wish += $wish;
 		print_td($wish, 20);
-		print_td($blink, 160);
+		print_td($blink, 100);
 		print("</tr>\n");
 	}
 	print("</table>");
