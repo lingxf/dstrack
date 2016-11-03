@@ -289,6 +289,44 @@ function share_statistic($type = 0)
 	}
 }
 
+function add_comment($book_id, $user, $this_comment, $month='', $date='')
+{
+	if($month == ''){
+		$time = strftime("%Y-%m-%d %H:%M:%S", time());
+	}else
+		$time = "2016-$month-$date";
+	$sql = "select * from comments where book_id = $book_id and borrower = '$user' and words = '$this_comment'";
+	$res = read_mysql_query($sql);
+	if(!($row = mysql_fetch_array($res))){
+		$sql = "insert into comments set book_id = $book_id, borrower = '$user', words = '$this_comment', timestamp = '$time'";
+		$rows = update_mysql_query($sql);
+		//print("add comment:$rows , $book_id, $user, $this_comment<br>");
+	}else
+		print("Already exist: $book_id, $user, $this_comment<br>");
+}
+
+function transfer_comment()
+{
+	$sql = "select * from books where comments != ''";
+	$res = read_mysql_query($sql);
+	$reg = '/\[(\D+)\]\[(\d+)\/(\d+)\]:([^\[]*)([\d\D\n.]*)/';
+	$ct_array = array();
+	while($row = mysql_fetch_array($res)){
+		$comment = $row['comments'];
+		$book_id = $row['book_id'];
+		$book = $row['name'];
+		while(preg_match($reg, $comment, $matches)){
+			$user = $matches[1];
+			$month = $matches[2];
+			$date = $matches[3];
+			$this_comment = $matches[4];
+			$comment = $matches[5];
+			$this_comment = str_replace("<br>", "", $this_comment);
+			add_comment($book_id, $user, $this_comment, $month, $date);
+		}
+	}
+}
+
 
 function cal_score()
 {
@@ -359,6 +397,7 @@ function comment_statistic($type = 0)
 	}
 	print("<th>Total</th>");
 	print("</tr>");
+	$total = array();
 	foreach($ct_array as $user=>$mct){
 		print("<tr>");
 		$user_name = get_user_name($user);
@@ -366,10 +405,19 @@ function comment_statistic($type = 0)
 		$t = 0;
 		foreach($mm as $m=>$name){
 			print_td($mct[$m]);
+			$total[$m] += $mct[$m];
 		}
 		print("<th>$mct[0]</th>");
+		$total[0] += $mct[0];
 		print("</tr>");
 	}
+	print("<tr>");
+	print("<th>Total</th>");
+	foreach($mm as $m=>$name){
+		print_td($total[$m]);
+	}
+	print("<th>$total[0]</th>");
+	print("</tr>");
 	print("</table>");
 //	print_r($ct_array);
 }
@@ -898,8 +946,11 @@ function show_book($book_id)
 	print("[" . get_book_status_name($status) . "]&nbsp;");
 	print("得分:$score&nbsp");
 	print("$blink");
-	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
-	print("<tr>");
+	$width_px = 800;
+	$table_head = "<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: $width_px"."px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto'>";
+	print("<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width:$width_px"."px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto'>");
+	print($table_head);
+	print('<tr>');
 	print_tdlist(array('编号', 'ISBN','索引','价格','中图分类', '咱分类', 'Sponsor', '购买日期', '次数', '状态'));
 	print("</tr>");
 	print("<tr>");
@@ -908,13 +959,20 @@ function show_book($book_id)
 	print("</table>");
 	print("<br/>");
 
-	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
+	print($table_head);
 	print("<tr><td>$desc</td></tr>");
 	print("</table>");
 
 	print("评论<br>");
-	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
-	print("<tr><td>$comments</td></tr>");
+	print($table_head);
+	$sql = "select borrower, words, date(timestamp) as dt from comments where book_id = $book_id order by timestamp desc";
+	$res = read_mysql_query($sql);
+	while($row = mysql_fetch_array($res)){
+		$borrower = $row['borrower'];
+		$comments = $row['words'];
+		$date = $row['dt'];
+		print("<tr><td>$date</td><td>$borrower</td><td>$comments</td></tr>");
+	}
 	print("</table>");
 	return;
 }
@@ -1000,7 +1058,7 @@ function list_log($format='normal')
 
 function show_borrower($book_id, $format="wait")
 {
-	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
+	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 800px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
 
 	if($format == 'score')
 		print_tdlist(array('编号', '书名','借阅人','日期', '评分'));

@@ -506,6 +506,9 @@ switch($action){
 	case "migrate":
 		migrate_record($login_id);
 		break;
+	case "transfer_comment":
+		transfer_comment();
+		break;
 	case "update_borrow_times":
 		update_borrow_times();
 		break;

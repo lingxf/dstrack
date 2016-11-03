@@ -42,6 +42,11 @@ if($book_id && $op=="modify"){
 	$intext = str_replace("'", "''", $text);
 	if($col == 'comments'){
 		$cm = "[$login_id]$intext<br>";
+		$reg = '/\[(\d+)\/(\d+)\]:([^\[]*)([\d\D\n.]*)/';
+		if(preg_match($reg, $intext, $matches)){
+			$intext = $matches[3];
+		}
+		add_comment($book_id, $login_id, $intext);
 		$tt =  read_book_column($book_id, $col);
 		$bookname = read_book_column($book_id, 'name');
 		if($tt != -1)
