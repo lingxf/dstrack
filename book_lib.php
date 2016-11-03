@@ -262,8 +262,10 @@ function list_statistic()
 {
 	print("评论统计");
 	comment_statistic(0);
+	//comment_statistic_legacy(0);
 	print("大于50字评论统计");
 	comment_statistic(1);
+	//comment_statistic_legacy(1);
 	print("分享统计");
 	share_statistic();
 }
@@ -297,19 +299,22 @@ function add_comment($book_id, $user, $this_comment, $month='', $date='')
 		$time = "2016-$month-$date";
 	$sql = "select * from comments where book_id = $book_id and borrower = '$user' and words = '$this_comment'";
 	$res = read_mysql_query($sql);
+//	if($user == 'lgao' && $month == 8)
+//		print("add comment:$rows , $month, $date, $book_id, $user, $this_comment<br>");
 	if(!($row = mysql_fetch_array($res))){
 		$sql = "insert into comments set book_id = $book_id, borrower = '$user', words = '$this_comment', timestamp = '$time'";
 		$rows = update_mysql_query($sql);
-		//print("add comment:$rows , $book_id, $user, $this_comment<br>");
-	}else
-		print("Already exist: $book_id, $user, $this_comment<br>");
+	//	print("add comment:$rows , $month, $date, $book_id, $user, $this_comment<br>");
+	}else{
+		//print("Already exist: $book_id, $user, $this_comment<br>");
+	}
 }
 
 function transfer_comment()
 {
 	$sql = "select * from books where comments != ''";
 	$res = read_mysql_query($sql);
-	$reg = '/\[(\D+)\]\[(\d+)\/(\d+)\]:([^\[]*)([\d\D\n.]*)/';
+	$reg = '/\[(\D+)\]\[(\d+)\/(\d+)\]([^\[]*)([\d\D\n.]*)/';
 	$ct_array = array();
 	while($row = mysql_fetch_array($res)){
 		$comment = $row['comments'];
@@ -321,7 +326,12 @@ function transfer_comment()
 			$date = $matches[3];
 			$this_comment = $matches[4];
 			$comment = $matches[5];
+			if(preg_match("/^:([\d\D\n.]+)/", $this_comment, $matches2)){
+				$this_comment = $matches2[1];
+			}
 			$this_comment = str_replace("<br>", "", $this_comment);
+//			if($user == 'lgao' && $month==8)
+//				print("$book_id:$book $user $this_comment<br>");
 			add_comment($book_id, $user, $this_comment, $month, $date);
 		}
 	}
@@ -329,6 +339,33 @@ function transfer_comment()
 
 
 function cal_score()
+{
+	$sql = "select * from comments";
+	$res = read_mysql_query($sql);
+	$ct_array = array();
+	while($row = mysql_fetch_array($res)){
+		$this_comment = $row['words'];
+		$book_id = $row['book_id'];
+		$user = $row['borrower'];
+		if(mb_strlen($this_comment, "UTF-8") >= 50) {
+				$ct_array[$user]+=20;
+		}
+	}
+
+	$sql = "select * from history where status = 0x106";
+	$res = read_mysql_query($sql);
+	while($row = mysql_fetch_array($res)){
+		$user = $row['borrower'];
+		$ct_array[$user]+=200;
+	}
+
+	foreach($ct_array as $user=>$score){
+		$sql = "update member set score=$score where user = '$user'";
+		$rows = update_mysql_query($sql);
+	}
+}
+
+function cal_score_legacy()
 {
 	$sql = "select * from books where comments != ''";
 	$res = read_mysql_query($sql);
@@ -361,10 +398,63 @@ function cal_score()
 		$sql = "update member set score=$score where user = '$user'";
 		$rows = update_mysql_query($sql);
 	}
-	
 }
 
 function comment_statistic($type = 0)
+{
+	$tr_width=400;
+	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	$sql = "select book_id, borrower, words, month(timestamp) as mon, timestamp  from comments ";
+	$res = read_mysql_query($sql);
+	$ct_array = array();
+	while($row = mysql_fetch_array($res)){
+		$this_comment = $row['words'];
+		$book_id = $row['book_id'];
+		$user = $row['borrower'];
+		$time = $row['timestamp'];
+		$month = $row['mon'];
+		if(mb_strlen($this_comment, "UTF-8") >= 50 || $type == 0){
+			$ct_array[$user][$month]++;
+			$ct_array[$user][0]++;
+		}
+//		print("$book:$user $date $comment<br>");
+	}
+	$ct_array = rsort_by_index($ct_array, 0);
+	$mm = array(7=>'Jul.', 8=>'Aug.', 9=>'Sep.', 10=>'Oct.', 11=>'Nov.', 12=>'Dec.');
+	print("<tr>");
+	print("<th>User</th>");
+	foreach($mm as $m=>$name){
+		print("<th >$name</th>");
+	}
+	print("<th>Total</th>");
+	print("</tr>");
+	$total = array();
+	foreach($ct_array as $user=>$mct){
+		print("<tr>");
+		$user_name = get_user_name($user);
+		print_td($user_name, 150);
+		$t = 0;
+		foreach($mm as $m=>$name){
+			print_td($mct[$m]);
+			$total[$m] += $mct[$m];
+		}
+		print("<th>$mct[0]</th>");
+		$total[0] += $mct[0];
+		print("</tr>");
+	}
+	print("<tr>");
+	print("<th>Total</th>");
+	foreach($mm as $m=>$name){
+		print_td($total[$m]);
+	}
+	print("<th>$total[0]</th>");
+	print("</tr>");
+	print("</table>");
+//	print_r($ct_array);
+}
+
+
+function comment_statistic_legacy($type = 0)
 {
 	$tr_width=400;
 	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
@@ -375,17 +465,23 @@ function comment_statistic($type = 0)
 	while($row = mysql_fetch_array($res)){
 		$comment = $row['comments'];
 		$book = $row['name'];
+		$book_id = $row['book_id'];
 		while(preg_match($reg, $comment, $matches)){
 			$user = $matches[1];
 			$month = $matches[2];
 			$date = $matches[3];
 			$this_comment = $matches[4];
+			if(preg_match("/^:([\d\D\n.]+)/", $this_comment, $matches2)){
+				$this_comment = $matches2[1];
+			}
+			$this_comment = str_replace("<br>", "", $this_comment);
 			$comment = $matches[5];
 			if(mb_strlen($this_comment, "UTF-8") >= 50 || $type == 0){
 				$ct_array[$user][$month]++;
 				$ct_array[$user][0]++;
 			}
-//			print("$book:$user $date $comment<br>");
+//			if($user == 'lgao' && $month==8)
+//				print("$book_id:$book $user $this_comment<br>");
 		}
 	}
 	$ct_array = rsort_by_index($ct_array, 0);
