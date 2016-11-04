@@ -1108,7 +1108,8 @@ function list_comments($book_id='', $borrower='', $times='')
 		$count = mb_strlen($comments, "UTF-8");
 		print("<tr>");
 		print_td($comment_id, 30);
-		print_tdlist(array($borrower,$date,$comments));
+		$borrower_link = "<a href=?action=list_comments&borrower=$borrower>$borrower</a>";
+		print_tdlist(array($borrower_link,$date,$comments));
 		print_td($count, 30);
 	}
 	print("</table>");
