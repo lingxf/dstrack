@@ -13,6 +13,14 @@ function get_client_ip(){
 	return($ip);
 }
 
+function get_cur_php(){
+	if(!isset($_SERVER['HTTP_HOST']))
+		return '';
+	$main_url = "http://" . $_SERVER['HTTP_HOST'];
+	$mail_url .= $_SERVER['PHP_SELF'];
+	return $mail_url;
+}
+
 function strip($str){
 	$reg = "/^\s*([^\s][^\s\r\n]*)\s*$/";
 	if(preg_match($reg, $str, $match))
