@@ -351,6 +351,7 @@ function cal_score()
 		$this_comment = $row['words'];
 		$book_id = $row['book_id'];
 		$user = $row['borrower'];
+		$this_comments = str_replace("\n", "", $this_comments);
 		if(mb_strlen($this_comment, "UTF-8") >= 50) {
 				$ct_array[$user]+=20;
 		}
@@ -385,6 +386,7 @@ function cal_score_legacy()
 			$this_comment = $matches[4];
 			$comment = $matches[5];
 			//print("<br>:$user:". $this_comment.":".mb_strlen($this_comment, "UTF-8"));
+			$this_comments = str_replace("\n", "", $this_comments);
 			if(mb_strlen($this_comment, "UTF-8") >= 50){
 				$ct_array[$user]+=20;
 			}
@@ -417,6 +419,7 @@ function comment_statistic($type = 0)
 		$user = $row['borrower'];
 		$time = $row['timestamp'];
 		$month = $row['mon'];
+		$this_comments = str_replace("\n", "", $this_comments);
 		if(mb_strlen($this_comment, "UTF-8") >= 50 || $type == 0){
 			$ct_array[$user][$month]++;
 			$ct_array[$user][0]++;
@@ -1101,7 +1104,8 @@ function list_comments($book_id='', $borrower='', $times='')
 		$borrower = $row['borrower'];
 		$comments = $row['words'];
 		$date = $row['dt'];
-		$count = mb_strlen($comments);
+		$comments = str_replace("\n", "", $comments);
+		$count = mb_strlen($comments, "UTF-8");
 		print("<tr>");
 		print_td($comment_id, 30);
 		print_tdlist(array($borrower,$date,$comments));
