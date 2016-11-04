@@ -18,6 +18,59 @@ else if($action == 'gen'){
 }
 else if($action == 'check')
 	check_timeout();
+else if($action == 'comment')
+	mail_new_comment();
+else if($action == 'gen_comment')
+	gen_comment();
+
+function gen_comment()
+{
+	list_comments('', '', 0, 7);
+}
+
+function mail_new_comment()
+{
+	$message = "
+	<html>
+	<head>
+	  <title>This Weeks Comments </title>
+	</head>
+	<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />
+	<meta http-equiv=\"Content-Language\" content=\"zh-CN\" /> 
+	<style type=\"text/css\">
+	@media screen {
+		.print_ignore {
+	display: none;
+		}
+		body, table, th, td {
+			font-size:         12pt;
+		}
+		table, th, td {
+			border-width:      1px;
+			border-color:      #0000f0;
+			border-style:      solid;
+		}
+		th, td {
+	padding:           0.2em;
+		}
+	}
+	</style>
+
+	<body>
+	<table style='font-size:14pt; color:#800000;'>
+	<tr><th style='text-align: left;'>Link:</th><td><a href='http://cedump-sh.ap.qualcomm.com/book/book.php?action=list_comments_all'>最新评论</a></td></tr>
+	</table>";
+	$subject = "本周评论";
+	exec("php mail_notify.php gen_comment", $output);
+	foreach($output as $line){
+		$message .= $line . "\n"; 
+	}
+	$message .= " </body> </html> ";
+	$to = 'QClub.BJ.Reading@qti.qualcomm.com';
+	$to = 'xling@qti.qualcomm.com';
+	$cc = '';
+	mail_html($to, $cc, $subject, $message);
+}
 
 function mail_tbd_list(){
 	$reason = "";

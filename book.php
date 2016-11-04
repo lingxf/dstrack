@@ -463,7 +463,7 @@ switch($action){
 		list_comments('', $borrower);
 		break;
 	case "list_comments_all":
-		list_comments('', '');
+		list_comments('', '', 0, 30);
 		break;
 		/*admin*/
 	case "transfer":

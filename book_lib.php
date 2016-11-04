@@ -1002,7 +1002,7 @@ function get_class_name($class=0)
 $table_name = "id_table_record";
 $tr_width = 800;
 $background = '#cfcfcf';
-$table_head = "<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>";
+$table_head = "<table id='$table_name' width=600 class=MsoNormalTable border=1 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>";
 //$width_px = 800;
 //$table_head = "<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: $width_px"."px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto'>";
 
@@ -1086,21 +1086,27 @@ function show_book($book_id)
 	return;
 }
 
-function list_comments($book_id='', $borrower='', $format=0)
+function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 {
 	global $table_head;
+
+	$mail_url = get_cur_php();
+	if($mail_url == '')
+		$mail_url = "http://cedump-sh.ap.qualcomm.com/book/book.php";
+
 	$cond = "1 ";
 	if($book_id != '')
 		$cond .= " and comments.book_id = $book_id";
 	if($borrower != '')
 		$cond .= " and borrower = '$borrower'";
-	
+	if($last_days != '')
+		$cond .= " and (to_days(now()) - to_days(`timestamp`)) < $last_days";
 	print($table_head);
 	if($format == 1)
 		print_tbline(array('序号', '用户', '日期', '评论', '字数'));
 	else
 		print_tbline(array('序号', '用户', '日期', '书名','评论', '字数'));
-	$sql = "select comment_id, borrower, words, date(timestamp) as dt, comments.book_id, books.name from comments, books where comments.book_id = books.book_id and $cond order by timestamp desc limit 50";
+	$sql = "select comment_id, borrower, words, date(timestamp) as dt, comments.book_id, books.name from comments, books where comments.book_id = books.book_id and $cond order by timestamp desc limit 100";
 	$res = read_mysql_query($sql);
 	while($row = mysql_fetch_array($res)){
 		$comment_id = $row['comment_id'];
@@ -1113,12 +1119,15 @@ function list_comments($book_id='', $borrower='', $format=0)
 		$count = mb_strlen($comments, "UTF-8");
 		print("<tr>");
 		print_td($comment_id, 30);
-		$borrower_link = "<a href=?action=list_comments&borrower=$borrower>$borrower</a>";
-		$book_link = "<a href=?action=show_borrower&book_id=$book_id>$book</a>";
+		$borrower_link = "<a href=$mail_url?action=list_comments&borrower=$borrower>$borrower</a>";
+		$book_link = "<a href=$mail_url?action=show_borrower&book_id=$book_id>$book</a>";
 		if($format == 1)
 			print_tdlist(array($borrower_link,$date, $comments));
-		else
-			print_tdlist(array($borrower_link,$date, $book_link, $comments));
+		else{
+			print_tdlist(array($borrower_link,$date));
+			print_td($book_link, 120);
+			print_td($comments);
+		}
 		print_td($count, 30);
 	}
 	print("</table>");
