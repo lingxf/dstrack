@@ -259,6 +259,7 @@ if($role == 0){
 if($role >= 1){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_favor\">我的</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_share\">分享</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_comments_all\">最新评论</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
@@ -461,7 +462,9 @@ switch($action){
 	case "list_comments":
 		list_comments('', $borrower);
 		break;
-
+	case "list_comments_all":
+		list_comments('', '');
+		break;
 		/*admin*/
 	case "transfer":
 		$book_id = get_bookid_by_record($record_id);
