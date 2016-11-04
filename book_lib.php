@@ -1073,7 +1073,7 @@ function show_book($book_id)
 	print("</table>");
 
 	print("评论<br>");
-	list_comments($book_id);
+	list_comments($book_id, '', 1);
 	print("当前借阅人<br>");
 	show_borrower($book_id, 'out');
 	print("等待列表<br>");
@@ -1086,18 +1086,21 @@ function show_book($book_id)
 	return;
 }
 
-function list_comments($book_id='', $borrower='', $times='')
+function list_comments($book_id='', $borrower='', $format=0)
 {
 	global $table_head;
 	$cond = "1 ";
 	if($book_id != '')
-		$cond .= " and book_id = $book_id";
+		$cond .= " and comments.book_id = $book_id";
 	if($borrower != '')
 		$cond .= " and borrower = '$borrower'";
 	
 	print($table_head);
-	print_tbline(array('序号', '用户', '日期', '评论', '字数'));
-	$sql = "select comment_id, borrower, words, date(timestamp) as dt from comments where $cond order by timestamp desc limit 50";
+	if($format == 1)
+		print_tbline(array('序号', '用户', '日期', '评论', '字数'));
+	else
+		print_tbline(array('序号', '用户', '日期', '书名','评论', '字数'));
+	$sql = "select comment_id, borrower, words, date(timestamp) as dt, comments.book_id, books.name from comments, books where comments.book_id = books.book_id and $cond order by timestamp desc limit 50";
 	$res = read_mysql_query($sql);
 	while($row = mysql_fetch_array($res)){
 		$comment_id = $row['comment_id'];
@@ -1105,11 +1108,17 @@ function list_comments($book_id='', $borrower='', $times='')
 		$comments = $row['words'];
 		$date = $row['dt'];
 		$comments = str_replace("\n", "", $comments);
+		$book = $row['name'];
+		$book_id = $row['book_id'];
 		$count = mb_strlen($comments, "UTF-8");
 		print("<tr>");
 		print_td($comment_id, 30);
 		$borrower_link = "<a href=?action=list_comments&borrower=$borrower>$borrower</a>";
-		print_tdlist(array($borrower_link,$date,$comments));
+		$book_link = "<a href=?action=show_borrower&book_id=$book_id>$book</a>";
+		if($format == 1)
+			print_tdlist(array($borrower_link,$date, $comments));
+		else
+			print_tdlist(array($borrower_link,$date, $book_link, $comments));
 		print_td($count, 30);
 	}
 	print("</table>");
