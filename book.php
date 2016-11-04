@@ -416,16 +416,7 @@ switch($action){
 		home_link();
 		break;
 	case "show_borrower":
-		print("介绍 - ");
 		show_book($book_id);
-		print("当前借阅人<br>");
-		show_borrower($book_id, 'out');
-		print("等待列表<br>");
-		show_borrower($book_id, 'wait');
-		print("历史借阅记录<br>");
-		show_borrower($book_id, 'borrow');
-		print("评分记录<br>");
-		show_borrower($book_id, 'score');
 		break;
 	case "list_share":
 		show_share($login_id);
@@ -673,7 +664,8 @@ function show_my($login_id)
 	list_record($login_id, 'waityou');
 	print("我的借阅记录");
 	list_record($login_id, 'self', ' history.status = 0 ');
-	print("</div>");
+	print("我的评论");
+	list_comments('', $login_id);
 	print("我的评分记录");
 	list_record($login_id, 'score', ' history.status = 0x109 ');
 	print("</div>");

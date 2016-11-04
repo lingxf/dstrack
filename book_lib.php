@@ -39,6 +39,13 @@ function print_tdlist($tdlist)
 	}
 }
 
+function print_tbline($tdlist)
+{
+	print("<tr>");
+	print_tdlist($tdlist);
+	print("</tr>");
+}
+
 function manage_record()
 {
 	global $login_id;
@@ -77,11 +84,8 @@ function get_book_status_name($status)
 
 function list_record($login_id, $format='self', $condition='')
 {
-	global $role;
-	$table_name = "id_table_record";
-	$tr_width = 800;
-	$background = '#cfcfcf';
-	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	global $role, $table_head;
+	print($table_head);
 	if($format == 'approve'){
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t3.user = t1.borrower $condition order by adate asc ";
@@ -992,9 +996,18 @@ function get_class_name($class=0)
 	}
 }
 
+$table_name = "id_table_record";
+$tr_width = 800;
+$background = '#cfcfcf';
+$table_head = "<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>";
+//$width_px = 800;
+//$table_head = "<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: $width_px"."px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto'>";
+
 function show_book($book_id)
 {
-	global $login_id;
+	global $login_id, $table_head;
+
+	print("介绍 - ");
 	$sql = " select * from (select count(distinct(borrower)) as btimes from history where book_id = $book_id and status < 6) as a, " .
 	" (select round(avg(data), 1) as score from history where book_id = $book_id and status = 0x109) as b ";
 	$res = read_mysql_query($sql);
@@ -1042,9 +1055,6 @@ function show_book($book_id)
 	print("[" . get_book_status_name($status) . "]&nbsp;");
 	print("得分:$score&nbsp");
 	print("$blink");
-	$width_px = 800;
-	$table_head = "<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: $width_px"."px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto'>";
-	print("<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width:$width_px"."px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto'>");
 	print($table_head);
 	print('<tr>');
 	print_tdlist(array('编号', 'ISBN','索引','价格','中图分类', '咱分类', 'Sponsor', '购买日期', '次数', '状态'));
@@ -1060,17 +1070,44 @@ function show_book($book_id)
 	print("</table>");
 
 	print("评论<br>");
+	list_comments($book_id);
+	print("当前借阅人<br>");
+	show_borrower($book_id, 'out');
+	print("等待列表<br>");
+	show_borrower($book_id, 'wait');
+	print("历史借阅记录<br>");
+	show_borrower($book_id, 'borrow');
+	print("评分记录<br>");
+	show_borrower($book_id, 'score');
+
+	return;
+}
+
+function list_comments($book_id='', $borrower='', $times='')
+{
+	global $table_head;
+	$cond = "1 ";
+	if($book_id != '')
+		$cond .= " and book_id = $book_id";
+	if($borrower != '')
+		$cond .= " and borrower = '$borrower'";
+	
 	print($table_head);
-	$sql = "select borrower, words, date(timestamp) as dt from comments where book_id = $book_id order by timestamp desc";
+	print_tbline(array('序号', '用户', '日期', '评论', '字数'));
+	$sql = "select comment_id, borrower, words, date(timestamp) as dt from comments where $cond order by timestamp desc limit 50";
 	$res = read_mysql_query($sql);
 	while($row = mysql_fetch_array($res)){
+		$comment_id = $row['comment_id'];
 		$borrower = $row['borrower'];
 		$comments = $row['words'];
 		$date = $row['dt'];
-		print("<tr><td>$date</td><td>$borrower</td><td>$comments</td></tr>");
+		$count = mb_strlen($comments);
+		print("<tr>");
+		print_td($comment_id, 30);
+		print_tdlist(array($borrower,$date,$comments));
+		print_td($count, 30);
 	}
 	print("</table>");
-	return;
 }
 
 function get_borrower($book_id)
@@ -1154,7 +1191,8 @@ function list_log($format='normal')
 
 function show_borrower($book_id, $format="wait")
 {
-	print('<table border=1 bordercolor="#0000f0", cellspacing="0" cellpadding="0" style="padding:0.2em;border-color:#0000f0;border-style:solid; width: 800px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:1;table-layout:auto">');
+	global $table_head;
+	print($table_head);
 
 	if($format == 'score')
 		print_tdlist(array('编号', '书名','借阅人','日期', '评分'));
