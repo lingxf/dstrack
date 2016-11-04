@@ -67,7 +67,7 @@ function mail_new_comment()
 	}
 	$message .= " </body> </html> ";
 	$to = 'QClub.BJ.Reading@qti.qualcomm.com';
-	$to = 'xling@qti.qualcomm.com';
+//	$to = 'xling@qti.qualcomm.com';
 	$cc = '';
 	mail_html($to, $cc, $subject, $message);
 }
