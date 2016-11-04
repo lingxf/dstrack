@@ -458,7 +458,11 @@ switch($action){
 		break;
 
 		/*admin*/
+	case "list_comments":
+		list_comments('', $borrower);
+		break;
 
+		/*admin*/
 	case "transfer":
 		$book_id = get_bookid_by_record($record_id);
 		$old_borrower = get_borrower($book_id);
