@@ -10,12 +10,17 @@ include 'db_connect.php';
 
 session_name('book');
 session_start();
-
 $login_id=$_SESSION['user'];
 $role = is_member($login_id);
-if(!isset($_POST['op']))
+if(isset($_POST['op'])) $op=$_POST['op'];
+if(isset($_GET['op'])) $op=$_GET['op'];
+
+if(!isset($op))
 	exit();
-$op=$_POST['op'];
+
+if(isset($_POST['comment_id'])) $comment_id = $_POST['comment_id'];
+if(isset($_GET['comment_id'])) $comment_id = $_GET['comment_id'];
+
 if($op == 'read' || $op == 'write' || $op=='modify'){
 	$book_id=$_POST['book_id'];
 	$col=$_POST['col'];
@@ -34,7 +39,6 @@ if($op == 'read' || $op == 'write' || $op=='modify'){
 	$old_date = $_POST['old_date'];
 	$desc =  $_POST['desc'];
 }
-
 if($role == 0)
 	return '';
 
@@ -117,7 +121,46 @@ if($book_id && $op=="modify"){
 	add_log($login_id, $login_id, $book_id, 10);
 	home_link();
 	return;
-}
+}else if($comment_id && $op=="save_comment"){
+	if(isset($_POST['cancel']))
+		return;
+	$comment = $_POST['comment'];
+	$date = $_POST['date'];
+	$sql = "update comments set words = '$comment', timestamp='$date'  where comment_id = $comment_id";
+	$row = update_mysql_query($sql);
 
+}else if($op=="edit_comment_ui"){
+	$op = "save_comment";
+	$sql = "select * from comments where comment_id = $comment_id";
+	$res = read_mysql_query($sql);
+	while($row = mysql_fetch_array($res)){
+		$comment = $row['words'];
+		$date = $row['timestamp'];
+	}
+	print("
+<html>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+<meta http-equiv='Content-Language' content='zh-CN' /> 
+");
+	print("
+<form method='post' action='edit_book.php'>
+<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
+<tbody>
+<input type='hidden' name='op' value='$op'>
+<input name='comment_id' type='hidden' value='$comment_id'>
+<tr class='odd noclick'><th>ID:</th><td>$comment_id</td></tr>
+<tr class='odd noclick'><th>Date:</th><td><input name='date' type='text' value='$date' ></td></tr>
+<tr><th>Comment:</th><td>
+<textarea wrap='soft' type='text' name='comment' rows='8' maxlength='2000' cols='60'>$comment</textarea>
+</td></tr>
+</tbody>
+</table>
+<input class='btn' type='submit' name='save' value='Save'>
+<input class='btn' type='submit' name='cancel' value='Cancel'>
+</form> ");
+
+}else{
+	print("unsupported $op");
+}
 
 ?>
