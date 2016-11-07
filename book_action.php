@@ -36,13 +36,13 @@ if(isset($_GET['book_id'])) $book_id=$_GET['book_id'];
 if(isset($_GET['record_id'])) $record_id=$_GET['record_id'];
 if(isset($_GET['borrower'])) $borrower =$_GET['borrower'];
 
-if($role != 2 && preg_match("/deduce_member_score|manager|approve|stock|push|log|reject_wait/",$action)){
-	print("You are not administrator!");
+if($role < 1 ){
+	print("You are not member!");
 	return;
 }
 
-if($role < 1 && preg_match("/lend|history/",$action)){
-	print("You are not member!");
+if($role != 2 && preg_match("/deduce_member_score|manager|approve|stock|push|log|reject_wait/",$action)){
+	print("You are not administrator!");
 	return;
 }
 
