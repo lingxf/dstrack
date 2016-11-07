@@ -255,8 +255,11 @@ print "<a href=\"book.php\">首页</a> &nbsp;&nbsp;$login_text ";
 if($role == 0){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=join\">入会</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=library\">书库</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_share\">分享</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_comments_all\">最新评论</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
 }
 
 if($role >= 1){
