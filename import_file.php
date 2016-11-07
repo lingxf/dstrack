@@ -1,24 +1,27 @@
-<html>
-<Title>Import Sharing PPT</Title>
-
-<form enctype="multipart/form-data" action="import_file.php" method="POST">
-    <input type="hidden" name="MAX_FILE_SIZE" value="128000000" />
-    文件: <input name="userfile" type="file" />
-    <input name='upload' type="submit" value="Upload" />
-</form>
 <?php 
-include 'debug.php';
-include 'book_lib.php';
-include "db_connect.php";
+include_once 'debug.php';
+include_once 'book_lib.php';
+include_once "db_connect.php";
 global $login_id;	
 $login_id="";
 session_name("book");
 session_start();
 if(isset($_SESSION['user']))
 	$login_id=$_SESSION['user'];
-else
-	exit();
 
+print("
+<html>
+<Title>Import Sharing PPT</Title>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+<meta http-equiv='Content-Language' content='zh-CN' /> 
+");
+print("
+<form enctype='multipart/form-data' action='import_file.php' method='POST'>
+    <input type='hidden' name='MAX_FILE_SIZE' value='128000000' />
+    文件: <input name='userfile' type='file' />
+    <input name='upload' type='submit' value='Upload' />
+</form>
+");
 
 if(isset($_POST['upload'])){
 	$uploaddir = 'share/';
@@ -52,6 +55,6 @@ if ($handle = opendir('share/')) {
 	closedir($handle);
 }
 
+print("<html>");
 ?>
 
-<html>
