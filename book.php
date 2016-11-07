@@ -309,16 +309,16 @@ if(isset($_POST['list_all']))$action="list_all";
 
 dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage setting:$setting<br>");
 
-if($role != 2 && preg_match("/manager|approve|stock|push|log|reject_wait/",$action)){
-	print("You are not administrator!");
-	return;
-}
 
-if($role < 1 && preg_match("/lend|history/",$action)){
+if($role < 1 && !preg_match("/home|next|library|begin|end|prev|show_borrower|list_comments|list_comments_all|list_share|list_timeout|list_out/",$action)){
 	print("You are not member!");
 	return;
 }
 
+if($role != 2 && preg_match("/manager|approve|stock|push|log|reject_wait|edit_book|add_newbook|list_member|remove_member|approve_member/",$action)){
+	print("You are not administrator!");
+	return;
+}
 
 if(isset($_GET['comment_type'])) $comment_type=$_GET['comment_type'];
 else if(isset($_SESSION['comment_type'])) $comment_type=$_SESSION['comment_type'];
@@ -374,7 +374,47 @@ switch($action){
 		$_SESSION['start'] = $start;
 		show_home();
 		break;
+	case "show_borrower":
+		show_book($book_id);
+		break;
+	case "list_comments":
+		list_comments('', $borrower);
+		break;
+	case "list_comments_all":
+		list_comments('', '', 0, 30);
+		break;
+	case "list_share":
+		show_share($login_id);
+		break;
+	case "list_timeout":
+		print(">8 week<br>");
+		list_record('', 'timeout', 56);
+		print(">4 week<br>");
+		list_record('', 'timeout', 28);
+		print(">3.5 week<br>");
+		list_record('', 'timeout', 24);
+		print(">3 week<br>");
+		list_record('', 'timeout', 21);
+		break;
+	case "list_out":
+		out_record($login_id);
+		break;
+	case "join":
+		if($login_id == 'NoLogin'){
+			print("please register first!");
+			break;
+		}
+		$borrower = $login_id;
+		$cc = get_user_attr($borrower, 'email');
+		$user = get_user_attr($borrower, 'name');
+		$to = get_admin_mail();
+		add_member($borrower, $user, $cc, 0x0);
+		add_record(0, $login_id, 0x107);
+		mail_html($to, $cc, "$user is applying to join reading club", "");
+		manage_record($login_id);
+		break;
 
+	/*member*/
 	case "borrow":
 		if(isset($record_id)){
 			borrow_wait_book($record_id, $login_id);
@@ -417,12 +457,6 @@ switch($action){
 		}
 		home_link();
 		break;
-	case "show_borrower":
-		show_book($book_id);
-		break;
-	case "list_share":
-		show_share($login_id);
-		break;
 	case "add_favor":
 		add_favor($login_id, $book_id);
 		list_book($view, $start, $items_perpage, 0, 'favor');
@@ -439,33 +473,13 @@ switch($action){
 		$favor = true;
 		show_my($login_id);
 		break;
-	case "list_out":
-		out_record($login_id);
-		break;
 	case "list_tbd":
 		list_book('tbd');
-		break;
-	case "list_timeout":
-		print(">8 week<br>");
-		list_record('', 'timeout', 56);
-		print(">4 week<br>");
-		list_record('', 'timeout', 28);
-		print(">3.5 week<br>");
-		list_record('', 'timeout', 24);
-		print(">3 week<br>");
-		list_record('', 'timeout', 21);
 		break;
 	case "list_statistic":
 		list_statistic();
 		break;
 
-		/*admin*/
-	case "list_comments":
-		list_comments('', $borrower);
-		break;
-	case "list_comments_all":
-		list_comments('', '', 0, 30);
-		break;
 		/*admin*/
 	case "transfer":
 		$book_id = get_bookid_by_record($record_id);
@@ -600,20 +614,6 @@ switch($action){
 		if(isset($record_id))
 			set_record_status($record_id, 0x108);
 		set_member_attr($borrower, 'role', 0x1);
-		manage_record($login_id);
-		break;
-	case "join":
-		if($login_id == 'NoLogin'){
-			print("please register first!");
-			break;
-		}
-		$borrower = $login_id;
-		$cc = get_user_attr($borrower, 'email');
-		$user = get_user_attr($borrower, 'name');
-		$to = get_admin_mail();
-		add_member($borrower, $user, $cc, 0x0);
-		add_record(0, $login_id, 0x107);
-		mail_html($to, $cc, "$user is applying to join reading club", "");
 		manage_record($login_id);
 		break;
 	case "reject_return":
@@ -754,7 +754,7 @@ function show_library()
 
 function show_share()
 {
-
+	//include 'import_file.php';
 	print("<iframe height=1920 width=1024 src='import_file.php'></iframe>");
 }
 
