@@ -254,6 +254,9 @@ print "<a href=\"book.php\">首页</a> &nbsp;&nbsp;$login_text ";
 
 if($role == 0){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=join\">入会</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=library\">书库</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_comments_all\">最新评论</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
 }
 
 if($role >= 1){
@@ -276,15 +279,7 @@ if($role == 2){
 
 print("<br>");
 
-if($role < 1 && $login_id == 'NoLogin'){
-	print("<div id='div_homentro'>");
-	$lines = file("QClubIntroduction.htm");
-	foreach ($lines as $line_num => $line) {
-	    #print(htmlspecialchars($line) . "<br/>\n");
-	    print($line);
-	}
-	print('</div>');
-}
+
 #print('<div id="div_homeintro" ></div>');
 
 
@@ -352,6 +347,9 @@ switch($action){
 		$start += $items_perpage;
 		$_SESSION['start'] = $start;
 		show_home();
+		break;
+	case "library":
+		show_library();
 		break;
 	case "begin":
 		$start = 0;
@@ -694,7 +692,23 @@ function show_home()
 	global $class_list, $class, $comment_type, $role, $order;
 	if($role > 0){
 		show_my_hot($login_id);
+	}else if($login_id == 'NoLogin'){
+		print("<div id='div_homentro'>");
+		$lines = file("QClubIntroduction.htm");
+		foreach ($lines as $line_num => $line) {
+#print(htmlspecialchars($line) . "<br/>\n");
+			print($line);
+		}
+		print('</div>');
 	}
+	show_library();
+}
+
+function show_library()
+{
+
+	global $login_id, $view, $start, $items_perpage;
+	global $class_list, $class, $comment_type, $role, $order;
 	$view_op = $view == 'brief'?'normal':'brief';
 	$view_ch = $view_op == 'brief'?'简略':'完整';
 	print("<div'>书库列表 <a href='book.php?view=$view_op'>$view_ch</a>");

@@ -125,9 +125,12 @@ if($book_id && $op=="modify"){
 	if(isset($_POST['cancel']))
 		return;
 	$comment = $_POST['comment'];
+	$borrower = $_POST['borrower'];
 	$date = $_POST['date'];
 	$sql = "update comments set words = '$comment', timestamp='$date'  where comment_id = $comment_id";
 	$row = update_mysql_query($sql);
+	print("Update $row rows for $borrower");
+	print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_comments_all'\",2000);</script>");
 
 }else if($op=="edit_comment_ui"){
 	$op = "save_comment";
@@ -136,6 +139,7 @@ if($book_id && $op=="modify"){
 	while($row = mysql_fetch_array($res)){
 		$comment = $row['words'];
 		$date = $row['timestamp'];
+		$borrower = $row['borrower'];
 	}
 	print("
 <html>
@@ -148,7 +152,9 @@ if($book_id && $op=="modify"){
 <tbody>
 <input type='hidden' name='op' value='$op'>
 <input name='comment_id' type='hidden' value='$comment_id'>
+<input name='borrower' type='hidden' value='$borrower'>
 <tr class='odd noclick'><th>ID:</th><td>$comment_id</td></tr>
+<tr class='odd noclick'><th>Borrower:</th><td>$borrower</td></tr>
 <tr class='odd noclick'><th>Date:</th><td><input name='date' type='text' value='$date' ></td></tr>
 <tr><th>Comment:</th><td>
 <textarea wrap='soft' type='text' name='comment' rows='8' maxlength='2000' cols='60'>$comment</textarea>
