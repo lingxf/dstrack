@@ -2,12 +2,14 @@
 include_once 'debug.php';
 include_once 'book_lib.php';
 include_once "db_connect.php";
-global $login_id;	
+global $login_id, $role;	
 $login_id="";
 session_name("book");
 session_start();
-if(isset($_SESSION['user']))
+if(isset($_SESSION['user'])){
 	$login_id=$_SESSION['user'];
+	$role = is_member($login_id);
+}
 
 print("
 <html>
@@ -35,6 +37,17 @@ if(isset($_POST['upload'])){
 	}
 }
 
+if(isset($_GET['action']))
+	$action = $_GET['action'];
+
+switch($action){
+	case 'delete':
+		if($role != 2)
+			break;
+		$file = 'share/'.$_GET['file'];
+		unlink($file);
+		break;
+}
 
 print("待分享:<br>");
 list_record($login_id, 'share', 0x105);
@@ -49,9 +62,15 @@ if ($handle = opendir('share/')) {
 		$booklist[] = $file;
 	}
 	sort($booklist);
+	print($table_head);
 	foreach($booklist as $file){
-		print("<a href='share/$file'>$file</a>\n<br>");
+		print("<tr>");
+		print_td("<a href='share/$file'>$file</a>");
+		if($role == 2)
+			print_td("<a onclick='javascript:return confirm(\"Do you really want to delete?\");' href='import_file.php?action=delete&file=$file'>Delete</a>");
+		print("</tr>");
 	}
+	print("</table>");
 	closedir($handle);
 }
 
