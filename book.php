@@ -254,23 +254,16 @@ print "<a href=\"book.php\">首页</a> &nbsp;&nbsp;$login_text ";
 
 if($role == 0){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=join\">入会</a>";
+}else if($role >= 1){
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_favor\">我的</a>";
+}
 	print "&nbsp;&nbsp;<a href=\"book.php?action=library\">书库</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_share\">分享</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_comments_all\">最新评论</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
-}
-
-if($role >= 1){
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_favor\">我的</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_share\">分享</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_comments_all\">最新评论</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_statistic\">统计</a>";
-}
 
 if($role == 2){
 	print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"book.php?action=manage\">管理</a>";
@@ -310,7 +303,7 @@ if(isset($_POST['list_all']))$action="list_all";
 dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage setting:$setting<br>");
 
 
-if($role < 1 && !preg_match("/home|next|library|begin|end|prev|show_borrower|list_comments|list_comments_all|list_share|list_timeout|list_out/",$action)){
+if($role < 1 && !preg_match("/home|next|library|begin|end|prev|show_borrower|history|list_comments|list_comments_all|list_share|list_timeout|list_out|list_statistic/",$action)){
 	print("You are not member!");
 	return;
 }
