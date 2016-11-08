@@ -164,7 +164,72 @@ if($book_id && $op=="modify"){
 <input class='btn' type='submit' name='save' value='Save'>
 <input class='btn' type='submit' name='cancel' value='Cancel'>
 </form> ");
+}else if($op=="add_share" || $op == "save_share"){
+	if(isset($_POST['cancel'])){
+		print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_share'\",1000);</script>");
+		return;
+	}
+	$book_id = $_POST['book_id'];
+	$borrower = $_POST['borrower'];
+	$date = $_POST['date'];
+	$book_name = $_POST['book_name'];
+	$time = time();
+	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
+	$adate = $time_start;
+	$sdate = $date;
+	if($op=='add_share'){
+		$rows = add_record_one($book_id, $borrower, $adate, "", $sdate, $sdate, 0x105, 0, $book_name);
+		print(" Add $rows rows $book_id, $book_name, $borrower<br>");
+	}else{
+		$record_id = $_POST['record_id'];
+		$sql = " update history set `borrower`='$borrower', book_id=$book_id, sdate='$sdate', misc='$book_name' where record_id = $record_id";
+		$res = update_mysql_query($sql);
+		print("Update $rows rows $book_id, $book_name, $borrower, $date<br>");
+	}
 
+	print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_share'\",1000);</script>");
+}else if($op=="add_share_ui" || $op="edit_share_ui"){
+	if($op=="add_share_ui"){
+		$op = "add_share";
+		$time = time() + 3600*24*7;
+		$date = strftime("%Y-%m-%d %H:%M:%S", $time);
+		$borrower = isset($_GET['borrower'])?$_GET['borrower']:'';
+		$book_id = 0;
+		$book_name = '';
+	}else{
+		$op = "save_share";
+		$record_id = $_GET['record_id'];
+		$sql = "select * from history where record_id = $record_id";
+		$res = read_mysql_query($sql);
+		while($row = mysql_fetch_array($res)){
+			$borrower= $row['borrower'];
+			$book_id= $row['book_id'];
+			$date= $row['sdate'];
+			$book_name = $row['misc'];
+		}
+	}
+	print("
+<html>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+<meta http-equiv='Content-Language' content='zh-CN' /> 
+");
+	print("
+<form method='post' action='edit_book.php'>
+<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
+<tbody>
+<input type='hidden' name='op' value='$op'>
+<input type='hidden' name='record_id' value='$record_id'>
+<tr class='odd noclick'><th>编号:</th><td><input name='book_id' type='text' value='$book_id' ></td></tr>
+<tr class='odd noclick'><th>用户名:</th><td><input name='borrower' type='text' value='$borrower' ></td></tr>
+<tr class='odd noclick'><th>日期:</th><td><input name='date' type='text' value='$date' ></td></tr>
+<tr><th>非库书名:</th><td>
+<textarea wrap='soft' type='text' name='book_name' rows='1' maxlength='2000' cols='60'>$book_name</textarea>
+</td></tr>
+</tbody>
+</table>
+<input class='btn' type='submit' name='save' value='Save'>
+<input class='btn' type='submit' name='cancel' value='Cancel'>
+</form> ");
 }else{
 	print("unsupported $op");
 }

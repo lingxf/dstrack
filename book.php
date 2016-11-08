@@ -755,7 +755,7 @@ function show_library()
 function show_share()
 {
 	//include 'import_file.php';
-	print("<iframe height=1920 width=1024 src='import_file.php'></iframe>");
+	print("<iframe height=1920 width=1150 src='import_file.php'></iframe>");
 }
 
 function add_newbook()

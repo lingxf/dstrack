@@ -55,8 +55,8 @@ function manage_record()
 	list_record($login_id, 'approve', " history.status = 3 ");
 	print("&nbsp;&nbsp;等候：");
 	list_record($login_id, 'approve', " (history.status = 4 or history.status = 0x104) ");
-	print("&nbsp;&nbsp;分享：");
-	list_record($login_id, 'approve', " history.status = 0x105 ");
+	print("&nbsp;&nbsp;分享：<a href=edit_book.php?op=add_share_ui>添加</a>");
+	list_record($login_id, 'share', " 0x105 ");
 	print("&nbsp;&nbsp;申请入会：");
 	list_record($login_id, 'member');
 }
@@ -88,8 +88,8 @@ function list_record($login_id, $format='self', $condition='')
 	print($table_head);
 	if($format == 'approve'){
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t3.user = t1.borrower $condition order by adate asc ";
-		$sql = " select record_id, borrower, history.status, name, user_name, data, adate, bdate,rdate,sdate, history.book_id from history left join `books` as t2 using (`book_id`) left join member on member.user = history.borrower  where $condition order by adate asc ";
+		$sql = " select record_id, borrower, t1.status, name, misc, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t3.user = t1.borrower $condition order by adate asc ";
+		$sql = " select record_id, borrower, history.status, name, misc, user_name, data, adate, bdate,rdate,sdate, history.book_id from history left join `books` as t2 using (`book_id`) left join member on member.user = history.borrower  where $condition order by adate asc ";
 	}else if($format == 'self'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, history.status, books.status as bstatus, data, name, user_name, adate, bdate,rdate,sdate, history.book_id from history, books, member  where history.borrower='$login_id' and history.book_id = books.book_id and member.user = history.borrower and $condition order by adate desc ";
@@ -107,7 +107,7 @@ function list_record($login_id, $format='self', $condition='')
 		$sql .= " order by adate asc ";
 	}else if($format == 'out'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower order by bdate desc";
+		$sql = " select record_id, borrower, t1.status, name, misc, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower order by bdate desc";
 	}else if($format == 'history'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期' ));
 		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by sdate desc ";
@@ -119,7 +119,7 @@ function list_record($login_id, $format='self', $condition='')
 		$sql = " select record_id, borrower, t1.status, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower order by adate desc ";
 	}else if($format == 'timeout'){	
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '到期日期','状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3 or t1.status = 5) and  t1.book_id = t2.book_id and t3.user = t1.borrower ";
+		$sql = " select record_id, borrower, t1.status, name, misc, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3 or t1.status = 5) and  t1.book_id = t2.book_id and t3.user = t1.borrower ";
 		if($condition != ''){
 			$condition = " (to_days(now())  - to_days(bdate)) >= $condition ";
 			$sql .= "and $condition";
@@ -181,10 +181,6 @@ function list_record($login_id, $format='self', $condition='')
 				$status_text = "续借";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=approve_renew\">批准</a>";
 				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_wait\">拒绝</a>";
-			}else if($status == 0x105){
-				$status_text = "分享";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=share_done\">完成</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=share_cancel\">取消</a>";
 			}else if($status == 0){
 				$status_text = "已还";
 			}else{
@@ -248,7 +244,12 @@ function list_record($login_id, $format='self', $condition='')
 		else if($format == 'share'){
 			if($book_id == 0)
 				$name = $row['name'].":".$row['misc'];
-			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $sdate)); 
+			if($status == 0x105 && $role == 2){
+				$blink = "<a href=\"book.php?record_id=$record_id&action=share_done\">完成</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=share_cancel\">取消</a>";
+				$blink .= "&nbsp;<a href=\"edit_book.php?record_id=$record_id&op=edit_share_ui\">编辑</a>";
+			}
+			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $sdate, $blink)); 
 		}else if($format == 'member')
 			print_tdlist(array($i,$borrower_id, $borrower,$adate, $sdate, $blink)); 
 		else if($format == 'score')
@@ -567,6 +568,7 @@ function list_member()
 			$blink = "<a href=book.php?action=approve_member&borrower=$user_id>入会</a>";
 		}
 		$blink .= "&nbsp;<a href='javascript:deduce_member_score(this,\"$user_id\");' >扣分</a>";
+		$blink .= "&nbsp;<a href='edit_book.php?op=add_share_ui&borrower=$user_id' >分享</a>";
 		print("<tr>\n");
 		if(preg_match("/^test/", $user_id))
 			continue;
@@ -583,7 +585,7 @@ function list_member()
 		$wish = floor(($score - $score_used)/100);
 		$total_wish += $wish;
 		print_td($wish, 20);
-		print_td($blink, 100);
+		print_td($blink, 180);
 		print("</tr>\n");
 	}
 	print("</table>");
@@ -934,7 +936,7 @@ function add_score($book_id, $login_id, $score=0)
 	return true;
 }
 
-function apply_share($book_id, $login_id)
+function apply_share($book_id, $login_id, $date=0)
 {
 	$sql = " select * from history where book_id = $book_id and borrower='$login_id' and (status = 0x105)";
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
@@ -1304,13 +1306,22 @@ function add_record($book_id, $user_id, $status=1, $record_id=false, $data=0)
 	return 0;
 }
 
-function add_record_full($book_id, $user_id, $bdate, $sdate, $status=1)
+function add_record_one($book_id, $user_id, $adate, $bdate, $rdate, $sdate, $status=1, $data=0, $misc='')
 {
 	$time = time();
 	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
-	$sql = " insert into history set `borrower`='$user_id', book_id=$book_id, adate='$bdate', bdate= '$bdate', rdate='$sdate', sdate='$sdate', status=$status";
+	$sql = " insert into history set `borrower`='$user_id', book_id=$book_id, adate='$adate', bdate= '$bdate', rdate='$rdate', sdate='$sdate', status=$status, data=$data, misc='$misc'";
 	$res = update_mysql_query($sql);
-	return true;
+	return $res;
+}
+
+function add_record_full($book_id, $user_id, $bdate, $sdate, $status=1, $data=0, $misc='')
+{
+	$time = time();
+	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
+	$sql = " insert into history set `borrower`='$user_id', book_id=$book_id, adate='$bdate', bdate= '$bdate', rdate='$sdate', sdate='$sdate', status=$status, data=$data, misc='$misc'";
+	$res = update_mysql_query($sql);
+	return $res;
 }
 
 function get_bookid_by_borrower($borrower)
