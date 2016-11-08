@@ -273,6 +273,9 @@ function list_statistic()
 	//comment_statistic_legacy(1);
 	print("分享统计");
 	share_statistic();
+
+	print("评分统计");
+	score_statistic();
 }
 function share_statistic($type = 0)
 {
@@ -294,6 +297,7 @@ function share_statistic($type = 0)
 		print_td($count);
 		print("</tr>");
 	}
+	print("</table>");
 }
 
 function add_comment($book_id, $user, $this_comment, $month='', $date='')
@@ -426,6 +430,54 @@ function comment_statistic($type = 0)
 			$ct_array[$user][0]++;
 		}
 //		print("$book:$user $date $comment<br>");
+	}
+	$ct_array = rsort_by_index($ct_array, 0);
+	$mm = array(7=>'Jul.', 8=>'Aug.', 9=>'Sep.', 10=>'Oct.', 11=>'Nov.', 12=>'Dec.');
+	print("<tr>");
+	print("<th>User</th>");
+	foreach($mm as $m=>$name){
+		print("<th >$name</th>");
+	}
+	print("<th>Total</th>");
+	print("</tr>");
+	$total = array();
+	foreach($ct_array as $user=>$mct){
+		print("<tr>");
+		$user_name = get_user_name($user);
+		print_td($user_name, 150);
+		$t = 0;
+		foreach($mm as $m=>$name){
+			print_td($mct[$m]);
+			$total[$m] += $mct[$m];
+		}
+		print("<th>$mct[0]</th>");
+		$total[0] += $mct[0];
+		print("</tr>");
+	}
+	print("<tr>");
+	print("<th>Total</th>");
+	foreach($mm as $m=>$name){
+		print_td($total[$m]);
+	}
+	print("<th>$total[0]</th>");
+	print("</tr>");
+	print("</table>");
+//	print_r($ct_array);
+}
+
+function score_statistic($type = 0)
+{
+	$tr_width=400;
+	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	$sql = "select book_id, borrower, month(adate) as mon, adate from history where status=0x109";
+	$res = read_mysql_query($sql);
+	$ct_array = array();
+	while($row = mysql_fetch_array($res)){
+		$book_id = $row['book_id'];
+		$user = $row['borrower'];
+		$month = $row['mon'];
+		$ct_array[$user][$month]++;
+		$ct_array[$user][0]++;
 	}
 	$ct_array = rsort_by_index($ct_array, 0);
 	$mm = array(7=>'Jul.', 8=>'Aug.', 9=>'Sep.', 10=>'Oct.', 11=>'Nov.', 12=>'Dec.');
