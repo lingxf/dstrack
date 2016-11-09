@@ -26,6 +26,8 @@ $_SESSION['order'] = $order;
 
 $login_id = $_SESSION['user'];
 $role = is_member($login_id);
+$role_city = get_user_attr($login_id, 'city');
+$disp_city = 0;
 
 $start=$_SESSION['start'];
 $items_perpage=$_SESSION['items_perpage'];
