@@ -674,7 +674,7 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 	$hasmore = false;
 	$hasprev = false;
 
-	$cond = "where (name != 'TBD' and name != '') ";
+	$cond = "where (name != 'TBD' and name != '' and book_id != 0) ";
 	if($format == 'tbd')
 		$cond = "where (name = 'TBD' or name = '') ";
 	if($class == 100)
@@ -742,16 +742,16 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 
 	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'normal')
-		print_tdlist(array('编号', '书名','作者', '描述','评论','分类', '状态', '操作'));
+		print_tdlist(array('编号', '书名','作者', '描述','评论','分类','评分','状态', '操作'));
 	else if($format == 'brief'){
 		if($order == 1 || $order == 0)
 			print_tdlist(array('编号', '书名','作者','分类','次数','状态', '操作'));
 		else if($order == 2)
 			print_tdlist(array('编号', '书名','作者','分类','评分','状态', '操作'));
 	}else if($format == 'class')
-		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','咱分类','状态', '操作'));
+		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','Q分类','状态', '操作'));
 	else if($format == 'tbd')
-		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','咱分类','状态', '操作'));
+		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','Q分类','状态', '操作'));
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date','sponsor','status', 'action'));
 
@@ -837,6 +837,7 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 			print_td($desc,'','','',$sc_desc);
 			print_td($comments, '150','','',$sc_comments);
 			print_td($class_text, 35, '', '', $sc_class);
+			print_td($data,35);
 			print_td($status_text,35);
 			print_td($blink,80);
 		}else if($format == 'class' || $format == 'tbd'){

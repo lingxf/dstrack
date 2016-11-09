@@ -233,7 +233,7 @@ else
 if($login_id == 'NoLogin')
 	$login_text = "<a href=book_user_login.php>登录</a>";
 else
-	$login_text = "<a href=book_user_setting.php>$login_id($role_text)<a/> &nbsp;&nbsp;<a href=\"book.php?action=logout\">注销</a>";
+	$login_text = "<a href=book_user_setting.php>$login_id($role_text)<a/>&nbsp;&nbsp;<a href=\"book.php?action=logout\">注销</a>";
 
 $action="home";
 if(isset($_GET['action']))$action=$_GET['action'];
@@ -252,7 +252,7 @@ if(isset($_GET['record_id'])) $record_id=$_GET['record_id'];
 if(isset($_GET['borrower'])) $borrower =$_GET['borrower'];
 
 
-print "<a href=\"book.php\">首页</a> &nbsp;&nbsp;$login_text ";
+print "<a href=\"book.php\">首页</a>";
 
 if($role == 0){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=join\">入会</a>";
@@ -274,6 +274,8 @@ if($role == 2){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=add_newbook\">新书</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_tbd\">待定</a>";
 }
+
+print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$login_text ";
 
 print("<br>");
 
@@ -344,7 +346,7 @@ switch($action){
 	case "next":
 		$start += $items_perpage;
 		$_SESSION['start'] = $start;
-		show_home();
+		show_library();
 		break;
 	case "library":
 		show_library();
@@ -352,7 +354,7 @@ switch($action){
 	case "begin":
 		$start = 0;
 		$_SESSION['start'] = $start;
-		show_home();
+		show_library();
 		break;
 	case "end":
 		$end = get_total_books();
@@ -360,14 +362,14 @@ switch($action){
 		if($start < 0)
 			$start = 0;
 		$_SESSION['start'] = $start;
-		show_home();
+		show_library();
 		break;
 	case "prev":
 		$start -= $items_perpage;
 		if($start < 0)
 			$start = 0;
 		$_SESSION['start'] = $start;
-		show_home();
+		show_library();
 		break;
 	case "show_borrower":
 		show_book($book_id);
@@ -655,14 +657,7 @@ function show_my($login_id)
 	$score = get_user_attr($login_id, 'score');
 	$score_used = get_user_attr($login_id, 'score_used');
 	print("我的积分:$score 已用积分:$score_used<br>");
-	print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
-	list_book($view, $start, $items_perpage,0, 'favor');
-	print("<div>我的借阅");
-	list_record($login_id, 'self', ' (history.status = 2 or history.status = 3 or history.status = 1 ) ');
-	print("我的等候");
-	list_record($login_id, 'self', ' (history.status = 4 or history.status = 0x100 or history.status = 0x101 or history.status = 0x104)  ');
-	print("等我的人");
-	list_record($login_id, 'waityou');
+	print("<div>");
 	print("我的借阅记录");
 	list_record($login_id, 'self', ' history.status = 0 ');
 	print("我的评论");
@@ -673,7 +668,7 @@ function show_my($login_id)
 	list_record($login_id, 'score', ' history.status = 0x109 ');
 	print("</div>");
 	print("曾借书本");
-	list_book($view, $start, $items_perpage,0, 'history');
+	list_book('normal', $start, $items_perpage,0, 'history');
 }
 
 function show_my_hot($login_id)
@@ -691,7 +686,13 @@ function show_home()
 	global $login_id, $view, $start, $items_perpage;
 	global $class_list, $class, $comment_type, $role, $order;
 	if($role > 0){
+		$score = get_user_attr($login_id, 'score');
+		$score_used = get_user_attr($login_id, 'score_used');
+		$score_free = $score - $score_used;
+		print("我的积分:$score 已用积分:$score_used 可用积分:$score_free<br>");
 		show_my_hot($login_id);
+		print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
+		list_book('normal', $start, $items_perpage,0, 'favor');
 	}else if($login_id == 'NoLogin'){
 		print("<div id='div_homentro'>");
 		$sql = "select * from notice where item = 'BJ'";
@@ -709,8 +710,8 @@ function show_home()
 				}
 		}
 		print('</div>');
+		show_library();
 	}
-	show_library();
 }
 
 function show_library()
@@ -720,12 +721,12 @@ function show_library()
 	global $class_list, $class, $comment_type, $role, $order;
 	$view_op = $view == 'brief'?'normal':'brief';
 	$view_ch = $view_op == 'brief'?'简略':'完整';
-	print("<div'>书库列表 <a href='book.php?view=$view_op'>$view_ch</a>");
-	print("&nbsp;<a href='book.php?items_perpage=25'>25</a>");
-	print("&nbsp;<a href='book.php?items_perpage=50'>50</a>");
-	print("&nbsp;<a href='book.php?items_perpage=100'>100</a>");
-	print("&nbsp;<a href='book.php?items_perpage=200'>200</a>");
-	print("&nbsp;&nbsp;&nbsp;&nbsp;<a href='book.php?view=class'>分类</a>&nbsp;");
+	print("<div'>书库列表 <a href='book.php?action=library&view=$view_op'>$view_ch</a>");
+	print("&nbsp;<a href='book.php?action=library&items_perpage=25'>25</a>");
+	print("&nbsp;<a href='book.php?action=library&items_perpage=50'>50</a>");
+	print("&nbsp;<a href='book.php?action=library&items_perpage=100'>100</a>");
+	print("&nbsp;<a href='book.php?action=library&items_perpage=200'>200</a>");
+	print("&nbsp;&nbsp;&nbsp;&nbsp;<a href='book.php?action=library&view=class'>分类</a>&nbsp;");
 	print("<select id='sel_class' onchange='change_class(this.value, 0)'>");
 	print("<option value='100'>所有</option>");
 	foreach($class_list as $key => $class_text) {
@@ -735,9 +736,9 @@ function show_library()
 	}
 	print("</select>");
 	if($comment_type == 0)
-		print("&nbsp;<a href='book.php?comment_type=1'>只看评论</a>");
+		print("&nbsp;<a href='book.php?action=library&comment_type=1'>只看评论</a>");
 	else
-		print("&nbsp;<a href='book.php?comment_type=0'>全部</a>");
+		print("&nbsp;<a href='book.php?action=library&comment_type=0'>全部</a>");
 	print("&nbsp;书名检索&nbsp;<input id='id_book_name' name='book_name' type='text' value=''>");
 	print("<input class='btn' type='button' name='search' value='检索' onclick='book_search()'>");
 
