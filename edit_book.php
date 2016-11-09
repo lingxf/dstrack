@@ -182,7 +182,7 @@ if($book_id && $op=="modify"){
 		<tr class='odd noclick'><th>User:</th><td>$borrower</td></tr>
 		<tr class='odd noclick'><th>Book:</th><td>$book_name</td></tr>
 		");
-	if($op=="edit_comment_ui")
+	if($op=="save_comment")
 		print("<tr class='odd noclick'><th>Date:</th><td><input name='date' type='text' value='$date' ></td></tr> ");
 	print("
 		<tr><th>Comment:</th><td>
