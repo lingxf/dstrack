@@ -692,10 +692,19 @@ function show_home()
 		show_my_hot($login_id);
 	}else if($login_id == 'NoLogin'){
 		print("<div id='div_homentro'>");
-		$lines = file("QClubIntroduction.htm");
-		foreach ($lines as $line_num => $line) {
+		$sql = "select * from notice where item = 'BJ'";
+		$res = read_mysql_query($sql);
+		$n = 0;
+		if($row = mysql_fetch_array($res)){
+				$notice = $row['notice'];
+				$lines = explode("\n", $notice);
+				foreach ($lines as $line_num => $line) {
 #print(htmlspecialchars($line) . "<br/>\n");
-			print($line);
+					if(is_numeric($line[0]) && $n != 0)
+						print("<br>");
+				print($line."<br/>");
+				$n++;
+				}
 		}
 		print('</div>');
 	}
