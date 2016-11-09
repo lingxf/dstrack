@@ -84,7 +84,11 @@ function get_book_status_name($status)
 
 function list_record($login_id, $format='self', $condition='')
 {
-	global $role, $table_head;
+	global $role, $table_head, $role_city, $disp_city;
+	$cond = " 1 ";
+	if($city != 255)
+		$cond .= " and books.city = $role_city ";
+
 	print($table_head);
 	if($format == 'approve'){
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
@@ -95,7 +99,7 @@ function list_record($login_id, $format='self', $condition='')
 		$sql = " select record_id, borrower, history.status, books.status as bstatus, data, name, user_name, adate, bdate,rdate,sdate, history.book_id from history, books, member  where history.borrower='$login_id' and history.book_id = books.book_id and member.user = history.borrower and $condition order by adate desc ";
 	}else if($format == 'score'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '评分'));
-		$sql = " select record_id, borrower, history.status, books.status as bstatus, data, name, user_name, adate, bdate,rdate,sdate, history.book_id from history, books, member  where history.borrower='$login_id' and history.book_id = books.book_id and member.user = history.borrower and $condition order by adate desc ";
+		$sql = " select record_id, borrower, history.status, books.status as bstatus, data, name, user_name, adate, bdate,rdate,sdate, history.book_id from history, books, member  where history.borrower='$login_id' and history.book_id = books.book_id and member.user = history.borrower and $cond and $condition order by adate desc ";
 	}else if( $format == 'waityou'){
 		print_tdlist(array('序号','等候人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$book_ids = get_bookid_by_borrower($login_id);
@@ -107,19 +111,19 @@ function list_record($login_id, $format='self', $condition='')
 		$sql .= " order by adate asc ";
 	}else if($format == 'out'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, misc, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower order by bdate desc";
+		$sql = " select record_id, borrower, t1.status, name, misc, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower and t2.city = $role_city order by bdate desc";
 	}else if($format == 'history'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期' ));
-		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower order by sdate desc ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower and t2.city = $role_city order by sdate desc ";
 	}else if($format == 'share'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '完成日期' ));
-		$sql = " select record_id, borrower, t1.status, name, user_name, data, misc, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = $condition and t3.user = t1.borrower order by sdate desc,adate desc ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data, misc, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = $condition and t3.user = t1.borrower and t2.city = $role_city order by sdate desc,adate desc ";
 	}else if($format == 'member'){
 		print_tdlist(array('序号','帐号','申请人','申请日期', '批准日期', '操作'));
-		$sql = " select record_id, borrower, t1.status, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower order by adate desc ";
+		$sql = " select record_id, borrower, t1.status, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower and t3.city = $role_city order by adate desc ";
 	}else if($format == 'timeout'){	
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '到期日期','状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, misc, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3 or t1.status = 5) and  t1.book_id = t2.book_id and t3.user = t1.borrower ";
+		$sql = " select record_id, borrower, t1.status, name, misc, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3 or t1.status = 5) and  t1.book_id = t2.book_id and t3.user = t1.borrower and t2.city = $role_city ";
 		if($condition != ''){
 			$condition = " (to_days(now())  - to_days(bdate)) >= $condition ";
 			$sql .= "and $condition";
@@ -650,12 +654,20 @@ function list_member()
 	print('</form');
 }
 
+function get_city_booktb($city)
+{
+	$city_book = array('books', 'sh-books', 'sz-books', 'xa-books');
+	return $city_book[$city];
+}
 
 function list_book($format='normal', $start=0, $items=50, $order = 0, $condition='')
 {
 	global $login_id, $role, $class, $comment_type, $book_sname, $favor;
+	global $role_city, $disp_city;
 
 	$table_name = "book";
+	$tb_name = get_city_booktb($disp_city);
+
 	$tr_width = 800;
 	$background = '#efefef';
 
@@ -680,20 +692,20 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		$cond .= " and comments != '' ";
 
 	if($order == 1){
-		$sql_time = "select book_id, count( distinct history.borrower) as btimes from history left join books using (book_id) where history.status<6 group by book_id ";
-		$sql = " select * from books left join ($sql_time) btime using (book_id) $cond order by btime.btimes desc"; 
+		$sql_time = "select book_id, count( distinct history.borrower) as btimes from history left join $tb_name using (book_id) where history.status<6 group by book_id ";
+		$sql = " select * from $tb_name left join ($sql_time) btime using (book_id) $cond order by btime.btimes desc"; 
 	}else if($order == 2){
-		$sql_time = "select book_id, round(avg( history.data),1) as score from history left join books using (book_id) where history.status = 0x109 group by book_id ";
-		$sql = " select * from books left join ($sql_time) score using (book_id) $cond order by score.score desc"; 
+		$sql_time = "select book_id, round(avg( history.data),1) as score from history left join $tb_name using (book_id) where history.status = 0x109 group by book_id ";
+		$sql = " select * from $tb_name left join ($sql_time) score using (book_id) $cond order by score.score desc"; 
 	}else{
-		$sql_time = "select book_id, count( distinct history.borrower) as btimes from history left join books using (book_id) where history.status<6 group by book_id ";
-		$sql = " select * from books left join ($sql_time) btime using (book_id) $cond order by book_id asc"; 
+		$sql_time = "select book_id, count( distinct history.borrower) as btimes from history left join $tb_name using (book_id) where history.status<6 group by book_id ";
+		$sql = " select * from $tb_name left join ($sql_time) btime using (book_id) $cond order by book_id asc"; 
 	}
 
 	if($condition == 'favor')
-		$sql = "select * from favor left join books using (book_id) where member_id = '$login_id'";
+		$sql = "select * from favor left join $tb_name using (book_id) where member_id = '$login_id'";
 	else if($condition == 'history')
-		$sql = "select * from history left join books using (book_id) where borrower = '$login_id' and (history.status < 6) ";
+		$sql = "select * from history left join $tb_name using (book_id) where borrower = '$login_id' and (history.status < 6) ";
 	else{
 		$res1 = mysql_query($sql) or die("Invalid query:" .$sql. mysql_error());
 		$rows = mysql_num_rows($res1);

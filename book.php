@@ -221,6 +221,8 @@ else{
 $max_books = 1;
 $items_perpage = 50;
 $role = is_member($login_id);
+$role_city = get_user_attr($login_id, 'city');
+$disp_city = 0;
 if($role == 2)
 	$role_text = "管理员";
 else if($role == 1)

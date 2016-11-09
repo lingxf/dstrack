@@ -9,6 +9,7 @@ session_start();
 if(isset($_SESSION['user'])){
 	$login_id=$_SESSION['user'];
 	$role = is_member($login_id);
+	$role_city = get_user_attr($login_id, 'city');
 }
 
 print("
