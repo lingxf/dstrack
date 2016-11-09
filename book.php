@@ -657,8 +657,6 @@ function show_my($login_id)
 	print("我的积分:$score 已用积分:$score_used<br>");
 	print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
 	list_book($view, $start, $items_perpage,0, 'favor');
-	print("曾借书本");
-	list_book($view, $start, $items_perpage,0, 'history');
 	print("<div>我的借阅");
 	list_record($login_id, 'self', ' (history.status = 2 or history.status = 3 or history.status = 1 ) ');
 	print("我的等候");
@@ -669,9 +667,13 @@ function show_my($login_id)
 	list_record($login_id, 'self', ' history.status = 0 ');
 	print("我的评论");
 	list_comments('', $login_id);
+	print("我的评论回复");
+	list_comments('', $login_id, 2);
 	print("我的评分记录");
 	list_record($login_id, 'score', ' history.status = 0x109 ');
 	print("</div>");
+	print("曾借书本");
+	list_book($view, $start, $items_perpage,0, 'history');
 }
 
 function show_my_hot($login_id)

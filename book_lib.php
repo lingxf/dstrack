@@ -1166,19 +1166,26 @@ function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 	$cond = "1 ";
 	if($book_id != '')
 		$cond .= " and comments.book_id = $book_id";
-	if($borrower != '')
-		$cond .= " and borrower = '$borrower'";
+	if($borrower != '') {
+		if($format == 2)
+			$cond .= " and cm.borrower = '$borrower'";
+		else
+			$cond .= " and comments.borrower = '$borrower'";
+	}
 	if($last_days != '')
 		$cond .= " and (to_days(now()) - to_days(`timestamp`)) < $last_days";
 	print($table_head);
 	if($format == 1)
-		print_tbline(array('序号', '用户', '日期', '评论', '字数'));
+		print_tbline(array('序号', '用户', '日期', '评论', '命令'));
 	else
-		print_tbline(array('序号', '用户', '日期', '书名','评论', '字数'));
-	$sql = "select comment_id, borrower, words, date(timestamp) as dt, comments.book_id, books.name from comments, books where comments.book_id = books.book_id and $cond order by timestamp desc limit 100";
+		print_tbline(array('序号', '用户', '日期', '书名','评论', '命令'));
+	$tc = "(select comment_id, borrower from comments)";
+	$sql = "select comments.comment_id, comments.borrower, parent, words, date(timestamp) as dt, comments.book_id, books.name, cm.borrower as parent_user from comments left join $tc as cm on comments.parent = cm.comment_id left join books on comments.book_id = books.book_id where $cond order by timestamp desc limit 100";
 	$res = read_mysql_query($sql);
 	while($row = mysql_fetch_array($res)){
 		$comment_id = $row['comment_id'];
+		$parent = $row['parent'];
+		$parent_user = $row['parent_user'];
 		$borrower = $row['borrower'];
 		$comments = $row['words'];
 		$date = $row['dt'];
@@ -1189,9 +1196,10 @@ function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 		print("<tr>");
 		if($login_id == 'xling'){
 			$webroot = dirname($mail_url);
-			$comment_id = "<a href=$webroot/edit_book.php?op=edit_comment_ui&comment_id=$comment_id>$comment_id</a>";
-		}
-		print_td($comment_id, 30);
+			$comment_id_link = "<a href=$webroot/edit_book.php?op=edit_comment_ui&comment_id=$comment_id>$comment_id</a>";
+		}else
+			$comment_id_link = $comment_id;
+		print_td($comment_id_link, 30);
 		$borrower_link = "<a href=$mail_url?action=list_comments&borrower=$borrower>$borrower</a>";
 		$book_link = "<a href=$mail_url?action=show_borrower&book_id=$book_id>$book</a>";
 		if($format == 1)
@@ -1199,9 +1207,13 @@ function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 		else{
 			print_tdlist(array($borrower_link,$date));
 			print_td($book_link, 120);
-			print_td($comments);
+			if($parent != 0){
+				$comments = "回复:$parent_user:".$comments;
+			}
+			print_td($comments."($count)");
 		}
-		print_td($count, 30);
+		$cmd = "<a href='edit_book.php?op=add_comment_ui&book_id=$book_id&comment_id=$comment_id&borrower=$borrower'>回复</a>";
+		print_td($cmd, 40);
 	}
 	print("</table>");
 }

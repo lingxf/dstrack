@@ -121,49 +121,78 @@ if($book_id && $op=="modify"){
 	add_log($login_id, $login_id, $book_id, 10);
 	home_link();
 	return;
-}else if($comment_id && $op=="save_comment"){
-	if(isset($_POST['cancel']))
+}else if($op=="save_comment" || $op=="add_comment"){
+	if(isset($_POST['cancel'])){
+		print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_comments_all'\",1000);</script>");
 		return;
+	}
 	$comment = $_POST['comment'];
 	$borrower = $_POST['borrower'];
 	$date = $_POST['date'];
-	$sql = "update comments set words = '$comment', timestamp='$date'  where comment_id = $comment_id";
-	$row = update_mysql_query($sql);
-	print("Update $row rows for $borrower");
+	if($op=="save_comment"){
+		$sql = "update comments set words = '$comment', timestamp='$date'  where comment_id = $comment_id";
+		$row = update_mysql_query($sql);
+		print("Update $row rows for $borrower");
+	}else{
+		$parent = $_POST['parent'];
+		$book_id = $_POST['book_id'];
+		$sql = "insert comments set words = '$comment', borrower='$borrower', parent='$parent', book_id='$book_id'  ";
+		$row = update_mysql_query($sql);
+		print("Insert $row rows for $borrower, $book_id");
+	}
 	print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_comments_all'\",2000);</script>");
 
-}else if($op=="edit_comment_ui"){
-	$op = "save_comment";
-	$sql = "select * from comments where comment_id = $comment_id";
-	$res = read_mysql_query($sql);
-	while($row = mysql_fetch_array($res)){
-		$comment = $row['words'];
-		$date = $row['timestamp'];
-		$borrower = $row['borrower'];
+}else if($op=="edit_comment_ui"||$op="add_comment_ui"){
+	if($op=="edit_comment_ui"){
+		$op = "save_comment";
+		$sql = "select * from comments, books where comments.book_id = books.book_id and comment_id = $comment_id";
+		$res = read_mysql_query($sql);
+		while($row = mysql_fetch_array($res)){
+			$comment = $row['words'];
+			$date = $row['timestamp'];
+			$borrower = $row['borrower'];
+			$book_id = $_row['book_id'];
+			$book_name = $row['name'];
+		}
+	}else{
+		$op = "add_comment";
+		$parent = $_GET['comment_id'];
+		$comment_id = $parent;
+		$parent_user = $_GET['borrower'];
+		$book_id = $_GET['book_id'];
+		$book_name = get_bookname($book_id); 
+		$borrower = $login_id;
 	}
 	print("
-<html>
-<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-<meta http-equiv='Content-Language' content='zh-CN' /> 
-");
+		<html>
+		<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+		<meta http-equiv='Content-Language' content='zh-CN' /> 
+	");
 	print("
-<form method='post' action='edit_book.php'>
-<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
-<tbody>
-<input type='hidden' name='op' value='$op'>
-<input name='comment_id' type='hidden' value='$comment_id'>
-<input name='borrower' type='hidden' value='$borrower'>
-<tr class='odd noclick'><th>ID:</th><td>$comment_id</td></tr>
-<tr class='odd noclick'><th>Borrower:</th><td>$borrower</td></tr>
-<tr class='odd noclick'><th>Date:</th><td><input name='date' type='text' value='$date' ></td></tr>
-<tr><th>Comment:</th><td>
-<textarea wrap='soft' type='text' name='comment' rows='8' maxlength='2000' cols='60'>$comment</textarea>
-</td></tr>
-</tbody>
-</table>
-<input class='btn' type='submit' name='save' value='Save'>
-<input class='btn' type='submit' name='cancel' value='Cancel'>
-</form> ");
+		<form method='post' action='edit_book.php'>
+		<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
+		<tbody>
+		<input type='hidden' name='op' value='$op'>
+		<input name='comment_id' type='hidden' value='$comment_id'>
+		<input name='book_id' type='hidden' value='$book_id'>
+		<input name='parent' type='hidden' value='$parent'>
+		<input name='borrower' type='hidden' value='$borrower'>
+		<tr class='odd noclick'><th>ID:</th><td>$comment_id</td></tr>
+		<tr class='odd noclick' ><th>ReplyTo:</th><td>$parent_user</td></tr>
+		<tr class='odd noclick'><th>User:</th><td>$borrower</td></tr>
+		<tr class='odd noclick'><th>Book:</th><td>$book_name</td></tr>
+		");
+	if($op=="edit_comment_ui")
+		print("<tr class='odd noclick'><th>Date:</th><td><input name='date' type='text' value='$date' ></td></tr> ");
+	print("
+		<tr><th>Comment:</th><td>
+		<textarea wrap='soft' type='text' name='comment' rows='8' maxlength='2000' cols='60'>$comment</textarea>
+		</td></tr>
+		</tbody>
+		</table>
+		<input class='btn' type='submit' name='save' value='Save'>
+		<input class='btn' type='submit' name='cancel' value='Cancel'>
+		</form> ");
 }else if($op=="add_share" || $op == "save_share"){
 	if(isset($_POST['cancel'])){
 		print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_share'\",1000);</script>");
@@ -208,28 +237,27 @@ if($book_id && $op=="modify"){
 			$book_name = $row['misc'];
 		}
 	}
-	print("
-<html>
-<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-<meta http-equiv='Content-Language' content='zh-CN' /> 
-");
-	print("
-<form method='post' action='edit_book.php'>
-<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
-<tbody>
-<input type='hidden' name='op' value='$op'>
-<input type='hidden' name='record_id' value='$record_id'>
-<tr class='odd noclick'><th>编号:</th><td><input name='book_id' type='text' value='$book_id' ></td></tr>
-<tr class='odd noclick'><th>用户名:</th><td><input name='borrower' type='text' value='$borrower' ></td></tr>
-<tr class='odd noclick'><th>日期:</th><td><input name='date' type='text' value='$date' ></td></tr>
-<tr><th>非库书名:</th><td>
-<textarea wrap='soft' type='text' name='book_name' rows='1' maxlength='2000' cols='60'>$book_name</textarea>
-</td></tr>
-</tbody>
-</table>
-<input class='btn' type='submit' name='save' value='Save'>
-<input class='btn' type='submit' name='cancel' value='Cancel'>
-</form> ");
+	print("<html>
+		<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+		<meta http-equiv='Content-Language' content='zh-CN' /> 
+		");
+			print("
+		<form method='post' action='edit_book.php'>
+		<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
+		<tbody>
+		<input type='hidden' name='op' value='$op'>
+		<input type='hidden' name='record_id' value='$record_id'>
+		<tr class='odd noclick'><th>编号:</th><td><input name='book_id' type='text' value='$book_id' ></td></tr>
+		<tr class='odd noclick'><th>用户名:</th><td><input name='borrower' type='text' value='$borrower' ></td></tr>
+		<tr class='odd noclick'><th>日期:</th><td><input name='date' type='text' value='$date' ></td></tr>
+		<tr><th>非库书名:</th><td>
+		<textarea wrap='soft' type='text' name='book_name' rows='1' maxlength='2000' cols='60'>$book_name</textarea>
+		</td></tr>
+		</tbody>
+		</table>
+		<input class='btn' type='submit' name='save' value='Save'>
+		<input class='btn' type='submit' name='cancel' value='Cancel'>
+		</form> ");
 }else{
 	print("unsupported $op");
 }
