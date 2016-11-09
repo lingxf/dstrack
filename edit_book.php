@@ -142,7 +142,7 @@ if($book_id && $op=="modify"){
 	}
 	print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_comments_all'\",2000);</script>");
 
-}else if($op=="edit_comment_ui"||$op="add_comment_ui"){
+}else if($op=="edit_comment_ui"||$op=="add_comment_ui"){
 	if($op=="edit_comment_ui"){
 		$op = "save_comment";
 		$sql = "select * from comments, books where comments.book_id = books.book_id and comment_id = $comment_id";
@@ -217,7 +217,7 @@ if($book_id && $op=="modify"){
 	}
 
 	print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_share'\",1000);</script>");
-}else if($op=="add_share_ui" || $op="edit_share_ui"){
+}else if($op=="add_share_ui" || $op=="edit_share_ui"){
 	if($op=="add_share_ui"){
 		$op = "add_share";
 		$time = time() + 3600*24*7;
