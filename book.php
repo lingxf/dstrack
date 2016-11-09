@@ -253,13 +253,13 @@ if(isset($_GET['borrower'])) $borrower =$_GET['borrower'];
 
 
 print "<a href=\"book.php\">首页</a>";
+print "&nbsp;&nbsp;<a href=\"book.php?action=library\">书库</a>";
 
 if($role == 0){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=join\">入会</a>";
 }else if($role >= 1){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_favor\">我的</a>";
 }
-	print "&nbsp;&nbsp;<a href=\"book.php?action=library\">书库</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_share\">分享</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_comments_all\">最新评论</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
@@ -304,7 +304,7 @@ if(isset($_POST['end']))$action="end";
 if(isset($_POST['list_all']))$action="list_all";
 
 
-dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage setting:$setting<br>");
+//dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage setting:$setting<br>");
 
 
 if($role < 1 && !preg_match("/home|next|library|join|begin|end|prev|show_borrower|history|list_comments|list_comments_all|list_share|list_timeout|list_out|list_statistic/",$action)){
@@ -334,7 +334,7 @@ $_SESSION['class'] = $class;
 if(isset($_GET['view'])) $view=$_GET['view'];
 else if(isset($_SESSION['view'])) $view=$_SESSION['view'];
 else $view = $setting & 1 ? 'normal':'brief';
-dprint("view:$view, setting:$setting<br>");
+//dprint("view:$view, setting:$setting<br>");
 $_SESSION['view'] = $view;
 $_SESSION['setting'] = $setting;
 $favor = false;
