@@ -741,7 +741,7 @@ function show_library()
 
 	print("&nbsp;排序&nbsp;");
 	print("<select id='sel_class' onchange='change_order(this.value, 0)'>");
-	$order_list = array("编号","次数", "评分");
+	$order_list = array("编号","次数", "评分", "评论数");
 	foreach($order_list as $key => $order_text) {
 		print("<option value='$key'");
 		if($key == $order) print("selected");

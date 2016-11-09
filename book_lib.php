@@ -697,6 +697,9 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 	}else if($order == 2){
 		$sql_time = "select book_id, round(avg( history.data),1) as score from history left join $tb_name using (book_id) where history.status = 0x109 group by book_id ";
 		$sql = " select * from $tb_name left join ($sql_time) score using (book_id) $cond order by score.score desc"; 
+	}else if($order == 3){
+		$sql_time = "select book_id, count(comments.words) as cmtimes from comments left join $tb_name using (book_id) group by book_id ";
+		$sql = " select * from $tb_name left join ($sql_time) btime using (book_id) $cond order by btime.cmtimes desc"; 
 	}else{
 		$sql_time = "select book_id, count( distinct history.borrower) as btimes from history left join $tb_name using (book_id) where history.status<6 group by book_id ";
 		$sql = " select * from $tb_name left join ($sql_time) btime using (book_id) $cond order by book_id asc"; 
