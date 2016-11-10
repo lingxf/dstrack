@@ -193,7 +193,7 @@ if($book_id && $op=="modify"){
 		<input class='btn' type='submit' name='save' value='Save'>
 		<input class='btn' type='submit' name='cancel' value='Cancel'>
 		</form> ");
-}else if($op=="recommend_book" || $op == "save_recommend"){
+}else if($op=="recommend_book" || $op == "save_recommend" || $op == "buy_book"){
 	if(isset($_POST['cancel'])){
 		print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_recommend'\",1000);</script>");
 		return;
@@ -209,7 +209,11 @@ if($book_id && $op=="modify"){
 	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
 	if($op=='recommend_book'){
 		$sql = "insert into books_nostock set `name`='$book_name', author='$author', buy_date='$time_start', sponsor='$borrower', note='$azurl', `desc`='$desc', `comments`='$comments', status=$status";
-		print $sql;	
+		$res=update_mysql_query($sql);
+		$rows = mysql_affected_rows();
+		print(" Add $rows rows $book_name, $borrower<br>");
+	}else if($op=='buy_book'){
+		$sql = "insert into books_nostock set `name`='$book_name', author='$author', buy_date='$time_start', sponsor='$borrower', note='$azurl', `desc`='$desc', `comments`='$comments', status=3";
 		$res=update_mysql_query($sql);
 		$rows = mysql_affected_rows();
 		print(" Add $rows rows $book_name, $borrower<br>");
@@ -220,13 +224,16 @@ if($book_id && $op=="modify"){
 		print("Update $rows rows $book_id, $book_name, $borrower, $date<br>");
 	}
 	print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_recommend'\",1000);</script>");
-}else if($op=="add_recommend_ui" || $op=="edit_recommend_ui"){
+}else if($op=="add_recommend_ui" || $op=="edit_recommend_ui"||$op=="buy_book_ui"){
 	if($op=="add_recommend_ui"){
 		$op = "recommend_book";
 		$status = $_GET['status'];
 		$borrower = $login_id;
 	}else{
-		$op = "save_recommend";
+		if($op == "edit_recommend_ui")
+			$op = "save_recommend";
+		else
+			$op = "buy_book";
 		$book_id = $_GET['book_id'];
 		$sql = "select * from books_nostock where book_id = $book_id";
 		$res = read_mysql_query($sql);
@@ -241,7 +248,9 @@ if($book_id && $op=="modify"){
 			$status = $row['status'];
 		}
 	}
-	$status_string = array('取消', '捐赠', '推荐');
+	if($op == "buy_book")
+		$borrower = $login_id;
+	$status_string = array('取消', '捐赠', '推荐', '待购');
 	$status_text = $status_string[$status];
 	print("<html>
 		<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />

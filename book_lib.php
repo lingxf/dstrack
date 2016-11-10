@@ -75,6 +75,7 @@ function out_record()
    0x108 approve_member
    0x109 add score
    0x110 share_cancel
+   0x111 add want
  */
 function get_book_status_name($status)
 {
@@ -1219,6 +1220,34 @@ function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 	print("</table>");
 }
 
+function add_want($book_id, $login_id)
+{
+	$sql = " select * from history where book_id = $book_id and borrower='$login_id' and (status = 0x111)";
+	$res = read_mysql_query($sql);
+	$rows = mysql_num_rows($res);
+	if($rows > 0){
+		print ("You already vote for this book");
+		return 0;
+	}
+	add_record($book_id, $login_id, 0x111, false);
+	$add = 1;
+	$sql = "update books_nostock set times = `times` + $add where book_id = $book_id";
+	$rows = update_mysql_query($sql);
+	print("OK");
+	return 1;
+}
+
+
+function cancel_recommend($book_id='')
+{
+	$sql = "update books_nostock set status = 0 where book_id = $book_id";
+	$rows = update_mysql_query($sql);
+	if($rows == 1)
+		print("OK");
+	else
+		print("no update");
+}
+
 function list_recommend($book_id='', $borrower='', $status=0, $last_days='')
 {
 	global $table_head, $login_id;
@@ -1235,10 +1264,11 @@ function list_recommend($book_id='', $borrower='', $status=0, $last_days='')
 	}
 	if($last_days != '')
 		$cond .= " and (to_days(now()) - to_days(`buy_date`)) < $last_days";
+	print("推荐列表:");
 	print("<a href='edit_book.php?op=add_recommend_ui&status=1'>捐赠</a>");
 	print("&nbsp;&nbsp;<a href='edit_book.php?op=add_recommend_ui&status=2'>推荐</a>");
 	print($table_head);
-	print_tbline(array('编号', '书名','作者', '描述','评论','推荐人', '类别', '操作'));
+	print_tbline(array('编号', '书名','作者', '描述','评论','推荐人', '类别', '热度', '操作'));
 	$tc = "(select comment_id, borrower from comments)";
 	$sql = "select * from books_nostock where status != 0";
 	$res = read_mysql_query($sql);
@@ -1251,8 +1281,9 @@ function list_recommend($book_id='', $borrower='', $status=0, $last_days='')
 		$author = $row['author'];
 		$status = $row['status'];
 		$azurl= $row['note'];
+		$times = $row['times'];
 
-		$status_string = array('取消', '捐赠', '推荐');
+		$status_string = array('取消', '捐赠', '推荐', '待购');
 		$status_text = $status_string[$status];
 		print("<tr>");
 		$borrower_link = "<a href=$mail_url?action=list_comments&borrower=$borrower>$borrower</a>";
@@ -1266,11 +1297,18 @@ function list_recommend($book_id='', $borrower='', $status=0, $last_days='')
 		print_tdlist(array($desc, $comments));
 		print_td($borrower_link, 60);
 		print_td($status_text, 40);
-		$cmd = "<a href='javascript:want_read($book_id)'>想看</a>";
-		if($status == 2)
-			$cmd .= "&nbsp;&nbsp;<a href='edit_book.php?op=buy_book&book_id=$book_id'>购书</a>";
-		if($borrower == $login_id)
-			$cmd .= "&nbsp;&nbsp;<a href='edit_book.php?op=edit_recommend_ui&book_id=$book_id'>编辑</a>";
+		print_td($times, 30);
+		$cmd = "";
+		if($borrower == $login_id){
+			$cmd .= "<a href='edit_book.php?op=edit_recommend_ui&book_id=$book_id'>编辑</a>";
+			$cmd .= "&nbsp;&nbsp;<a href='javascript:cancel_recommend($book_id)'>取消</a>";
+			if($status == 2)
+				$cmd .= "&nbsp;&nbsp;<a href='edit_book.php?op=buy_book_ui&book_id=$book_id'>换购</a>";
+		}else{
+			$cmd = "<a href='javascript:want_read($book_id)'>想看</a>";
+			if($status == 2)
+				$cmd .= "&nbsp;&nbsp;<a href='edit_book.php?op=buy_book_ui&book_id=$book_id'>换购</a>";
+		}
 		print_td($cmd, 120);
 		print("</tr>");
 	}

@@ -147,6 +147,42 @@ function add_score(tdc, book_id)
 	return;
 };
 
+function want_read(book_id)
+{
+	var result = confirm("Are you interested in this book?:");
+	var url = "book_action.php?action=add_want&book_id="+book_id;
+	if(result)
+	loadXMLDoc(url, function() {
+			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+				if(xmlhttp.responseText.substr(0, 2) == "OK")
+					location.reload();
+				else
+					alert(xmlhttp.responseText);
+				//document.getElementById("div_booklist").innerHTML=xmlhttp.responseText;
+				//setTimeout("windows.location.href="+backurl, 1000);
+			}
+	});
+	return;
+};
+
+function cancel_recommend(book_id)
+{
+	var result = confirm("Do you really want to cancel?");
+	var url = "book_action.php?action=cancel_recommend&book_id="+book_id;
+	if(result)
+	loadXMLDoc(url, function() {
+			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+				if(xmlhttp.responseText.substr(0, 2) == "OK")
+					location.reload();
+				else
+					alert(xmlhttp.responseText);
+				//document.getElementById("div_booklist").innerHTML=xmlhttp.responseText;
+				//setTimeout("windows.location.href="+backurl, 1000);
+			}
+	});
+	return;
+};
+
 function deduce_member_score(tdc, member)
 {
 	var result = prompt("Deduce Score:");
@@ -242,8 +278,7 @@ if($action == "logout"){
 	$_SESSION = array();
 	session_destroy();
 	print "You are logout now";
-	sleep(5);
-	header("Location: book.php");
+	print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php'\",1000);</script>");
 # header("Location: book_user_login.php");
 }
 
@@ -694,7 +729,8 @@ function show_home()
 		$score = get_user_attr($login_id, 'score');
 		$score_used = get_user_attr($login_id, 'score_used');
 		$score_free = $score - $score_used;
-		print("我的积分:$score 已用积分:$score_used 可用积分:$score_free<br>");
+		$cmd .= "&nbsp;&nbsp;<a href='edit_book.php?op=buy_book_ui&book_id=0'>换购</a>";
+		print("我的积分:$score 已用积分:$score_used 可用积分:$score_free $cmd<br>");
 		show_my_hot($login_id);
 		print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
 		list_book('normal', $start, $items_perpage,0, 'favor');

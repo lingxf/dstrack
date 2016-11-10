@@ -76,6 +76,12 @@ switch($action){
 		$score = $_GET['score'];
 		add_score($book_id, $login_id, $score);
 		break;
+	case "add_want":
+		add_want($book_id, $login_id);
+		break;
+	case "cancel_recommend":
+		cancel_recommend($book_id);
+		break;
 
 	/*admin*/
 	case "migrate":
@@ -88,6 +94,3 @@ switch($action){
 }
 
 ?>
-
-</body>
-</html>
