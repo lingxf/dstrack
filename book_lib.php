@@ -272,6 +272,8 @@ function list_record($login_id, $format='self', $condition='')
 
 function list_statistic()
 {
+	print("积分排名");
+	point_statistic();
 	print("评论统计");
 	comment_statistic(0);
 	//comment_statistic_legacy(0);
@@ -280,7 +282,6 @@ function list_statistic()
 	//comment_statistic_legacy(1);
 	print("分享统计");
 	share_statistic();
-
 	print("评分统计");
 	score_statistic();
 }
@@ -307,6 +308,49 @@ function share_statistic($type = 0)
 	print("</table>");
 }
 
+function point_statistic($type = 0)
+{
+	$tr_width=400;
+	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	print("<tr>");
+	print("<th>姓名</th>");
+	print("<th >积分</th>");
+	print("<th >已用积分</th>");
+	print("<th >可用积分</th>");
+	print("<th >累计借书</th>");
+	print("<th >累计分享</th>");
+	print("<th >累计评论</th>");
+	print("</tr>");
+
+	$tb_comments = " (select borrower, count(words) as total_comments from `comments` group by borrower)";
+	$sql = "  select user,user_name, score, score_used, tc.total_comments, ";
+	$sql .= "COUNT( CASE WHEN `status` = 0 THEN 1 ELSE NULL END ) AS `books_his`,  COUNT( CASE WHEN `status` = 0x106 THEN 1 ELSE NULL END ) AS `shares`";
+//	$sql .= ", count(case when `words` != '' then 1 else null end ) as `total_comments`";
+	$sql .= " from `member` left join $tb_comments tc on member.user = tc.borrower ";
+	$sql .= "  left join `history` on member.user = history.borrower ";
+	$sql .= " group by user order by score desc ";
+
+	$res = read_mysql_query($sql);
+	while($row = mysql_fetch_array($res)){
+		$name = $row['user_name'];
+		$score = $row['score'];
+		$score_used = $row['score_used'];
+		$score_free = $score - $score_used;
+		$books_his = $row['books_his'];
+		$shares = $row['shares'];
+		$comments = $row['total_comments'];
+		print("<tr>");
+		print_td($name);
+		print_td($score);
+		print_td($score_used);
+		print_td($score_free);
+		print_td($books_his);
+		print_td($shares);
+		print_td($comments);
+		print("</tr>");
+	}
+	print("</table>");
+}
 function add_comment($book_id, $user, $this_comment, $month='', $date='')
 {
 	if($month == ''){
