@@ -1219,6 +1219,64 @@ function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 	print("</table>");
 }
 
+function list_recommend($book_id='', $borrower='', $status=0, $last_days='')
+{
+	global $table_head, $login_id;
+
+	$mail_url = get_cur_php();
+	if($mail_url == '')
+		$mail_url = "http://cedump-sh.ap.qualcomm.com/book/book.php";
+
+	$cond = "1 ";
+	if($book_id != '')
+		$cond .= " and comments.book_id = $book_id";
+	if($borrower != '') {
+		$cond .= " and borrower = '$borrower'";
+	}
+	if($last_days != '')
+		$cond .= " and (to_days(now()) - to_days(`buy_date`)) < $last_days";
+	print("<a href='edit_book.php?op=add_recommend_ui&status=1'>捐赠</a>");
+	print("&nbsp;&nbsp;<a href='edit_book.php?op=add_recommend_ui&status=2'>推荐</a>");
+	print($table_head);
+	print_tbline(array('编号', '书名','作者', '描述','评论','推荐人', '类别', '操作'));
+	$tc = "(select comment_id, borrower from comments)";
+	$sql = "select * from books_nostock where status != 0";
+	$res = read_mysql_query($sql);
+	while($row = mysql_fetch_array($res)){
+		$borrower= $row['sponsor'];
+		$book_id= $row['book_id'];
+		$book_name = $row['name'];
+		$comments = $row['comments'];
+		$desc = $row['desc'];
+		$author = $row['author'];
+		$status = $row['status'];
+		$azurl= $row['note'];
+
+		$status_string = array('取消', '捐赠', '推荐');
+		$status_text = $status_string[$status];
+		print("<tr>");
+		$borrower_link = "<a href=$mail_url?action=list_comments&borrower=$borrower>$borrower</a>";
+		if($azurl != '')
+			$book_link = "<a href=$azurl>$book_name</a>";
+		else
+			$book_link = $book_name;
+		print_td($book_id, 30);
+		print_td($book_link, 150);
+		print_td($author, 120);
+		print_tdlist(array($desc, $comments));
+		print_td($borrower_link, 60);
+		print_td($status_text, 40);
+		$cmd = "<a href='javascript:want_read($book_id)'>想看</a>";
+		if($status == 2)
+			$cmd .= "&nbsp;&nbsp;<a href='edit_book.php?op=buy_book&book_id=$book_id'>购书</a>";
+		if($borrower == $login_id)
+			$cmd .= "&nbsp;&nbsp;<a href='edit_book.php?op=edit_recommend_ui&book_id=$book_id'>编辑</a>";
+		print_td($cmd, 120);
+		print("</tr>");
+	}
+	print("</table>");
+}
+
 function get_borrower($book_id)
 {
 	$r = array();

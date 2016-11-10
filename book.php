@@ -2,6 +2,13 @@
 session_set_cookie_params(7*24*3600);
 session_name('book');
 session_start();
+setcookie('username',session_name(),time()+3600);    //创建cookie
+if(isset($_COOKIE["username"])){    //使用isset()函数检测cookie变量是否已经被设置
+	$username = $_COOKIE["username"];    //您好！nostop     读取cookie 
+}else{
+	$username = '';
+}
+	
 ?>
 
 <html>
@@ -206,13 +213,7 @@ if(isset($_POST['login'])){
 	$_SESSION['view'] = $view;
 }
 
-setcookie('username',session_name(),time()+3600);    //创建cookie
-if(isset($_COOKIE["username"])){    //使用isset()函数检测cookie变量是否已经被设置
-	$username = $_COOKIE["username"];    //您好！nostop     读取cookie 
-}else{
-	$username = '';
-}
-		
+	
 if(isset($_SESSION['user'])) $login_id=$_SESSION['user'];
 else{
 	//    header("Location: book_user_login.php");
@@ -262,6 +263,7 @@ if($role == 0){
 }
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_share\">分享</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_comments_all\">最新评论</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_recommend\">推荐/捐赠</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
@@ -307,7 +309,7 @@ if(isset($_POST['list_all']))$action="list_all";
 //dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage setting:$setting<br>");
 
 
-if($role < 1 && !preg_match("/home|next|library|join|begin|end|prev|show_borrower|history|list_comments|list_comments_all|list_share|list_timeout|list_out|list_statistic/",$action)){
+if($role < 1 && !preg_match("/home|next|library|join|begin|end|prev|show_borrower|history|list_comments|list_comments_all|list_recommend|list_share|list_timeout|list_out|list_statistic/",$action)){
 	print("You are not member!");
 	return;
 }
@@ -379,6 +381,9 @@ switch($action){
 		break;
 	case "list_comments_all":
 		list_comments('', '', 0, 30);
+		break;
+	case "list_recommend":
+		list_recommend('', '', 0, 30);
 		break;
 	case "list_share":
 		show_share($login_id);

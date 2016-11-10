@@ -193,6 +193,83 @@ if($book_id && $op=="modify"){
 		<input class='btn' type='submit' name='save' value='Save'>
 		<input class='btn' type='submit' name='cancel' value='Cancel'>
 		</form> ");
+}else if($op=="recommend_book" || $op == "save_recommend"){
+	if(isset($_POST['cancel'])){
+		print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_recommend'\",1000);</script>");
+		return;
+	}
+	$borrower= $_POST['borrower'];
+	$book_name = $_POST['book_name'];
+	$comments = $_POST['comments'];
+	$desc = $_POST['desc'];
+	$status = $_POST['status'];
+	$author = $_POST['author'];
+	$azurl = $_POST['note'];
+	$time = time();
+	$time_start = strftime("%Y-%m-%d %H:%M:%S", $time);
+	if($op=='recommend_book'){
+		$sql = "insert into books_nostock set `name`='$book_name', author='$author', buy_date='$time_start', sponsor='$borrower', note='$azurl', `desc`='$desc', `comments`='$comments', status=$status";
+		print $sql;	
+		$res=update_mysql_query($sql);
+		$rows = mysql_affected_rows();
+		print(" Add $rows rows $book_name, $borrower<br>");
+	}else{
+		$book_id= $_POST['book_id'];
+		$sql = " update books_nostock set `name`='$book_name', author='$author', buy_date='$time_start', sponsor='$borrower', note='$azurl', `desc`='$desc', `comments`='$comments', status=$status where book_id = $book_id";
+		$res = update_mysql_query($sql);
+		print("Update $rows rows $book_id, $book_name, $borrower, $date<br>");
+	}
+	print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_recommend'\",1000);</script>");
+}else if($op=="add_recommend_ui" || $op=="edit_recommend_ui"){
+	if($op=="add_recommend_ui"){
+		$op = "recommend_book";
+		$status = $_GET['status'];
+		$borrower = $login_id;
+	}else{
+		$op = "save_recommend";
+		$book_id = $_GET['book_id'];
+		$sql = "select * from books_nostock where book_id = $book_id";
+		$res = read_mysql_query($sql);
+		while($row = mysql_fetch_array($res)){
+			$borrower= $row['sponsor'];
+			$book_id= $row['book_id'];
+			$book_name = $row['name'];
+			$comments = $row['comments'];
+			$desc = $row['desc'];
+			$author = $row['author'];
+			$azurl = $row['note'];
+			$status = $row['status'];
+		}
+	}
+	$status_string = array('取消', '捐赠', '推荐');
+	$status_text = $status_string[$status];
+	print("<html>
+		<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+		<meta http-equiv='Content-Language' content='zh-CN' /> 
+		");
+			print("
+		<form method='post' action='edit_book.php'>
+		<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
+		<tbody>
+		<input type='hidden' name='op' value='$op'>
+		<input type='hidden' name='book_id' value='$book_id'>
+		<input type='hidden' name='status' value='$status'>
+		<tr class='odd noclick'><th>类别:</th><td>$status_text</td></tr>
+		<tr class='odd noclick'><th>推荐人:</th><td><input name='borrower' readonly type='text' value='$borrower' ></td></tr>
+		<tr class='odd noclick'><th>书名:</th><td><input name='book_name' type='text' value='$book_name' ></td></tr>
+		<tr class='odd noclick'><th>作者:</th><td><input name='author' type='text' value='$author' ></td></tr>
+		<tr class='odd noclick'><th>亚马逊链接:</th><td><input name='note' type='text' value='$azurl' ></td></tr>
+		<tr><th>图书介绍:</th><td>
+		<textarea wrap='soft' type='text' name='desc' rows='3' maxlength='2000' cols='60'>$desc</textarea>
+		</td></tr>
+		<tr><th>推荐评论:</th><td>
+		<textarea wrap='soft' type='text' name='comments' rows='3' maxlength='2000' cols='60'>$comments</textarea>
+		</td></tr>
+		</tbody>
+		</table>
+		<input class='btn' type='submit' name='save' value='Save'>
+		<input class='btn' type='submit' name='cancel' value='Cancel'>
+		</form> ");
 }else if($op=="add_share" || $op == "save_share"){
 	if(isset($_POST['cancel'])){
 		print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_share'\",1000);</script>");
