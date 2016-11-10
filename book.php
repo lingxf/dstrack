@@ -415,7 +415,7 @@ switch($action){
 		list_comments('', $borrower);
 		break;
 	case "list_comments_all":
-		list_comments('', '', 0, 30);
+		list_comments('', '', 0, 90);
 		break;
 	case "list_recommend":
 		print("推荐列表:");
