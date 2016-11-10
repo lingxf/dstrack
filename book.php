@@ -418,7 +418,10 @@ switch($action){
 		list_comments('', '', 0, 30);
 		break;
 	case "list_recommend":
-		list_recommend('', '', 0, 30);
+		print("推荐列表:");
+		print("<a href='edit_book.php?op=add_recommend_ui&status=1'>捐赠</a>");
+		print("&nbsp;&nbsp;<a href='edit_book.php?op=add_recommend_ui&status=2'>推荐</a>");
+		list_recommend();
 		break;
 	case "list_share":
 		show_share($login_id);
@@ -809,12 +812,12 @@ function show_share()
 function add_newbook()
 {
 
-	print("<iframe height=1920 width=800 src='edit_book_ui.php'></iframe>");
+	print("<iframe height=1920 width=800 src='edit_book.php?op=edit_book_ui'></iframe>");
 }
 
 function edit_book($book_id)
 {
-	print("<iframe height=1920 width=800 src='edit_book_ui.php?book_id=$book_id'></iframe>");
+	print("<iframe height=1920 width=800 src='edit_book.php?op=edit_book_ui&book_id=$book_id'></iframe>");
 }
 
 function update_borrow_times()

@@ -59,6 +59,8 @@ function manage_record()
 	list_record($login_id, 'share', " 0x105 ");
 	print("&nbsp;&nbsp;申请入会：");
 	list_record($login_id, 'member');
+	print("&nbsp;&nbsp;待购图书:");
+	list_recommend('', '', 3);
 }
 
 function out_record()
@@ -1248,9 +1250,9 @@ function cancel_recommend($book_id='')
 		print("no update");
 }
 
-function list_recommend($book_id='', $borrower='', $status=0, $last_days='')
+function list_recommend($book_id='', $borrower='', $status=-1, $last_days='')
 {
-	global $table_head, $login_id;
+	global $table_head, $login_id, $role;
 
 	$mail_url = get_cur_php();
 	if($mail_url == '')
@@ -1264,13 +1266,14 @@ function list_recommend($book_id='', $borrower='', $status=0, $last_days='')
 	}
 	if($last_days != '')
 		$cond .= " and (to_days(now()) - to_days(`buy_date`)) < $last_days";
-	print("推荐列表:");
-	print("<a href='edit_book.php?op=add_recommend_ui&status=1'>捐赠</a>");
-	print("&nbsp;&nbsp;<a href='edit_book.php?op=add_recommend_ui&status=2'>推荐</a>");
+	if($status != -1)
+		$cond .= " and status = $status ";
+	else
+		$cond .= " and status != 0 ";
 	print($table_head);
 	print_tbline(array('编号', '书名','作者', '描述','评论','推荐人', '类别', '热度', '操作'));
 	$tc = "(select comment_id, borrower from comments)";
-	$sql = "select * from books_nostock where status != 0";
+	$sql = "select * from books_nostock where $cond";
 	$res = read_mysql_query($sql);
 	while($row = mysql_fetch_array($res)){
 		$borrower= $row['sponsor'];
@@ -1309,6 +1312,8 @@ function list_recommend($book_id='', $borrower='', $status=0, $last_days='')
 			if($status == 2)
 				$cmd .= "&nbsp;&nbsp;<a href='edit_book.php?op=buy_book_ui&book_id=$book_id'>换购</a>";
 		}
+		if($role == 2 && $status == 3)
+			$cmd .= "&nbsp;&nbsp;<a href='edit_book.php?op=buy_book_done&book_id=$book_id'>入库</a>";
 		print_td($cmd, 120);
 		print("</tr>");
 	}
@@ -1613,6 +1618,17 @@ function add_member($user, $name, $email, $role) {
 	if($row1=mysql_affected_rows($res1))
 		return true;
 	return false;
+}
+
+function check_member_score($user, $score){
+	$sql = "select * from member where `user` = '$user' ";
+	$res = read_mysql_query($sql);
+	while($row = mysql_fetch_array($res)){
+		$score = $row['score'];
+		$score_used = $row['score_used'];
+		return $score - $score_used;
+	}
+	return 0;
 }
 
 function deduce_member_score($user, $score){

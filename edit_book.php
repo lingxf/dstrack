@@ -83,7 +83,6 @@ if($book_id && $op=="modify"){
 	return;
 
 }else if($book_id && $op=="edit"){
-
 	$desc = str_replace("'", "''", $desc);
 	$note = str_replace("'", "''", $note);
 	$sql = "UPDATE books set `name`='$name', author='$author', ISBN='$isbn', `index`='$index', price='$price', buy_date='$buy_date', sponsor='$sponsor', note='$note', `desc`='$desc' ";
@@ -121,6 +120,75 @@ if($book_id && $op=="modify"){
 	add_log($login_id, $login_id, $book_id, 10);
 	home_link();
 	return;
+}else if($op=="edit_book_ui"||$op=="buy_book_done"){
+	$time = time();
+	$buy_date = strftime("%Y-%m-%d %H:%M:%S", $time);
+	if($op=="buy_book_done"){
+		$book_id=$_GET['book_id'];
+		$sql = "select * from books_nostock where book_id = $book_id";
+		$res = read_mysql_query($sql);
+		while($row = mysql_fetch_array($res)){
+			$sponsor = $row['sponsor'];
+			$book_name = $row['name'];
+			$comments = $row['comments'];
+			$desc = $row['desc'];
+			$author = $row['author'];
+			$note = $row['note'];
+		}
+	}else if(isset($_GET['book_id'])) { 
+		$book_id=$_GET['book_id'];
+		$sql = " select * from books where book_id = $book_id";
+		$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+		while($row=mysql_fetch_array($res)){
+			$book_id = $row['book_id']; 
+			$name = $row['name'];
+			$author= $row['author'];
+			$isbn = $row['ISBN'];
+			$index = $row['index'];
+			$price = $row['price'];
+			$sponsor = $row['sponsor'];
+			$note = $row['note'];
+			$buy_date = substr($row['buy_date'], 0, 10);
+			$desc =  $row['desc'];
+		}
+		$op = 'edit';
+	}else{
+		$book_id = ''; 
+		$name = '';
+		$author= '';
+		$isbn = ''; 
+		$index = '';
+		$price = '';
+		$sponsor = '';
+		$note = ''; 
+		$desc = '';
+		$op = 'add';
+	}
+	print("
+		<form method='post' action='edit_book.php'>
+		<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
+		<tbody>
+		<input type='hidden' name='op' value='$op'>
+		<input name='book_id' type='hidden' value='$book_id'>
+		<input name='old_date' type='hidden' value='$buy_date'>
+		<tr class='odd noclick'><th>ID:</th><td>$book_id</td></tr>
+		<tr><th>Name:</th><td><input name='name' type='text' value='$name' ></td></tr>
+		<tr><th>Author:</th><td><input name='author' type='text' value='$author'></td></tr>
+		<tr><th>ISBN:</th><td><input name='ISBN' type='text' value='$isbn'></td></tr>
+		<tr><th>index:</th><td><input name='index' type='text' value='$index'></td></tr>
+		<tr><th>price:</th><td><input name='price' type='text' value='$price'></td></tr>
+		<tr><th>buy_date:</th><td><input name='buy_date' type='text' value='$buy_date'></td></tr>
+		<tr><th>Sponsor:</th><td><input name='sponsor' type='text' value='$sponsor'></td></tr>
+		<tr><th>Description:</th><td>
+		<textarea wrap='soft' type='text' name='desc' rows='8' maxlength='2000' cols='60'>$desc</textarea>
+		</td></tr>
+		<tr><th>Note:</th><td>
+		<textarea wrap='soft' type='text' name='note' rows='2' maxlength='2000' cols='60'>$note</textarea>
+		</td></tr>
+		</tbody>
+		</table>
+		<input class='btn'  type='submit' name='save' value='Save'>
+		</form> ");
 }else if($op=="save_comment" || $op=="add_comment"){
 	if(isset($_POST['cancel'])){
 		print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_comments_all'\",1000);</script>");
@@ -217,6 +285,8 @@ if($book_id && $op=="modify"){
 		$res=update_mysql_query($sql);
 		$rows = mysql_affected_rows();
 		print(" Add $rows rows $book_name, $borrower<br>");
+		deduce_member_score($login_id, 100);
+		print(" Deduce 100 point for $login_id");
 	}else{
 		$book_id= $_POST['book_id'];
 		$sql = " update books_nostock set `name`='$book_name', author='$author', buy_date='$time_start', sponsor='$borrower', note='$azurl', `desc`='$desc', `comments`='$comments', status=$status where book_id = $book_id";
@@ -232,8 +302,14 @@ if($book_id && $op=="modify"){
 	}else{
 		if($op == "edit_recommend_ui")
 			$op = "save_recommend";
-		else
+		else{
 			$op = "buy_book";
+			if(($free = check_member_score($login_id)) < 100){
+				print("You do not have enought point to buy book($free)");
+				return;
+			}
+				
+		}
 		$book_id = $_GET['book_id'];
 		$sql = "select * from books_nostock where book_id = $book_id";
 		$res = read_mysql_query($sql);
