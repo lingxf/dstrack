@@ -421,6 +421,7 @@ switch($action){
 		print("推荐列表:");
 		print("<a href='edit_book.php?op=add_recommend_ui&status=1'>捐赠</a>");
 		print("&nbsp;&nbsp;<a href='edit_book.php?op=add_recommend_ui&status=2'>推荐</a>");
+		print("&nbsp;&nbsp;<a href='edit_book.php?op=buy_book_ui&book_id=0'>换购</a>");
 		list_recommend();
 		break;
 	case "list_share":
