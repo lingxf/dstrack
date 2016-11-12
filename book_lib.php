@@ -1196,7 +1196,7 @@ function show_book($book_id)
 	print("等待列表<br>");
 	show_borrower($book_id, 'wait');
 	print("历史借阅记录<br>");
-	show_borrower($book_id, 'borrow');
+	show_borrower($book_id, 'history');
 	print("评分记录<br>");
 	show_borrower($book_id, 'score');
 
@@ -1447,8 +1447,8 @@ function show_borrower($book_id, $format="wait")
 	global $table_head;
 	print($table_head);
 
-	if($format == 'score')
-		print_tdlist(array('编号', '书名','借阅人','日期', '评分'));
+	if($format == 'history')
+		print_tdlist(array('编号', '书名','借阅人','借出日期', '归还日期', '评分'));
 	else
 		print_tdlist(array('编号', '书名','借阅人','日期', '状态'));
 	if($format == 'out')
@@ -1467,6 +1467,7 @@ function show_borrower($book_id, $format="wait")
 		$user_name= $row['user_name'];
 		$status=$row['status'];	
 		$date = $row['adate'];
+		$sdate = $row['sdate'];
 		if($status == 4 || $status == 0x104){
 			$status_text = "等候";
 			$date = $row['adate'];
@@ -1488,7 +1489,10 @@ function show_borrower($book_id, $format="wait")
 		}else
 			continue;
 		print("<tr>");
-		print_tdlist(array($book_id, $name, $user_name,$date, $status_text)); 
+		if($format == 'history')
+			print_tdlist(array($book_id, $name, $user_name,$date,$sdate, $status_text)); 
+		else
+			print_tdlist(array($book_id, $name, $user_name,$date, $status_text)); 
 		print("</tr>\n");
 	}
 	print("</table>");
