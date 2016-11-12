@@ -1203,6 +1203,8 @@ function show_book($book_id)
 	return;
 }
 
+
+
 function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 {
 	global $table_head, $login_id;
@@ -1250,16 +1252,13 @@ function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 		print_td($comment_id_link, 30);
 		$borrower_link = "<a href=$mail_url?action=list_comments&borrower=$borrower>$borrower</a>";
 		$book_link = "<a href=$mail_url?action=show_borrower&book_id=$book_id>$book</a>";
-		if($format == 1)
-			print_tdlist(array($borrower_link,$date, $comments));
-		else{
-			print_tdlist(array($borrower_link,$date));
+		print_tdlist(array($borrower_link,$date));
+		if($format != 1)
 			print_td($book_link, 120);
-			if($parent != 0){
-				$comments = "回复:$parent_user:".$comments;
-			}
-			print_td($comments."($count)");
+		if($parent != 0){
+			$comments = "回复:$parent_user:".$comments;
 		}
+		print_td($comments."($count)");
 		$cmd = "<a href='edit_book.php?op=add_comment_ui&book_id=$book_id&comment_id=$comment_id&borrower=$borrower'>回复</a>";
 		print_td($cmd, 40);
 	}
@@ -1693,6 +1692,10 @@ function set_member_attr($user, $prop, $value) {
 
 function get_user_name($user){
 	return get_user_attr($user, 'name');
+}
+
+function get_user_email($user){
+	return get_user_attr($user, 'email');
 }
 
 function get_user_attr($user, $prop) {
