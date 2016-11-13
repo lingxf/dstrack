@@ -1,4 +1,5 @@
 <?php
+include 'myphp/disp_lib.php';
 include 'book_lib.php';
 include 'debug.php';
 include 'db_connect.php';
@@ -140,6 +141,8 @@ function mail_new_comment()
 	$to = 'QClub.BJ.Reading@qti.qualcomm.com';
 //	$to = 'xling@qti.qualcomm.com';
 	$cc = '';
+//	$message = base64_encode($message);
+	$subject = "=?UTF-8?B?".base64_encode($subject)."?=";
 	mail_html($to, $cc, $subject, $message);
 }
 
