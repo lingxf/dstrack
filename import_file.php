@@ -1,5 +1,7 @@
 <?php 
 include_once 'debug.php';
+include_once 'myphp/common.php';
+include_once 'myphp/disp_lib.php';
 include_once 'book_lib.php';
 include_once "db_connect.php";
 global $login_id, $role;	
@@ -40,6 +42,8 @@ if(isset($_POST['upload'])){
 
 if(isset($_GET['action']))
 	$action = $_GET['action'];
+else
+	$action = '';
 
 switch($action){
 	case 'delete':

@@ -124,7 +124,7 @@ function list_record($login_id, $format='self', $condition='')
 		$borrower_id = $row['borrower']; 
 		$borrower = $row['user_name']; 
 		$book_id = $row['book_id']; 
-		$name = $row['name']; 
+		$name = isset($row['name'])?$row['name']:''; 
 		$name = "<a href='book.php?action=show_borrower&book_id=$book_id'>$name</a>";
 		$adate= $row['adate']; 
 		$bdate= $row['bdate']; 
@@ -270,7 +270,9 @@ function list_statistic()
 function share_statistic($type = 0)
 {
 	$tr_width=400;
-	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	//print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	print_table_head('', 400);
+
 	print("<tr>");
 	print("<th>User</th>");
 	print("<th >分享次数</th>");
@@ -292,8 +294,9 @@ function share_statistic($type = 0)
 
 function point_statistic($type = 0)
 {
-	$tr_width=400;
-	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+//	$tr_width=400;
+//	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	print_table_head('', 400);
 	print("<tr>");
 	print("<th>姓名</th>");
 	print("<th >积分</th>");
@@ -389,9 +392,9 @@ function cal_score()
 		$this_comment = $row['words'];
 		$book_id = $row['book_id'];
 		$user = $row['borrower'];
-		$this_comments = str_replace("\n", "", $this_comments);
+		$this_comment = str_replace("\n", "", $this_comment);
 		if(mb_strlen($this_comment, "UTF-8") >= 50) {
-				$ct_array[$user]+=20;
+			$ct_array[$user] = isset($ct_array[$user]) ? $ct_array[$user] + 20 : 20;
 		}
 	}
 
@@ -399,7 +402,7 @@ function cal_score()
 	$res = read_mysql_query($sql);
 	while($row = mysql_fetch_array($res)){
 		$user = $row['borrower'];
-		$ct_array[$user]+=200;
+		$ct_array[$user] = isset($ct_array[$user]) ? $ct_array[$user] + 200 : 200;
 	}
 
 	foreach($ct_array as $user=>$score){
@@ -424,7 +427,7 @@ function cal_score_legacy()
 			$this_comment = $matches[4];
 			$comment = $matches[5];
 			//print("<br>:$user:". $this_comment.":".mb_strlen($this_comment, "UTF-8"));
-			$this_comments = str_replace("\n", "", $this_comments);
+			$this_comment = str_replace("\n", "", $this_comment);
 			if(mb_strlen($this_comment, "UTF-8") >= 50){
 				$ct_array[$user]+=20;
 			}
@@ -447,7 +450,8 @@ function cal_score_legacy()
 function comment_statistic($type = 0)
 {
 	$tr_width=400;
-	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+//	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	print_table_head('', 400);
 	$sql = "select book_id, borrower, words, month(timestamp) as mon, timestamp  from comments ";
 	$res = read_mysql_query($sql);
 	$ct_array = array();
@@ -457,10 +461,10 @@ function comment_statistic($type = 0)
 		$user = $row['borrower'];
 		$time = $row['timestamp'];
 		$month = $row['mon'];
-		$this_comments = str_replace("\n", "", $this_comments);
+		$this_comment = str_replace("\n", "", $this_comment);
 		if(mb_strlen($this_comment, "UTF-8") >= 50 || $type == 0){
-			$ct_array[$user][$month]++;
-			$ct_array[$user][0]++;
+			$ct_array[$user][$month] = isset($ct_array[$user][$month]) ? $ct_array[$user][$month] + 1: 1;
+			$ct_array[$user][0] = isset($ct_array[$user][0]) ? $ct_array[$user][0] + 1:1 ;
 		}
 //		print("$book:$user $date $comment<br>");
 	}
@@ -480,11 +484,13 @@ function comment_statistic($type = 0)
 		print_td($user_name, 150);
 		$t = 0;
 		foreach($mm as $m=>$name){
-			print_td($mct[$m]);
-			$total[$m] += $mct[$m];
+			$mc = isset($mct[$m]) ? $mct[$m] : 0;
+			print_td($mc);
+			$total[$m] = isset($total[$m]) ? $total[$m] + $mc : $mc;
 		}
 		print("<th>$mct[0]</th>");
-		$total[0] += $mct[0];
+		$mc = isset($mct[0]) ? $mct[0] : 0;
+		$total[0] = isset($total[0]) ? $total[0] + $mc : $mc;
 		print("</tr>");
 	}
 	print("<tr>");
@@ -501,7 +507,8 @@ function comment_statistic($type = 0)
 function score_statistic($type = 0)
 {
 	$tr_width=400;
-	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	//print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	print_table_head('', 400);
 	$sql = "select book_id, borrower, month(adate) as mon, adate from history where status=0x109";
 	$res = read_mysql_query($sql);
 	$ct_array = array();
@@ -509,8 +516,8 @@ function score_statistic($type = 0)
 		$book_id = $row['book_id'];
 		$user = $row['borrower'];
 		$month = $row['mon'];
-		$ct_array[$user][$month]++;
-		$ct_array[$user][0]++;
+		$ct_array[$user][$month] = isset($ct_array[$user][$month]) ? $ct_array[$user][$month] + 1: 1;
+		$ct_array[$user][0] = isset($ct_array[$user][0]) ? $ct_array[$user][0] + 1:1 ;
 	}
 	$ct_array = rsort_by_index($ct_array, 0);
 	$mm = array(7=>'Jul.', 8=>'Aug.', 9=>'Sep.', 10=>'Oct.', 11=>'Nov.', 12=>'Dec.');
@@ -528,11 +535,13 @@ function score_statistic($type = 0)
 		print_td($user_name, 150);
 		$t = 0;
 		foreach($mm as $m=>$name){
-			print_td($mct[$m]);
-			$total[$m] += $mct[$m];
+			$mc = isset($mct[$m]) ? $mct[$m] : 0;
+			print_td($mc);
+			$total[$m] = isset($total[$m]) ? $total[$m] + $mc : $mc;
 		}
 		print("<th>$mct[0]</th>");
-		$total[0] += $mct[0];
+		$mc = isset($mct[0]) ? $mct[0] : 0;
+		$total[0] = isset($total[0]) ? $total[0] + $mc : $mc;
 		print("</tr>");
 	}
 	print("<tr>");
@@ -636,6 +645,7 @@ function list_member()
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	$i = 0;
+	$total_wish = 0;
 	while($row=mysql_fetch_array($res)){
 		$user_id = $row['user']; 
 		$user_name = $row['user_name'];

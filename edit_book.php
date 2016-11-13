@@ -4,6 +4,8 @@
 	copyright Xiaofeng(Daniel) Ling<xling@qualcomm.com>, 2012, Aug.
 */
 
+include_once 'myphp/disp_lib.php';
+include_once 'myphp/common.php';
 include 'book_lib.php';
 include 'debug.php';
 include 'db_connect.php';
@@ -12,6 +14,7 @@ session_name('book');
 session_start();
 $login_id=$_SESSION['user'];
 $role = is_member($login_id);
+$book_id = 0;
 if(isset($_POST['op'])) $op=$_POST['op'];
 if(isset($_GET['op'])) $op=$_GET['op'];
 
@@ -218,8 +221,10 @@ if($book_id && $op=="modify"){
 		while($row = mysql_fetch_array($res)){
 			$comment = $row['words'];
 			$date = $row['timestamp'];
+			$parent = $row['parent'];
+			$parent_user = '';
 			$borrower = $row['borrower'];
-			$book_id = $_row['book_id'];
+			$book_id = $row['book_id'];
 			$book_name = $row['name'];
 		}
 	}else{
