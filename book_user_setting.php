@@ -6,9 +6,16 @@
 </head>
 <body>
 <?php
+$web_name = 'book';
+$home_page = 'book.php';
+session_set_cookie_params(7*24*3600);
+session_name($web_name);
+session_start();
+
 include 'book_lib.php';
 include 'debug.php';
 include 'db_connect.php';
+include 'myphp/login_lib.php';
 
 global $login_id, $login_password;
 check_login();
@@ -44,7 +51,7 @@ if(isset($_POST['save'])){
 			$sql1 = "update user.user set password=ENCRYPT('$newpassword1', 'ab') where user_id ='$login_id'";
 			$res1=update_mysql_query($sql1);
 			printf("<br>Change password successfully!");
-			home_link("Back");
+			show_home_link("Back");
 			return;
 		}else{
 			printf("New Password is empty!");

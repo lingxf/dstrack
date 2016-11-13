@@ -1,6 +1,13 @@
 <?php
+/*
+   copyright Xiaofeng(Daniel) Ling<lingxf@gmail.com>, 2016, Aug.
+ */
+
+
+$web_name = 'book';
+$home_page = 'book.php';
 session_set_cookie_params(7*24*3600);
-session_name('book');
+session_name($web_name);
 session_start();
 setcookie('username',session_name(),time()+3600);    //创建cookie
 if(isset($_COOKIE["username"])){    //使用isset()函数检测cookie变量是否已经被设置
@@ -8,7 +15,17 @@ if(isset($_COOKIE["username"])){    //使用isset()函数检测cookie变量是�
 }else{
 	$username = '';
 }
-	
+
+include 'debug.php';
+include 'db_connect.php';
+include 'myphp/disp_lib.php';
+include 'book_lib.php';
+include 'myphp/login_lib.php';
+
+global $login_id, $max_book, $setting;	
+$login_id = "Login";
+check_login($web_name);
+
 ?>
 
 <html>
@@ -200,87 +217,31 @@ function deduce_member_score(tdc, member)
 </script>
 
 <?php
-include 'book_lib.php';
-/*
-   copyright Xiaofeng(Daniel) Ling<lingxf@gmail.com>, 2016, Aug.
- */
-
-include 'debug.php';
-include 'db_connect.php';
-
 global $login_id, $max_book, $setting;	
 
-//foreach(session_get_cookie_params() as $a=>$b){ print("$a=>$b<br>");}
-
-$sid=session_id();
-$login_id = "NoLogin";
-if(isset($_POST['login'])){
-	if(isset($_POST['user'])){
-		$login_id=$_POST['user'];
-		if(isset($_POST['password'])) $password=$_POST['password'];
-		$ret = check_passwd($login_id, $password);
-		if($ret == 1){
-			print("No user $login_id exist");
-			unset($_SESSION['user']); 
-			home_link();
-			exit;
-		}else if($ret == 2){
-			print("wrong password");
-			unset($_SESSION['user']);
-			home_link();
-			exit;
-		}else{
-			$_SESSION = array();
-			session_destroy();
-			session_name('book');
-			session_start();
-			$_SESSION['user'] = $login_id;
-		}
-
-	}
-}else if(isset($_POST['register'])){
-	include 'book_user_register.php';
-	//header("Location: book_user_register.php");
-	exit;
-}else if(isset($_SESSION['user'])){
-	$login_id=$_SESSION['user'];
-}else{
-	$view = 'class';
-	$_SESSION['view'] = $view;
-}
-
-	
-if(isset($_SESSION['user'])) $login_id=$_SESSION['user'];
-else{
-	//    header("Location: book_user_login.php");
-	//  exit;
-}
 $max_books = 1;
 $items_perpage = 50;
 $role = is_member($login_id);
 $role_city = get_user_attr($login_id, 'city');
+$role_city = $role_city ? $role_city:0;
 $disp_city = 0;
+$action="home";
+if(isset($_GET['action']))$action=$_GET['action'];
+
 if($role == 2)
 	$role_text = "管理员";
 else if($role == 1)
 	$role_text = "会员";
-else
+else if($role == 0)
 	$role_text = "非会员";
+else if($role == -1)
+	$role_text = "未激活";
 
-if($login_id == 'NoLogin')
-	$login_text = "<a href=book_user_login.php>登录</a>";
+if($login_id == 'Login')
+	$login_text = "<a id='id_login_name' href=?action=login>登录</a>&nbsp;&nbsp;<a href=\"?action=register\">注册</a>";
 else
-	$login_text = "<a href=book_user_setting.php>$login_id($role_text)<a/>&nbsp;&nbsp;<a href=\"book.php?action=logout\">注销</a>";
+	$login_text = "<a href=book_user_setting.php>$login_id($role_text)</a>&nbsp;&nbsp;<a href=\"?action=logout&url=book.php\">注销</a>";
 
-$action="home";
-if(isset($_GET['action']))$action=$_GET['action'];
-if($action == "logout"){
-	$_SESSION = array();
-	session_destroy();
-	print "You are logout now";
-	print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php'\",1000);</script>");
-# header("Location: book_user_login.php");
-}
 
 $book_id=0;
 if(isset($_GET['book_id'])) $book_id=$_GET['book_id'];
@@ -441,7 +402,7 @@ switch($action){
 		out_record($login_id);
 		break;
 	case "join":
-		if($login_id == 'NoLogin'){
+		if($login_id == 'Login'){
 			print("please register first!");
 			break;
 		}
@@ -496,7 +457,7 @@ switch($action){
 			$cc = '';
 			mail_html($to, $cc, "$user is waiting for your book <$bookname>", "");
 		}
-		home_link();
+		show_home_link();
 		break;
 	case "add_favor":
 		add_favor($login_id, $book_id);
@@ -589,7 +550,7 @@ switch($action){
 		$to = get_user_attr($borrower, 'email');
 		$cc = get_admin_mail();
 		mail_html($to, $cc, "Timeout, Please return the book <$bookname>", "");
-		home_link("Back", 'manage');
+		show_home_link("Back", 'manage');
 		break;
 
 	case "approve_renew":
@@ -738,7 +699,7 @@ function show_home()
 		show_my_hot($login_id);
 		print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
 		list_book('normal', $start, $items_perpage,0, 'favor');
-	}else if($login_id == 'NoLogin'){
+	}else if($login_id == 'Login' || $role == 0 || $role == -1){
 		print("<div id='div_homentro'>");
 		$sql = "select * from notice where item = 'BJ'";
 		$res = read_mysql_query($sql);

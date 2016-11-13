@@ -118,7 +118,7 @@ if($book_id && $op=="modify"){
 		$book_id = 0;
 	print("Add $rows rows, book_id:$book_id book:$name $author $sponsor<br>");
 	add_log($login_id, $login_id, $book_id, 10);
-	home_link();
+	show_home_link();
 	return;
 }else if($op=="edit_book_ui"||$op=="buy_book_done"){
 	$time = time();

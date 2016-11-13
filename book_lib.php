@@ -1,5 +1,4 @@
 <?php
-include 'common.php';
 function dprint($str)
 {
 	global $debug_print, $debug;
@@ -20,31 +19,14 @@ function rsort_by_index($array, $index)
 	return $new_array;
 }
 
-function print_td($text, $width='', $color='', $background='', $script='')
-{
-    $td = "<td width=$width style='width:$width pt;".
-		"background:$background;" .
-		"color:$color;" .
-		"padding:0cm 5.4pt 0cm 5.4pt;height:33.0pt' $script>";
-	$td .= "$text";
-	$td .= "</td>";
-	print $td;
+
+function show_home_link($str="Home", $action='', $more=''){
+	if($action!='')
+    	print("<a href=\"book.php?action=$action\">$str</a>" . $more);
+	else
+    	print("<a href=\"book.php\">$str</a>" . $more);
 }
 
-function print_tdlist($tdlist)
-{
-	foreach($tdlist as $tdc)
-	{
-		print("<td>$tdc</td>"); 
-	}
-}
-
-function print_tbline($tdlist)
-{
-	print("<tr>");
-	print_tdlist($tdlist);
-	print("</tr>");
-}
 
 function manage_record()
 {
@@ -89,7 +71,7 @@ function list_record($login_id, $format='self', $condition='')
 {
 	global $role, $table_head, $role_city, $disp_city;
 	$cond = " 1 ";
-	if($city != 255)
+	if($disp_city != 255)
 		$cond .= " and books.city = $role_city ";
 
 	print($table_head);
@@ -932,7 +914,15 @@ function is_member($login_id)
 		$items_perpage = $row['perpage'];
 		return $role;
 	}
-	return 0;
+
+	$sql = "select * from user.user where user_id=\"$login_id\"";
+	$res = mysql_query($sql) or die("Invalid query:".$sql.mysql_error());
+	if($row = mysql_fetch_array($res)){
+		if($row['activate'] == 0)
+			return -1;
+		return 0;
+	}
+	return -2;
 }
 
 function check_wait($book_id)
@@ -1638,27 +1628,6 @@ function set_book_status($book_id, $status)
 	return false;
 }
 
-function check_passwd($login_id, $login_passwd){
-
-	$sql1="SELECT * FROM user.user WHERE user_id = '$login_id';";
-	$res1=mysql_query($sql1) or die("Query Error:" . mysql_error());
-	$row1=mysql_fetch_array($res1);
-	if(!$row1)
-		return 1;
-	if($row1['password'] == "")
-		return 0;
-    if($row1['password'] == $login_passwd)
-        return 0;
-	$sql1="SELECT * FROM user.user WHERE user_id = '$login_id' and password=ENCRYPT('$login_passwd', 'ab');";
-	$res1=mysql_query($sql1) or die("Query Error:" . mysql_error());
-	$row1=mysql_fetch_array($res1);
-	if(!$row1)
-		return 2;
-//	$passwd = crypt($login_passwd);
-	return 0;
-}
-
-
 function add_member($user, $name, $email, $role) {
 	$sql1 = "replace member set user = '$user', user_name= '$name', email='$email', role = $role ";
 	$res1=mysql_query($sql1) or die("Invalid query:" . $sql1 . mysql_error());
@@ -1724,24 +1693,6 @@ function set_user_attr($user, $prop, $value) {
 	if($row1=mysql_affected_rows($res1) > 0)
 		return true;
 	return false;
-}
-
-function home_link($str="Home", $action='', $more=''){
-	if($action!='')
-		print("<a href=\"book.php?action=$action\">$str</a>" . $more);
-	else
-		print("<a href=\"book.php\">$str</a>" . $more);
-}
-
-function check_login(){
-	global $login_id;
-	session_name('book');
-	session_start();
-	if(isset($_SESSION['user'])) $login_id=$_SESSION['user'];
-	else{
-		print("You are not login!");
-		exit();
-	}
 }
 
 function get_class_by_index($index)
@@ -1824,29 +1775,7 @@ function clear_favor($member_id)
 	return true;
 }
 
-function mail_html($to, $cc, $subject, $message)
-{
-	global $debug_mail, $debug;
-	$headers = 'From: book@cedump-sh.ap.qualcomm.com' . "\r\n" .
-	    'Reply-To: xling@qti.qualcomm.com' . "\r\n" .
-	    'X-Mailer: PHP/' . phpversion();
-	$headers  = 'MIME-Version: 1.0' . "\r\n";
-	$headers .= 'Content-type: text/html; charset=utf-8' . "\r\n";
-	if($debug == 1){
-		$message .= "\r\n To:$to, CC:$cc";
-		$cc = 'xling@qti.qualcomm.com';
-		$to = 'xling@qti.qualcomm.com';
-	}
-	if($cc)
-		$headers .= "Cc: $cc" . "\r\n";
-	if(isset($debug_mail) && $debug_mail == 1)
-		$headers .= "Bcc: xling@qti.qualcomm.com" . "\r\n";
 
-	dprint("mail|to:$to|cc:$cc|". htmlentities($subject, ENT_COMPAT, 'utf-8') . "<br>\n");
-//	print("$message\n");
-	mail($to,$subject, $message, $headers);
-
-}
 
 /* only used once*/
 function import_favor_from_history()
