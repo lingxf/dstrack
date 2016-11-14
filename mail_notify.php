@@ -22,7 +22,7 @@ else if($action == 'check')
 else if($action == 'comment')
 	mail_new_comment();
 else if($action == 'reply')
-	notify_reply_comment(7);
+	notify_reply_comment(1);
 else if($action == 'gen_comment')
 	gen_comment();
 
@@ -39,7 +39,7 @@ function notify_reply_comment($last_days='')
 
 	$cond = "1 ";
 	if($last_days != '')
-		$cond .= " and (to_days(now()) - to_days(`timestamp`)) < $last_days";
+		$cond .= " and `timestamp` > date_sub(`timestamp`, interval $last_days day)";
 	$cond .= " and comments.parent != 0 ";
 
 	$tc = "(select comment_id, words, borrower from comments)";
