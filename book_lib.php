@@ -70,6 +70,8 @@ function get_book_status_name($status)
 function list_record($login_id, $format='self', $condition='')
 {
 	global $role, $table_head, $role_city, $disp_city;
+	$role_city = isset($role_city)?$role_city:0;
+	$disp_city = isset($disp_city)?$disp_city:0;
 	$cond = " 1 ";
 	if($disp_city != 255)
 		$cond .= " and books.city = $role_city ";
