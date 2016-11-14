@@ -1,4 +1,6 @@
 <?php
+include 'myphp/common.php';
+include 'myphp/disp_lib.php';
 include 'book_lib.php';
 /*
    copyright Xiaofeng(Daniel) Ling<lingxf@gmail.com>, 2016, Aug.

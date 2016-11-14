@@ -18,7 +18,8 @@ if(isset($_COOKIE["username"])){    //使用isset()函数检测cookie变量是�
 
 include 'debug.php';
 include 'db_connect.php';
-include 'myphp/disp_lib.php';
+include_once 'myphp/common.php';
+include_once 'myphp/disp_lib.php';
 include 'book_lib.php';
 include 'myphp/login_lib.php';
 

@@ -1,5 +1,6 @@
 <?php
 include 'myphp/disp_lib.php';
+include 'myphp/common.php';
 include 'book_lib.php';
 include 'debug.php';
 include 'db_connect.php';

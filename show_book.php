@@ -4,6 +4,8 @@
 	copyright Xiaofeng(Daniel) Ling<xling@qualcomm.com>, 2012, Aug.
 */
 
+include 'myphp/common.php';
+include 'myphp/disp_lib.php';
 include 'book_lib.php';
 include 'debug.php';
 include 'db_connect.php';
