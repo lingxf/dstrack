@@ -1,10 +1,4 @@
 <?php
-function dprint($str)
-{
-	global $debug_print, $debug;
-	if(isset($debug_print) && $debug_print == 1)
-		print($str);
-}
 
 function rsort_by_index($array, $index)
 {
