@@ -1203,7 +1203,7 @@ function show_book($book_id)
 
 function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 {
-	global $table_head, $login_id;
+	global $table_head, $login_id, $role;
 
 	$mail_url = get_cur_php();
 	if($mail_url == '')
@@ -1240,7 +1240,7 @@ function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 		$book_id = $row['book_id'];
 		$count = mb_strlen($comments, "UTF-8");
 		print("<tr>");
-		if($login_id == 'xling'){
+		if($role == 2){
 			$webroot = dirname($mail_url);
 			$comment_id_link = "<a href=$webroot/edit_book.php?op=edit_comment_ui&comment_id=$comment_id>$comment_id</a>";
 		}else
