@@ -6,7 +6,7 @@ include_once 'book_lib.php';
 include_once "db_connect.php";
 global $login_id, $role;	
 $login_id="";
-session_name("book");
+session_name($web_name);
 session_start();
 if(isset($_SESSION['user'])){
 	$login_id=$_SESSION['user'];

@@ -4,13 +4,13 @@
 	copyright Xiaofeng(Daniel) Ling<xling@qualcomm.com>, 2012, Aug.
 */
 
+include_once 'debug.php';
+include_once 'db_connect.php';
 include 'myphp/common.php';
 include 'myphp/disp_lib.php';
 include 'book_lib.php';
-include 'debug.php';
-include 'db_connect.php';
 
-session_name('book');
+session_name($web_name);
 session_start();
 
 if(isset($_GET['view'])) $view=$_GET['view'];

@@ -1,4 +1,6 @@
 <?php
+include_once 'debug.php'
+include_once 'db_connect.php';
 include 'myphp/common.php';
 include 'myphp/disp_lib.php';
 include 'book_lib.php';
@@ -6,12 +8,10 @@ include 'book_lib.php';
    copyright Xiaofeng(Daniel) Ling<lingxf@gmail.com>, 2016, Aug.
  */
 
-include 'debug.php';
-include 'db_connect.php';
 
 global $login_id, $max_book, $setting;	
 
-session_name('book');
+session_name($web_name);
 session_set_cookie_params(60*60*18);
 session_start();
 
