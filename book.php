@@ -378,6 +378,10 @@ switch($action){
 		break;
 	case "list_comments_all":
 		list_comments('', '', 0, 90);
+		if($city != 0){
+			print("其它城市");
+			list_comments('-2', '', 0, 90);
+		}
 		break;
 	case "list_recommend":
 		print("推荐列表:");

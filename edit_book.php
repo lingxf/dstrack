@@ -259,7 +259,7 @@ if($book_id && $op=="modify"){
 		print("<tr class='odd noclick'><th>Date:</th><td><input name='date' type='text' value='$date' ></td></tr> ");
 	print("
 		<tr><th>Comment:</th><td>
-		<textarea wrap='soft' type='text' name='comment' rows='8' maxlength='2000' cols='60'>$comment</textarea>
+		<textarea wrap='soft' type='text' name='comment' rows='8' maxlength='2000' cols='60'>$comments</textarea>
 		</td></tr>
 		</tbody>
 		</table>

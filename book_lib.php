@@ -691,7 +691,7 @@ function list_member()
 
 function get_city_booktb($city)
 {
-	$city_book = array('books', 'sh-books', 'sz-books', 'xa-books');
+	$city_book = array('books', 'books', 'books', 'books');
 	return $city_book[$city];
 }
 
@@ -828,7 +828,7 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 			$sc_comments = "ondblclick='show_edit_col(this,$book_id,2)'";
 			$sc_class = "ondblclick='show_edit_col(this,$book_id,3)'";
 		}
-		$id = $book_id;
+		$id = $book_id&0xffff;
 		if($role > 1){
 			$id = "<a href='book.php?action=edit_book&book_id=$book_id'>$id</a>";
 		}
@@ -1204,19 +1204,32 @@ function show_book($book_id)
 function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 {
 	global $table_head, $login_id, $role;
+	
+	if($book_id == -2){
+		$dbcomments = 'book.comments';
+		$dbbooks = 'book.books';
+	}else{
+		$dbcomments = 'comments';
+		$dbbooks = 'books';
+	}
 
 	$mail_url = get_cur_php();
-	if($mail_url == '')
+	if($book_id == -2){
 		$mail_url = "http://cedump-sh.ap.qualcomm.com/book/book.php";
+		$book_id = '';
+	}
+	if($mail_url == ''){
+			$mail_url = "http://cedump-sh.ap.qualcomm.com/book/book.php";
+	}
 
 	$cond = "1 ";
 	if($book_id != '')
-		$cond .= " and comments.book_id = $book_id";
+		$cond .= " and $dbcomments.book_id = $book_id";
 	if($borrower != '') {
 		if($format == 2)
 			$cond .= " and cm.borrower = '$borrower'";
 		else
-			$cond .= " and comments.borrower = '$borrower'";
+			$cond .= " and $dbcomments.borrower = '$borrower'";
 	}
 	if($last_days != '')
 		$cond .= " and (to_days(now()) - to_days(`timestamp`)) < $last_days";
@@ -1225,8 +1238,8 @@ function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 		print_tbline(array('序号', '用户', '日期', '评论', '命令'));
 	else
 		print_tbline(array('序号', '用户', '日期', '书名','评论', '命令'));
-	$tc = "(select comment_id, borrower from comments)";
-	$sql = "select comments.comment_id, comments.borrower, parent, words, date(timestamp) as dt, comments.book_id, books.name, cm.borrower as parent_user from comments left join $tc as cm on comments.parent = cm.comment_id left join books on comments.book_id = books.book_id where $cond order by timestamp desc limit 100";
+	$tc = "(select comment_id, borrower from $dbcomments)";
+	$sql = "select $dbcomments.comment_id, $dbcomments.borrower, parent, words, date(timestamp) as dt, $dbcomments.book_id, $dbbooks.name, cm.borrower as parent_user from $dbcomments left join $tc as cm on $dbcomments.parent = cm.comment_id left join $dbbooks on $dbcomments.book_id = $dbbooks.book_id where $cond order by timestamp desc limit 100";
 	$res = read_mysql_query($sql);
 	while($row = mysql_fetch_array($res)){
 		$comment_id = $row['comment_id'];
@@ -1240,7 +1253,7 @@ function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 		$book_id = $row['book_id'];
 		$count = mb_strlen($comments, "UTF-8");
 		print("<tr>");
-		if($role == 2){
+		if($role == 2 || $borrower == $login_id){
 			$webroot = dirname($mail_url);
 			$comment_id_link = "<a href=$webroot/edit_book.php?op=edit_comment_ui&comment_id=$comment_id>$comment_id</a>";
 		}else
