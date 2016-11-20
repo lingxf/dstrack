@@ -1222,10 +1222,10 @@ function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 	}
 
 	$mail_url = get_cur_php();
-	$edit_url = "";
+	$web_root = get_cur_root();
 	if($book_id == -2){
 		$mail_url = "http://cedump-sh.ap.qualcomm.com/book/book.php";
-		$edit_url = "http://cedump-sh.ap.qualcomm.com/book/";
+		$web_root = "http://cedump-sh.ap.qualcomm.com/book";
 		$book_id = '';
 	}
 	if($mail_url == ''){
@@ -1278,7 +1278,7 @@ function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 			$comments = "回复:$parent_user:".$comments;
 		}
 		print_td($comments."($count)");
-		$cmd = "<a href='$edit_url/edit_book.php?op=add_comment_ui&book_id=$book_id&comment_id=$comment_id&borrower=$borrower'>回复</a>";
+		$cmd = "<a href='$web_root/edit_book.php?op=add_comment_ui&book_id=$book_id&comment_id=$comment_id&borrower=$borrower'>回复</a>";
 		print_td($cmd, 40);
 	}
 	print("</table>");
