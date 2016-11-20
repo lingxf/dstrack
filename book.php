@@ -377,7 +377,7 @@ switch($action){
 	case "list_comments_all":
 		list_comments('', '', 0, 90);
 		if($city != 0){
-			print("其它城市");
+			print("北京俱乐部");
 			list_comments('-2', '', 0, 90);
 		}
 		break;
@@ -409,6 +409,11 @@ switch($action){
 			print("please register first!");
 			break;
 		}
+		$score = get_user_attr($borrower, 'score');
+		if(!$score){
+			print("You already applied to join, please wait approval");
+			break;
+		}
 		$borrower = $login_id;
 		$cc = get_user_attr($borrower, 'email');
 		$user = get_user_attr($borrower, 'name');
@@ -416,7 +421,6 @@ switch($action){
 		add_member($borrower, $user, $cc, 0x0);
 		add_record(0, $login_id, 0x107);
 		mail_html($to, $cc, "$user is applying to join reading club", "");
-		manage_record($login_id);
 		break;
 
 	/*member*/

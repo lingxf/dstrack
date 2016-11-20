@@ -1709,8 +1709,10 @@ function get_user_attr($user, $prop) {
 	if($prop == 'name')
 		$prop = 'user_name';
 	$res1=mysql_query($sql1) or die("Invalid query:" . $sql1 . mysql_error());
-	if($row1=mysql_fetch_array($res1))
-		return $row1["$prop"];
+	if($row1=mysql_fetch_array($res1)){
+		if(isset($row1[$prop]))
+			return $row1["$prop"];
+	}
 	return false;
 }
 
