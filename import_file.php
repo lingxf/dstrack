@@ -8,6 +8,7 @@ global $login_id, $role;
 $login_id="";
 session_name($web_name);
 session_start();
+$disp_city=0;
 if(isset($_SESSION['user'])){
 	$login_id=$_SESSION['user'];
 	$role = is_member($login_id);

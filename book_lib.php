@@ -67,7 +67,7 @@ function list_record($login_id, $format='self', $condition='')
 	$role_city = isset($role_city)?$role_city:0;
 	$disp_city = isset($disp_city)?$disp_city:0;
 	$cond = " 1 ";
-	if($disp_city != 255)
+	if($disp_city != 255 && $disp_city != '')
 		$cond .= " and books.city = $role_city ";
 
 	print($table_head);
