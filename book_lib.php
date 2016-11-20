@@ -792,9 +792,9 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		else if($order == 2)
 			print_tdlist(array('编号', '书名','作者','分类','评分','状态', '操作'));
 	}else if($format == 'class')
-		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','Q分类','状态', '操作'));
+		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','会员分类','状态', '操作'));
 	else if($format == 'tbd')
-		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','Q分类','状态', '操作'));
+		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','会员分类','状态', '操作'));
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date','sponsor','status', 'action'));
 
@@ -1181,7 +1181,7 @@ function show_book($book_id)
 	print("$blink");
 	print($table_head);
 	print('<tr>');
-	print_tdlist(array('编号', 'ISBN','索引','价格','中图分类', '咱分类', 'Sponsor', '购买日期', '次数', '状态'));
+	print_tdlist(array('编号', 'ISBN','索引','价格','中图分类', '会员分类', 'Sponsor', '购买日期', '次数', '状态'));
 	print("</tr>");
 	print("<tr>");
 	print_tdlist(array($book_id, $isbn, $index, $price, $class_name, $class_text, $sponsor, $buy_date, $times, get_book_status_name($status))); 
