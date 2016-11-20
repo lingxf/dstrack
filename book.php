@@ -3,8 +3,7 @@
    copyright Xiaofeng(Daniel) Ling<lingxf@gmail.com>, 2016, Aug.
  */
 
-
-$web_name = 'book';
+include 'debug.php';
 $home_page = 'book.php';
 session_set_cookie_params(7*24*3600);
 session_name($web_name);
@@ -16,7 +15,6 @@ if(isset($_COOKIE["username"])){    //使用isset()函数检测cookie变量是�
 	$username = '';
 }
 
-include 'debug.php';
 include 'db_connect.php';
 include_once 'myphp/common.php';
 include_once 'myphp/disp_lib.php';
@@ -24,7 +22,7 @@ include 'book_lib.php';
 include 'myphp/login_lib.php';
 
 global $login_id, $max_book, $setting;	
-$login_id = "Login";
+$login_id = "Guest";
 check_login($web_name);
 
 ?>
@@ -238,7 +236,7 @@ else if($role == 0)
 else if($role == -1)
 	$role_text = "未激活";
 
-if($login_id == 'Login')
+if($login_id == 'Guest')
 	$login_text = "<a id='id_login_name' href=?action=login>登录</a>&nbsp;&nbsp;<a href=\"?action=register\">注册</a>";
 else
 	$login_text = "<a href=book_user_setting.php>$login_id($role_text)</a>&nbsp;&nbsp;<a href=\"?action=logout&url=book.php\">注销</a>";
@@ -305,7 +303,7 @@ if(isset($_POST['list_all']))$action="list_all";
 
 //dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage setting:$setting<br>");
 
-
+dprint("$login_id,$role");
 if($role < 1 && !preg_match("/home|next|library|join|begin|end|prev|show_borrower|history|list_comments|list_comments_all|list_recommend|list_share|list_timeout|list_out|list_statistic/",$action)){
 	print("You are not member!");
 	return;
@@ -407,7 +405,7 @@ switch($action){
 		out_record($login_id);
 		break;
 	case "join":
-		if($login_id == 'Login'){
+		if($login_id == 'Guest'){
 			print("please register first!");
 			break;
 		}
@@ -704,7 +702,7 @@ function show_home()
 		show_my_hot($login_id);
 		print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
 		list_book('normal', $start, $items_perpage,0, 'favor');
-	}else if($login_id == 'Login' || $role == 0 || $role == -1){
+	}else if($login_id == 'Guest' || $role == 0 || $role == -1){
 		print("<div id='div_homentro'>");
 		$sql = "select * from notice where item = 'BJ'";
 		$res = read_mysql_query($sql);

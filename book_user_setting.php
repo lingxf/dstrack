@@ -6,15 +6,14 @@
 </head>
 <body>
 <?php
-$web_name = 'book';
+include 'debug.php';
+include 'db_connect.php';
 $home_page = 'book.php';
 session_set_cookie_params(7*24*3600);
 session_name($web_name);
 session_start();
 
 include 'book_lib.php';
-include 'debug.php';
-include 'db_connect.php';
 include 'myphp/login_lib.php';
 
 global $login_id, $login_password;
