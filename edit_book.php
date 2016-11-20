@@ -8,11 +8,12 @@ include_once 'debug.php';
 include_once 'db_connect.php';
 include_once 'myphp/disp_lib.php';
 include_once 'myphp/common.php';
-include 'book_lib.php';
+include_once 'book_lib.php';
 
 session_name($web_name);
 session_start();
-$login_id=$_SESSION['user'];
+$login_id=isset($_SESSION['user'])?$_SESSION['user']:'Guest';
+
 $role = is_member($login_id);
 $book_id = 0;
 if(isset($_POST['op'])) $op=$_POST['op'];
@@ -23,6 +24,20 @@ if(!isset($op))
 
 if(isset($_POST['comment_id'])) $comment_id = $_POST['comment_id'];
 if(isset($_GET['comment_id'])) $comment_id = $_GET['comment_id'];
+
+if($login_id == 'Guest'){
+	print('Please login first');
+	exit();
+}
+if($role == -1){
+	print('Please Activate your account first');
+	exit();
+}
+
+if($role < 1 && !preg_match("/add_comment_ui|edit_comment_ui|add_comment|save_comment/",$op)){
+	print("You are not member!");
+	return;
+}
 
 if($op == 'read' || $op == 'write' || $op=='modify'){
 	$book_id=$_POST['book_id'];
@@ -42,8 +57,8 @@ if($op == 'read' || $op == 'write' || $op=='modify'){
 	$old_date = $_POST['old_date'];
 	$desc =  $_POST['desc'];
 }
-if($role == 0)
-	return '';
+
+
 
 if($book_id && $op=="modify"){
 	$intext = str_replace("'", "''", $text);
