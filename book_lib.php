@@ -69,7 +69,15 @@ function list_record($login_id, $format='self', $condition='')
 	$cond = " 1 ";
 	if($disp_city != 255 && $disp_city != '')
 		$cond .= " and books.city = $role_city ";
-
+	$book_db = mysql_result(mysql_query("select database()") or die(mysql_error()."error get db"), 0);
+	$mail_url = get_cur_php();
+	if($login_id == -2){
+		$book_db = 'book';
+		$mail_url = "http://cedump-sh.ap.qualcomm.com/book/book.php";
+	}
+	if($mail_url == ''){
+		$mail_url = "http://cedump-sh.ap.qualcomm.com/book/book.php";
+	}
 	print($table_head);
 	if($format == 'approve'){
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
@@ -98,7 +106,7 @@ function list_record($login_id, $format='self', $condition='')
 		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower and t2.city = $role_city order by sdate desc ";
 	}else if($format == 'share'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '完成日期' ));
-		$sql = " select record_id, borrower, t1.status, name, user_name, data, misc, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = $condition and t3.user = t1.borrower and t2.city = $role_city order by sdate desc,adate desc ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data, misc, adate, bdate,rdate,sdate, t1.book_id from $book_db.history t1, $book_db.books t2, $book_db.member t3 where t1.book_id = t2.book_id and t1.status = $condition and t3.user = t1.borrower and t2.city = $role_city order by sdate desc,adate desc ";
 	}else if($format == 'member'){
 		print_tdlist(array('序号','帐号','申请人','申请日期', '批准日期', '操作'));
 		$sql = " select record_id, borrower, t1.status, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower and t3.city = $role_city order by adate desc ";
@@ -121,7 +129,7 @@ function list_record($login_id, $format='self', $condition='')
 		$borrower = $row['user_name']; 
 		$book_id = $row['book_id']; 
 		$name = isset($row['name'])?$row['name']:''; 
-		$name = "<a href='book.php?action=show_borrower&book_id=$book_id'>$name</a>";
+		$name = "<a href='$mail_url?action=show_borrower&book_id=$book_id'>$name</a>";
 		$adate= $row['adate']; 
 		$bdate= $row['bdate']; 
 		$rdate= $row['rdate']; 
@@ -229,7 +237,7 @@ function list_record($login_id, $format='self', $condition='')
 		else if($format == 'share'){
 			if($book_id == 0)
 				$name = $row['name'].":".$row['misc'];
-			if($status == 0x105 && $role == 2){
+			if($status == 0x105 && $role == 2 && $login_id != -2){
 				$blink = "<a href=\"book.php?record_id=$record_id&action=share_done\">完成</a>";
 				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=share_cancel\">取消</a>";
 				$blink .= "&nbsp;<a href=\"edit_book.php?record_id=$record_id&op=edit_share_ui\">编辑</a>";

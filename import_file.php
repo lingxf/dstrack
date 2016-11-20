@@ -80,6 +80,13 @@ if ($handle = opendir('share/')) {
 	closedir($handle);
 }
 
+if($city == 2){
+	print("北京俱乐部:<br>");
+	print("待分享:<br>");
+	list_record(-2, 'share', 0x105);
+	print("已分享:<br>");
+	list_record(-2, 'share', 0x106);
+}
 print("<html>");
 ?>
 
