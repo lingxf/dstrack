@@ -1715,7 +1715,7 @@ function get_user_attr($user, $prop) {
 		if(isset($row1[$prop]))
 			return $row1["$prop"];
 	}
-	return false;
+	return -1;
 }
 
 function set_user_attr($user, $prop, $value) {

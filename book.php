@@ -413,12 +413,12 @@ switch($action){
 			print("please register first!");
 			break;
 		}
+		$borrower = $login_id;
 		$score = get_user_attr($borrower, 'score');
-		if(!$score){
+		if($score != -1){
 			print("You already applied to join, please wait approval");
 			break;
 		}
-		$borrower = $login_id;
 		$cc = get_user_attr($borrower, 'email');
 		$user = get_user_attr($borrower, 'name');
 		$to = get_admin_mail();
