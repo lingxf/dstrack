@@ -708,7 +708,15 @@ function show_home()
 		show_my_hot($login_id);
 		print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
 		list_book('normal', $start, $items_perpage,0, 'favor');
+		show_notice();
 	}else if($login_id == 'Guest' || $role == 0 || $role == -1){
+		show_notice();
+		show_library();
+	}
+}
+
+function show_notice()
+{
 		print("<div id='div_homentro'>");
 		$cn = get_city_str();
 		$sql = "select * from notice where item = '$cn'";
@@ -726,8 +734,6 @@ function show_home()
 				}
 		}
 		print('</div>');
-		show_library();
-	}
 }
 
 function show_library()
