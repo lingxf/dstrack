@@ -375,6 +375,37 @@ if($book_id && $op=="modify"){
 		<input class='btn' type='submit' name='save' value='Save'>
 		<input class='btn' type='submit' name='cancel' value='Cancel'>
 		</form> ");
+}else if($op=="save_notice"){
+	$cityn = $_POST['cityn'];
+	$notice = $_POST['notice'];
+	$sql = " update notice set `notice`='$notice' where item = '$cityn'";
+	$res = update_mysql_query($sql);
+	print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=manage_record'\",1000);</script>");
+}else if($op=="edit_notice_ui"){
+	$cityn = get_city_str();
+	$sql = "select * from notice where item = '$cityn'";
+	$res = read_mysql_query($sql);
+	while($row = mysql_fetch_array($res)){
+		$notice = $row['notice'];
+	}
+	$op="save_notice";
+	print("<html>
+			<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+			<meta http-equiv='Content-Language' content='zh-CN' /> 
+			");
+	print("
+			<form method='post' action='edit_book.php'>
+			<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 1024px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
+			<tbody>
+			<input type='hidden' name='op' value='$op'>
+			<input type='hidden' name='cityn' value='$cityn'>
+			<tr><th>Club规则:</th><td>
+			<textarea wrap='soft' type='text' name='notice' rows='15' maxlength='5000' cols='120'>$notice</textarea>
+			</td></tr>
+			</tbody>
+			</table>
+			<input class='btn' type='submit' name='save' value='Save'>
+			</form> ");
 }else if($op=="add_share" || $op == "save_share"){
 	if(isset($_POST['cancel'])){
 		print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=list_share'\",1000);</script>");

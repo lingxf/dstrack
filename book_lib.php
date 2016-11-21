@@ -26,6 +26,7 @@ function manage_record()
 {
 	global $login_id;
 	print("&nbsp;&nbsp;申请：");
+	print("&nbsp;&nbsp;<a href=edit_book.php?op=edit_notice_ui>编辑规则</a>");
 	list_record($login_id, 'approve', " (history.status = 1 or history.status = 5) ");
 	print("&nbsp;&nbsp;归还：");
 	list_record($login_id, 'approve', " history.status = 3 ");
@@ -1817,6 +1818,26 @@ function import_favor_from_history()
 		add_favor($row['borrower'], $row['book_id']);
 	}
 
+}
+
+function get_city_str($c='')
+{
+	global $city;
+	if($c == '')
+		$c = $city;
+	$cityname = array('BJ', 'SH', 'SZ', 'XA');
+	$cn = $cityname[$c];
+	return $cn;
+}
+
+function get_city_name($c='')
+{
+	global $city;
+	if($c == '')
+		$c = $city;
+	$cityname = array('北京', '上海', '深圳', '西安');
+	$cn = $cityname[$c];
+	return $cn;
 }
 
 function migrate_record($login_id)
