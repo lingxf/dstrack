@@ -241,7 +241,7 @@ if($login_id == 'Guest')
 else
 	$login_text = "<a href=book_user_setting.php>$login_id($role_text)</a>&nbsp;&nbsp;<a href=\"?action=logout&url=book.php\">注销</a>";
 
-$login_text .= get_city_name($city);
+$login_text .= "&nbsp;&nbsp;".get_city_name($city);
 
 $book_id=0;
 if(isset($_GET['book_id'])) $book_id=$_GET['book_id'];
