@@ -701,6 +701,7 @@ function show_home()
 {
 	global $login_id, $view, $start, $items_perpage;
 	global $class_list, $class, $comment_type, $role, $order;
+	global $city;
 	if($role > 0){
 		$score = get_user_attr($login_id, 'score');
 		$score_used = get_user_attr($login_id, 'score_used');
@@ -712,7 +713,9 @@ function show_home()
 		list_book('normal', $start, $items_perpage,0, 'favor');
 	}else if($login_id == 'Guest' || $role == 0 || $role == -1){
 		print("<div id='div_homentro'>");
-		$sql = "select * from notice where item = 'BJ'";
+		$cityname = array('BJ', 'SH', 'SZ', 'XA');
+		$cn = $cityname[$city];
+		$sql = "select * from notice where item = '$cn'";
 		$res = read_mysql_query($sql);
 		$n = 0;
 		if($row = mysql_fetch_array($res)){
