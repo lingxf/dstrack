@@ -259,14 +259,12 @@ function list_record($login_id, $format='self', $condition='')
 
 function list_statistic()
 {
+	cal_score();
 	print("积分排名");
 	point_statistic();
 	print("评论统计");
 	comment_statistic(0);
 	//comment_statistic_legacy(0);
-	print("大于50字评论统计");
-	comment_statistic(1);
-	//comment_statistic_legacy(1);
 	print("分享统计");
 	share_statistic();
 	print("评分统计");
@@ -310,10 +308,11 @@ function point_statistic($type = 0)
 	print("<th >累计借书</th>");
 	print("<th >累计分享</th>");
 	print("<th >累计评论</th>");
+	print("<th >有效评论</th>");
 	print("</tr>");
 
 	$tb_comments = " (select borrower, count(words) as total_comments from `comments` group by borrower)";
-	$sql = "  select user,user_name, score, score_used, tc.total_comments, ";
+	$sql = "  select user,user_name, score, score_used, tc.total_comments, effect_comments, ";
 	$sql .= "COUNT( CASE WHEN `status` = 0 THEN 1 ELSE NULL END ) AS `books_his`,  COUNT( CASE WHEN `status` = 0x106 THEN 1 ELSE NULL END ) AS `shares`";
 //	$sql .= ", count(case when `words` != '' then 1 else null end ) as `total_comments`";
 	$sql .= " from `member` left join $tb_comments tc on member.user = tc.borrower ";
@@ -329,6 +328,7 @@ function point_statistic($type = 0)
 		$books_his = $row['books_his'];
 		$shares = $row['shares'];
 		$comments = $row['total_comments'];
+		$effect_comments = $row['effect_comments'];
 		print("<tr>");
 		print_td($name);
 		print_td($score);
@@ -337,6 +337,7 @@ function point_statistic($type = 0)
 		print_td($books_his);
 		print_td($shares);
 		print_td($comments);
+		print_td($effect_comments);
 		print("</tr>");
 	}
 	print("</table>");
@@ -390,19 +391,32 @@ function transfer_comment()
 
 function cal_score()
 {
-	$sql = "select * from comments";
+	$sql = "select * from comments ";
 	$res = read_mysql_query($sql);
 	$ct_array = array();
+	$cc_array = array();
+	$comment_array = array();
 	while($row = mysql_fetch_array($res)){
 		$this_comment = $row['words'];
 		$book_id = $row['book_id'];
 		$user = $row['borrower'];
 		$this_comment = str_replace("\n", "", $this_comment);
-		if(mb_strlen($this_comment, "UTF-8") >= 50) {
-			$ct_array[$user] = isset($ct_array[$user]) ? $ct_array[$user] + 20 : 20;
+		if($len = mb_strlen($this_comment, "UTF-8") ) {
+			if(!isset($comment_array[$user][$book_id]))
+				$comment_array[$user][$book_id] = 0;
+			$comment_array[$user][$book_id] += $len;
 		}
 	}
-
+	foreach($comment_array as $user=>$book_ct){
+		foreach($book_ct as $book_id=>$ct){
+			if($ct > 50){
+				$ct_array[$user] = isset($ct_array[$user]) ? $ct_array[$user] + 20 : 20;
+				$cc_array[$user] = isset($cc_array[$user]) ? $cc_array[$user] + 1 : 1;
+				
+			}
+		}
+	}
+	
 	$sql = "select * from history where status = 0x106";
 	$res = read_mysql_query($sql);
 	while($row = mysql_fetch_array($res)){
@@ -411,7 +425,8 @@ function cal_score()
 	}
 
 	foreach($ct_array as $user=>$score){
-		$sql = "update member set score=$score where user = '$user'";
+		$cc = isset($cc_array[$user])?$cc_array[$user]:0;
+		$sql = "update member set score=$score, effect_comments=$cc where user = '$user'";
 		$rows = update_mysql_query($sql);
 	}
 }
@@ -1263,6 +1278,7 @@ function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 		$book = $row['name'];
 		$book_id = $row['book_id'];
 		$count = mb_strlen($comments, "UTF-8");
+		$char_count = strlen($comments);
 		print("<tr>");
 		if($role == 2 || $borrower == $login_id){
 			$webroot = dirname($mail_url);
