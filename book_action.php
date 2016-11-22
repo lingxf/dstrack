@@ -1,5 +1,5 @@
 <?php
-include_once 'debug.php'
+include_once 'debug.php';
 include_once 'db_connect.php';
 include 'myphp/common.php';
 include 'myphp/disp_lib.php';
