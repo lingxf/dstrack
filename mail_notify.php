@@ -1,9 +1,9 @@
 <?php
-include 'myphp/disp_lib.php';
-include 'myphp/common.php';
+include_once 'debug.php';
+include_once 'db_connect.php';
+include_once 'myphp/disp_lib.php';
+include_once 'myphp/common.php';
 include 'book_lib.php';
-include 'debug.php';
-include 'db_connect.php';
 
 if($argc <= 1){
 	print(" mail|gen \n");
@@ -40,7 +40,7 @@ function notify_reply_comment($last_days='')
 
 	$cond = "1 ";
 	if($last_days != '')
-		$cond .= " and `timestamp` > date_sub(`timestamp`, interval $last_days day)";
+		$cond .= " and `timestamp` > date_sub(now(), interval $last_days day)";
 	$cond .= " and comments.parent != 0 ";
 
 	$tc = "(select comment_id, words, borrower from comments)";
