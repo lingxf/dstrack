@@ -211,7 +211,7 @@ function mail_reminder_day($remain_days)
 		$i++;
 		$bookname = $name; 
 		$to = $email;
-		$cc = 'yingwang@qti.qualcomm.com';
+		$cc = get_admin_mail();
 		if($remain_days > 0)
 			mail_html($to, $cc, "your book <$bookname> has $remain_days days left", "$borrower $bookname $bdate");
 		else

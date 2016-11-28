@@ -1770,11 +1770,16 @@ function get_first_wait_mail($book_id)
 
 function get_admin_mail()
 {
-	global $debug;
-	$cc = '';
-	$cc = "yingwang@qti.qualcomm.com;";
-	if($debug == 1)
-		$cc = "xling@qti.qualcomm.com";
+	$sql = "select email from member where role = 2";
+	$res = read_mysql_query($sql);
+	$cc = "";
+	while($row = mysql_fetch_array($res)){
+		$user = $row['user'];
+		if($user == 'xling')
+			continue;
+		$cc .= $row['email'];
+		$cc .= ";";
+	}
 	return $cc;
 }
 function add_log($login_id, $borrower, $book_id, $status)
