@@ -378,7 +378,7 @@ switch($action){
 	case "list_comments_all":
 		list_comments('', '', 0, 90);
 		if($city != 0){
-			print("北京俱乐部");
+			print("<a href='http://cedump-sh.ap.qualcomm.com/book'>北京俱乐部</a>");
 			list_comments('-2', '', 0, 90);
 		}
 		break;

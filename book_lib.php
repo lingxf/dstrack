@@ -885,8 +885,9 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 				$bcolor = 'white';
 			}
 		}
-		$blink .= "&nbsp;<a href='javascript:show_share_choice(this,$book_id);' >分享</a>";
-		$blink .= "&nbsp;<a href='javascript:add_score(this,$book_id);' >评分</a>";
+		//$blink .= "&nbsp;<a href='javascript:show_share_choice(this,$book_id);' >分享</a>";
+		$blink .= "&nbsp;<a href='javascript:add_score(this,$book_id);' >打分</a>";
+		$blink .= "&nbsp;<a href='edit_book.php?op=add_comment_ui&book_id=$book_id&borrower=$borrower'>评论</a>";
 		#$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
 		print("<tr style='background:$bcolor;'>");
 		if($format == 'normal'){
@@ -1192,6 +1193,7 @@ function show_book($book_id)
 		$blink .= "&nbsp;<a href='book.php?action=add_favor&book_id=$book_id' >收藏</a>";
 	$blink .= "&nbsp;<a href='javascript:add_score(this,$book_id);'>打分</a>";
 	$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
+	$blink .= "&nbsp;<a href='edit_book.php?op=add_comment_ui&book_id=$book_id&borrower=$borrower'>评论</a>";
 	print("[" . get_book_status_name($status) . "]&nbsp;");
 	print("得分:$score&nbsp");
 	print("$blink");
