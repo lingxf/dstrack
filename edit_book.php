@@ -246,6 +246,7 @@ if($book_id && $op=="modify"){
 		$op = "add_comment";
 		$parent = $_GET['comment_id'];
 		$comment_id = $parent;
+		$comment = '';
 		$parent_user = $_GET['borrower'];
 		$book_id = $_GET['book_id'];
 		$book_name = get_bookname($book_id); 
@@ -274,7 +275,7 @@ if($book_id && $op=="modify"){
 		print("<tr class='odd noclick'><th>Date:</th><td><input name='date' type='text' value='$date' ></td></tr> ");
 	print("
 		<tr><th>Comment:</th><td>
-		<textarea wrap='soft' type='text' name='comment' rows='8' maxlength='2000' cols='60'>$comments</textarea>
+		<textarea wrap='soft' type='text' name='comment' rows='8' maxlength='2000' cols='60'>$comment</textarea>
 		</td></tr>
 		</tbody>
 		</table>
