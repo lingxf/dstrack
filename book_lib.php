@@ -1228,8 +1228,10 @@ function show_book($book_id)
 function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 {
 	global $table_head, $login_id, $role;
+	$other_city = 0;
 	
 	if($book_id == -2){
+		$other_city = 1;
 		$dbcomments = 'book.comments';
 		$dbbooks = 'book.books';
 	}else{
@@ -1280,7 +1282,7 @@ function list_comments($book_id='', $borrower='', $format=0, $last_days='')
 		$count = mb_strlen($comments, "UTF-8");
 		$char_count = strlen($comments);
 		print("<tr>");
-		if($role == 2 || $borrower == $login_id){
+		if(!$other_city && ($role == 2 || $borrower == $login_id)){
 			$webroot = dirname($mail_url);
 			$comment_id_link = "<a href=$webroot/edit_book.php?op=edit_comment_ui&comment_id=$comment_id>$comment_id</a>";
 		}else
