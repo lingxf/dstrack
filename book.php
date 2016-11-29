@@ -660,8 +660,9 @@ switch($action){
 	case "log":
 		list_log();
 		break;
-
 }
+
+print("<a href='mailto:xling@qti.qualcomm.com'>Report Bug</a>");
 function show_my($login_id)
 {
 	global $view, $start, $items_perpage;
