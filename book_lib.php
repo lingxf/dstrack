@@ -705,13 +705,15 @@ function list_member()
 		print("</tr>\n");
 	}
 	print("</table>");
-	printf("Total Wish List:%d", $total_wish);
 	print('<br><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;');
+	/*
 	print('<input type="submit"'); print(' disabled name="begin" value="Begin" />   ');
 	print('<input type="submit"'); if(!$hasprev) print(" disabled "); print(' name="prev" value="Prev" />   ');
 	print('<input type="submit"'); if(!$hasmore) print(" disabled "); print(' name="next" value="Next" />   ');
 	print('<input type="submit"');  print(' disabled name="end" value="End" />   ');
-	print('</form');
+	*/
+	print('</form>');
+	printf("Total Wish List:%d<br>", $total_wish);
 }
 
 function get_city_booktb($city)
