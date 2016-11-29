@@ -317,6 +317,7 @@ function point_statistic($type = 0)
 //	$sql .= ", count(case when `words` != '' then 1 else null end ) as `total_comments`";
 	$sql .= " from `member` left join $tb_comments tc on member.user = tc.borrower ";
 	$sql .= "  left join `history` on member.user = history.borrower ";
+	$sql .= " where member.user not like 'test%' ";
 	$sql .= " group by user order by score desc ";
 
 	$res = read_mysql_query($sql);
