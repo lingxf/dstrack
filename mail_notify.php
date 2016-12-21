@@ -152,6 +152,12 @@ function mail_tbd_list(){
 	$time = time();
 	$date = strftime("%Y-%m-%d %H:%M:%S", $time);
 	$subject = "Book Library Action List $date";
+	global $city;
+	if($city == 2)
+		$url = "http://cedump-sh.ap.qualcomm.com/szbook/book.php?action=manage";
+	else
+		$url = "http://cedump-sh.ap.qualcomm.com/book/book.php?action=manage";
+
 	$message = "
 	<html>
 	<head>
@@ -160,7 +166,7 @@ function mail_tbd_list(){
 	<body>
 	<table style='font-size:14pt; color:#800000;'>
 	<tr><th style='text-align: left;'>Date:</th><td >$date</td></tr>
-	<tr><th style='text-align: left;'>Link:</th><td><a href='http://cedump-sh.ap.qualcomm.com/book/book.php?action=manage'>Manage</a></td></tr>
+	<tr><th style='text-align: left;'>Link:</th><td><a href='$url'>Manage</a></td></tr>
 	</table>";
 
 	exec("php mail_notify.php gen", $output);
