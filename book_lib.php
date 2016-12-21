@@ -1777,7 +1777,7 @@ function get_first_wait_mail($book_id)
 
 function get_admin_mail()
 {
-	$sql = "select email from member where role = 2";
+	$sql = "select user, email from member where role = 2";
 	$res = read_mysql_query($sql);
 	$cc = "";
 	while($row = mysql_fetch_array($res)){
