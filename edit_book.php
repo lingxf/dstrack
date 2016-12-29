@@ -14,6 +14,13 @@ session_name($web_name);
 session_start();
 $login_id=isset($_SESSION['user'])?$_SESSION['user']:'Guest';
 
+print("
+<html>
+<title>Edit Book</title>
+<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+<meta http-equiv='Content-Language' content='zh-CN' /> 
+");
+
 $role = is_member($login_id);
 $book_id = 0;
 if(isset($_POST['op'])) $op=$_POST['op'];
@@ -142,12 +149,14 @@ if($book_id && $op=="modify"){
 	$time = time();
 	$buy_date = strftime("%Y-%m-%d %H:%M:%S", $time);
 	if($op=="buy_book_done"){
+		$op = 'add';
 		$book_id=$_GET['book_id'];
 		$sql = "select * from books_nostock where book_id = $book_id";
 		$res = read_mysql_query($sql);
 		while($row = mysql_fetch_array($res)){
 			$sponsor = $row['sponsor'];
 			$book_name = $row['name'];
+			$name = $book_name;
 			$comments = $row['comments'];
 			$desc = $row['desc'];
 			$author = $row['author'];
