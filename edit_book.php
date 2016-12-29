@@ -10,16 +10,18 @@ include_once 'myphp/disp_lib.php';
 include_once 'myphp/common.php';
 include_once 'book_lib.php';
 
+function print_html_head(){
+	print("
+			<html>
+			<title>Edit Book</title>
+			<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+			<meta http-equiv='Content-Language' content='zh-CN' /> 
+			");
+}
+
 session_name($web_name);
 session_start();
 $login_id=isset($_SESSION['user'])?$_SESSION['user']:'Guest';
-
-print("
-<html>
-<title>Edit Book</title>
-<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-<meta http-equiv='Content-Language' content='zh-CN' /> 
-");
 
 $role = is_member($login_id);
 $book_id = 0;
@@ -191,6 +193,7 @@ if($book_id && $op=="modify"){
 		$desc = '';
 		$op = 'add';
 	}
+	print_html_head();
 	print("
 		<form method='post' action='edit_book.php'>
 		<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
@@ -261,11 +264,7 @@ if($book_id && $op=="modify"){
 		$book_name = get_bookname($book_id); 
 		$borrower = $login_id;
 	}
-	print("
-		<html>
-		<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-		<meta http-equiv='Content-Language' content='zh-CN' /> 
-	");
+	print_html_head();
 	print("
 		<form method='post' action='edit_book.php'>
 		<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
@@ -358,10 +357,8 @@ if($book_id && $op=="modify"){
 		$borrower = $login_id;
 	$status_string = array('取消', '捐赠', '推荐', '待购');
 	$status_text = $status_string[$status];
-	print("<html>
-		<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-		<meta http-equiv='Content-Language' content='zh-CN' /> 
-		");
+
+	print_html_head();
 			print("
 		<form method='post' action='edit_book.php'>
 		<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
@@ -399,10 +396,7 @@ if($book_id && $op=="modify"){
 		$notice = $row['notice'];
 	}
 	$op="save_notice";
-	print("<html>
-			<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-			<meta http-equiv='Content-Language' content='zh-CN' /> 
-			");
+	print_html_head();
 	print("
 			<form method='post' action='edit_book.php'>
 			<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 1024px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
@@ -460,11 +454,8 @@ if($book_id && $op=="modify"){
 			$book_name = $row['misc'];
 		}
 	}
-	print("<html>
-		<meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
-		<meta http-equiv='Content-Language' content='zh-CN' /> 
-		");
-			print("
+		print_html_head();
+		print("
 		<form method='post' action='edit_book.php'>
 		<table border=1 bordercolor='#0000f0', cellspacing='0' cellpadding='0' style='padding:0.2em;border-color:#0000f0;border-style:solid; width: 600px;background: none repeat scroll 0% 0% #e0e0f5;font-size:12pt;border-collapse:collapse;border-spacing:0;table-layout:auto'>
 		<tbody>
