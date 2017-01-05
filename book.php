@@ -305,6 +305,11 @@ if(isset($_POST['list_all']))$action="list_all";
 //dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage setting:$setting<br>");
 
 dprint("$login_id,$role");
+if($role < 1 && preg_match("/history|list_share|list_timeout|list_out|list_statistic/",$action)){
+	print("You are not member!");
+	return;
+}
+
 if($role < 1 && !preg_match("/home|next|library|join|begin|end|prev|show_borrower|history|list_comments|list_comments_all|list_recommend|list_share|list_timeout|list_out|list_statistic/",$action)){
 	print("You are not member!");
 	return;
