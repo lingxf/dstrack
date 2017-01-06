@@ -1525,7 +1525,7 @@ function show_borrower($book_id, $format="wait")
 			$date = $row['rdate'];
 		}else if($status == 0){
 			$status_text = "已还";
-			$date = $row['rdate'];
+			$date = $row['bdate'];
 		}else if($status == 0x109){
 			$score = $row['data'];
 			$status_text = "$score";
