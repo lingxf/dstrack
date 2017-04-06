@@ -687,7 +687,7 @@ function show_my($login_id)
 	list_record($login_id, 'score', ' history.status = 0x109 ');
 	print("</div>");
 	print("曾借书本");
-	list_book('normal', $start, $items_perpage,0, 'history');
+	list_book('normal', $start, $items_perpage,0, 'book_borrowed');
 }
 
 function show_my_hot($login_id)

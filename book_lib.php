@@ -771,7 +771,9 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		$sql = "select * from favor left join $tb_name using (book_id) where member_id = '$login_id'";
 	else if($condition == 'history')
 		$sql = "select * from history left join $tb_name using (book_id) where borrower = '$login_id' and (history.status < 6) ";
-	else{
+	else if($condition == 'book_borrowed'){
+		$sql = "select distinct book_id, name, author, comments, class, buy_date, books.status from history left join $tb_name using (book_id) where borrower = '$login_id' and (history.status < 6) ";
+	}else{
 		$res1 = mysql_query($sql) or die("Invalid query:" .$sql. mysql_error());
 		$rows = mysql_num_rows($res1);
 		if($start >= $rows){
