@@ -31,8 +31,7 @@ if(isset($_GET['op'])) $op=$_GET['op'];
 if(!isset($op))
 	exit();
 
-if(isset($_POST['comment_id'])) $comment_id = $_POST['comment_id'];
-if(isset($_GET['comment_id'])) $comment_id = $_GET['comment_id'];
+$comment_id = get_persist_var('comment_id', '');
 
 if($login_id == 'Guest'){
 	print('Please login first');
@@ -226,8 +225,8 @@ if($book_id && $op=="modify"){
 	}
 	$comment = $_POST['comment'];
 	$borrower = $_POST['borrower'];
-	$date = $_POST['date'];
 	if($op=="save_comment"){
+		$date = $_POST['date'];
 		$sql = "update comments set words = '$comment', timestamp='$date'  where comment_id = $comment_id";
 		$row = update_mysql_query($sql);
 		print("Update $row rows for $borrower");
@@ -256,10 +255,9 @@ if($book_id && $op=="modify"){
 		}
 	}else{
 		$op = "add_comment";
-		$parent = $_GET['comment_id'];
-		$comment_id = $parent;
+		$parent = $comment_id;
 		$comment = '';
-		$parent_user = $_GET['borrower'];
+		$parent_user = get_persist_var('borrower', '');
 		$book_id = $_GET['book_id'];
 		$book_name = get_bookname($book_id); 
 		$borrower = $login_id;

@@ -70,7 +70,8 @@ function list_record($login_id, $format='self', $condition='')
 	$cond = " 1 ";
 	if($disp_city != 255 && $disp_city != '')
 		$cond .= " and books.city = $role_city ";
-	$book_db = mysql_result(mysql_query("select database()") or die(mysql_error()."error get db"), 0);
+	$res = mysql_query("select database()") or die(mysql_error()."error get db");
+	$book_db = mysql_result($res, 0);
 	$mail_url = get_cur_php();
 	if($login_id == -2){
 		$book_db = 'book';
@@ -892,7 +893,7 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		}
 		//$blink .= "&nbsp;<a href='javascript:show_share_choice(this,$book_id);' >分享</a>";
 		$blink .= "&nbsp;<a href='javascript:add_score(this,$book_id);' >打分</a>";
-		$blink .= "&nbsp;<a href='edit_book.php?op=add_comment_ui&book_id=$book_id&borrower=$borrower'>评论</a>";
+		$blink .= "&nbsp;<a href='edit_book.php?op=add_comment_ui&book_id=$book_id'&comment_id=&borrower=>评论</a>";
 		#$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
 		print("<tr style='background:$bcolor;'>");
 		if($format == 'normal'){
