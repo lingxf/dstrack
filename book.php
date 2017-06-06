@@ -609,8 +609,10 @@ switch($action){
 		$user = get_user_attr($borrower, 'name');
 		$cc = get_admin_mail();
 		mail_html($to, $cc, "<$bookname> is returned by <$user>", "");
-		if($to = get_first_wait_mail($book_id))
+		$to = get_first_wait_mail($book_id);
+		if($to != ''){
 			mail_html($to, $cc, "your waiting book <$bookname> is returned by <$user>", "");
+		}
 		add_log($login_id, $borrower, $book_id, 0);
 		set_record_status($record_id, 0);
 		manage_record($login_id);

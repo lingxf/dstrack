@@ -1767,12 +1767,12 @@ function get_first_wait_mail($book_id)
 {
 	$sql = "select * from history where book_id = $book_id and (status = 4 or status = 0x104)  order by adate asc";
 	$res=mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
-	$to = false;
+	$to = '';
 	while($row = mysql_fetch_array($res)){
 		$borrower = $row['borrower'];
 		dprint("waiter $borrower");
 		$to .= get_user_attr($borrower, 'email');
-		$to .= ";";
+		$to .= ",";
 	}
 	return $to;
 }
