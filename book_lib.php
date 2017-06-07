@@ -310,11 +310,17 @@ function point_statistic($type = 0)
 	print("<th >累计分享</th>");
 	print("<th >累计评论</th>");
 	print("<th >有效评论</th>");
+	print("<th >打分次数</th>");
 	print("</tr>");
 
 	$tb_comments = " (select borrower, count(words) as total_comments from `comments` group by borrower)";
-	$sql = "  select user,user_name, score, score_used, tc.total_comments, effect_comments, ";
-	$sql .= "COUNT( CASE WHEN `status` = 0 THEN 1 ELSE NULL END ) AS `books_his`,  COUNT( CASE WHEN `status` = 0x106 THEN 1 ELSE NULL END ) AS `shares`";
+	$sql = "  select user,user_name, ".
+		"score, score_used, ".
+		"tc.total_comments, effect_comments, ".
+		//"COUNT( CASE WHEN `status` = 0 THEN 1 ELSE NULL END ) AS `books_his`, ". 
+		"COUNT(distinct (CASE WHEN `status` = 0 THEN `book_id` ELSE NULL END)) AS `books_his`, ". 
+	    "COUNT( CASE WHEN `status` = 0x106 THEN 1 ELSE NULL END ) AS `shares`, ".
+		"COUNT( CASE WHEN `status` = 0x109 THEN 1 ELSE NULL END ) AS `scount` ";
 //	$sql .= ", count(case when `words` != '' then 1 else null end ) as `total_comments`";
 	$sql .= " from `member` left join $tb_comments tc on member.user = tc.borrower ";
 	$sql .= "  left join `history` on member.user = history.borrower ";
@@ -329,6 +335,7 @@ function point_statistic($type = 0)
 		$score_free = $score - $score_used;
 		$books_his = $row['books_his'];
 		$shares = $row['shares'];
+		$scount = $row['scount'];
 		$comments = $row['total_comments'];
 		$effect_comments = $row['effect_comments'];
 		print("<tr>");
@@ -340,6 +347,7 @@ function point_statistic($type = 0)
 		print_td($shares);
 		print_td($comments);
 		print_td($effect_comments);
+		print_td($scount);
 		print("</tr>");
 	}
 	print("</table>");
