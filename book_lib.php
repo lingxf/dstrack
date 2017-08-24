@@ -1502,7 +1502,9 @@ function show_borrower($book_id, $format="wait")
 	print($table_head);
 
 	if($format == 'history')
-		print_tdlist(array('编号', '书名','借阅人','借出日期', '归还日期', '评分'));
+		print_tdlist(array('编号', '书名','借阅人','借出日期', '归还日期', '状态'));
+	else if($format == 'score')
+		print_tdlist(array('编号', '书名','借阅人','日期', '评分'));
 	else
 		print_tdlist(array('编号', '书名','借阅人','日期', '状态'));
 	if($format == 'out')
