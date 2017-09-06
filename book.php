@@ -437,6 +437,11 @@ switch($action){
 			borrow_book($book_id, $login_id);
 		show_my_hot($login_id);
 		break;
+	case "cancel_borrow":
+		set_record_status($record_id, 0);
+		set_record_status($record_id, 0x100);
+		show_my_hot($login_id);
+		break;
 	case "renew":
 		$book_id = get_bookid_by_record($record_id);
 		renew_book($book_id, $record_id, $login_id);
@@ -450,17 +455,18 @@ switch($action){
 		set_record_status($record_id, 3);
 		show_my_hot($login_id);
 		break;
+	case "cancel_return":
+		set_record_status($record_id, 2);
+		show_my_hot($login_id);
+		break;
 	case "share":
 		apply_share($book_id, $login_id);
 		break;
-	case "share_done":
-		set_record_status($record_id, 0x106);
-		manage_record($login_id);
-		break;
-	case "share_cancel":
+	case "cancel_share":
 		set_record_status($record_id, 0x110);
-		manage_record($login_id);
+		show_my_hot($login_id);
 		break;
+
 	case "wait":
 		if(wait_book($book_id, $login_id)){
 			$bookname = get_bookname($book_id);
@@ -617,6 +623,15 @@ switch($action){
 		set_record_status($record_id, 0);
 		manage_record($login_id);
 		break;
+	case "share_done":
+		set_record_status($record_id, 0x106);
+		manage_record($login_id);
+		break;
+	case "share_cancel":
+		set_record_status($record_id, 0x110);
+		manage_record($login_id);
+		break;
+
 	case "remove_member":
 		dprint("remove $borrower");
 		set_member_attr($borrower, 'role', 0);
@@ -700,6 +715,8 @@ function show_my_hot($login_id)
 		list_record($login_id, 'self', ' (history.status = 4 or history.status = 0x100 or history.status = 0x101 or history.status = 0x104)  ');
 		print("等我的人");
 		list_record($login_id, 'waityou');
+		print("待分享");
+		list_record($login_id, 'share', " borrower = '$login_id' and t1.status = 0x105 ");
 }
 
 function show_home()

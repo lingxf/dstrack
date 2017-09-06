@@ -56,9 +56,9 @@ switch($action){
 }
 
 print("待分享:<br>");
-list_record($login_id, 'share', 0x105);
+list_record($login_id, 'share', ' t1.status = 0x105 ');
 print("已分享:<br>");
-list_record($login_id, 'share', 0x106);
+list_record($login_id, 'share', ' t1.status = 0x106 ');
 print("已分享PPT:<br>");
 if ($handle = opendir('share/')) {
 	$booklist = array();
@@ -83,9 +83,9 @@ if ($handle = opendir('share/')) {
 if($city == 2){
 	print("北京俱乐部:<br>");
 	print("待分享:<br>");
-	list_record(-2, 'share', 0x105);
+	list_record(-2, 'share', ' t1.status = 0x105 ');
 	print("已分享:<br>");
-	list_record(-2, 'share', 0x106);
+	list_record(-2, 'share', ' t1.status = 0x106 ');
 }
 print("<html>");
 ?>

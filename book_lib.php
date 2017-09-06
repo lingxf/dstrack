@@ -22,6 +22,17 @@ function show_home_link($str="Home", $action='', $more=''){
 }
 
 
+function my_admin($uid)
+{
+	global $login_id;
+	print("&nbsp;&nbsp;申请：");
+	list_record($uid, 'approve', " (history.status = 1 or history.status = 5) ");
+	print("&nbsp;&nbsp;归还：");
+	list_record($uid, 'approve', " history.status = 3 ");
+	print("&nbsp;&nbsp;等候：");
+	list_record($uid, 'approve', " (history.status = 4 or history.status = 0x104) ");
+}
+
 function manage_record()
 {
 	global $login_id;
@@ -33,7 +44,7 @@ function manage_record()
 	print("&nbsp;&nbsp;等候：");
 	list_record($login_id, 'approve', " (history.status = 4 or history.status = 0x104) ");
 	print("&nbsp;&nbsp;分享：<a href=edit_book.php?op=add_share_ui>添加</a>");
-	list_record($login_id, 'share', " 0x105 ");
+	list_record($login_id, 'share', " t1.status = 0x105 ");
 	print("&nbsp;&nbsp;申请入会：");
 	list_record($login_id, 'member');
 	print("&nbsp;&nbsp;待购图书:");
@@ -62,9 +73,9 @@ function get_book_status_name($status)
 	return $status_name[$status];
 }
 
-function list_record($login_id, $format='self', $condition='')
+function list_record($uid, $format='self', $condition='')
 {
-	global $role, $table_head, $role_city, $disp_city;
+	global $role, $table_head, $role_city, $disp_city, $login_id;
 	$role_city = isset($role_city)?$role_city:0;
 	$disp_city = isset($disp_city)?$disp_city:0;
 	$cond = " 1 ";
@@ -73,7 +84,7 @@ function list_record($login_id, $format='self', $condition='')
 	$res = mysql_query("select database()") or die(mysql_error()."error get db");
 	$book_db = mysql_result($res, 0);
 	$mail_url = get_cur_php();
-	if($login_id == -2){
+	if($uid == -2){
 		$book_db = 'book';
 		$mail_url = "http://cedump-sh.ap.qualcomm.com/book/book.php";
 	}
@@ -108,7 +119,7 @@ function list_record($login_id, $format='self', $condition='')
 		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower and t2.city = $role_city order by sdate desc ";
 	}else if($format == 'share'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '完成日期' ));
-		$sql = " select record_id, borrower, t1.status, name, user_name, data, misc, adate, bdate,rdate,sdate, t1.book_id from $book_db.history t1, $book_db.books t2, $book_db.member t3 where t1.book_id = t2.book_id and t1.status = $condition and t3.user = t1.borrower and t2.city = $role_city order by sdate desc,adate desc ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data, misc, adate, bdate,rdate,sdate, t1.book_id from $book_db.history t1, $book_db.books t2, $book_db.member t3 where t1.book_id = t2.book_id and $condition and t3.user = t1.borrower and t2.city = $role_city order by sdate desc,adate desc ";
 	}else if($format == 'member'){
 		print_tdlist(array('序号','帐号','申请人','申请日期', '批准日期', '操作'));
 		$sql = " select record_id, borrower, t1.status, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower and t3.city = $role_city order by adate desc ";
@@ -192,6 +203,7 @@ function list_record($login_id, $format='self', $condition='')
 				$blink .= "&nbsp;<a href='javascript:show_share_choice(this,$book_id)'>分享</a>";
 			}else if($status == 1){
 				$status_text = "借阅中";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel_borrow\">取消</a>";
 			}else if($status == 2){
 				$status_text = "借出";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=returning\">归还</a>";
@@ -202,7 +214,7 @@ function list_record($login_id, $format='self', $condition='')
 				$rdate = strftime("%Y-%m-%d", $ldate);
 			}else if($status == 3){
 				$status_text = "归还中";
-				$blink = "";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel_return\">取消</a>";
 			}else if($status == 4 || $status == 0x104){
 				$status_text = get_book_status_name($bstatus);
 				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel\">取消</a>";
@@ -239,11 +251,12 @@ function list_record($login_id, $format='self', $condition='')
 		else if($format == 'share'){
 			if($book_id == 0)
 				$name = $row['name'].":".$row['misc'];
-			if($status == 0x105 && $role == 2 && $login_id != -2){
+			if($status == 0x105 && $role == 2 && $uid != -2){
 				$blink = "<a href=\"book.php?record_id=$record_id&action=share_done\">完成</a>";
 				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=share_cancel\">取消</a>";
 				$blink .= "&nbsp;<a href=\"edit_book.php?record_id=$record_id&op=edit_share_ui\">编辑</a>";
-			}
+			}else
+				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel_share\">取消</a>";
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $sdate, $blink)); 
 		}else if($format == 'member')
 			print_tdlist(array($i,$borrower_id, $borrower,$adate, $sdate, $blink)); 
