@@ -71,7 +71,7 @@ function out_record()
  */
 function get_book_status_name($status)
 {
-	$status_name = array('在库', '借阅中','借出','归还中', '待购', '续借中');
+	$status_name = array('在库', '借阅中','借出','归还中', '待购', '续借中', '下架');
 	return $status_name[$status];
 }
 
@@ -910,7 +910,7 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		$status=$row['status'];	
 		if($status != 0){
 			$status_text = "Out";
-			$text = "借出";
+			$text = get_book_status_name($status);
 			$bcolor = '#efcfef';
 			if($status == 1){
 				$text = "借中";
@@ -1228,6 +1228,7 @@ function show_book($book_id)
 		$class = $row['class'];
 		$class_text = get_class_name($class);
 		$member_id = $row['member_id'];
+		$admin = $row['admin'];
 
 		if($status == 0)
 			$blink = "<a href=book.php?action=borrow&book_id=$book_id>借阅</a>";
@@ -1237,6 +1238,14 @@ function show_book($book_id)
 		
 		if($member_id == $login_id){
 			$blink .= "&nbsp;<a href='book.php?action=remove_favor&book_id=$book_id' >去藏</a>";
+			break;
+		}
+
+		if($admin == $login_id){
+			if($status != 6)
+				$blink .= "&nbsp;<a href='book.php?action=offline&book_id=$book_id' >下架</a>";
+			else
+				$blink .= "&nbsp;<a href='book.php?action=online&book_id=$book_id' >上架</a>";
 			break;
 		}
 	}

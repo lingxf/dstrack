@@ -549,7 +549,33 @@ switch($action){
 		set_record_status($record_id, 2);
 		show_home($login_id);
 		break;
+	case "offline":
+		$bookname = get_bookname($book_id);
+		$old_status = get_book_status($book_id);
+		if($old_status != 0 && $old_status != 1){
+			print("<$book_id>$bookname is not returned yet");
+			break;
+		}
+		$to = get_admin_mail($book_id);
+		set_book_status($book_id, 6);
+		$message = "book:$book_id $bookname ";
+		mail_html($to, $to, "<$bookname> is offlined", "$message");
+		add_log($login_id, $login_id, $book_id, 2);
+		break;
 
+	case "online":
+		$bookname = get_bookname($book_id);
+		$old_status = get_book_status($book_id);
+		if($old_status != 6){
+			print("<$book_id>$bookname is not offline");
+			break;
+		}
+		set_book_status($book_id, 0);
+		$message = "book:$book_id $bookname ";
+		$to = get_admin_mail($book_id);
+		mail_html($to, $to, "<$bookname> is online", "$message");
+		add_log($login_id, $login_id, $book_id, 2);
+		break;
 	/*admin*/
 	case "migrate":
 		migrate_record($login_id);
