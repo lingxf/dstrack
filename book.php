@@ -229,7 +229,6 @@ function deduce_member_score(tdc, member)
 global $login_id, $max_book, $setting;	
 
 $max_books = 1;
-$items_perpage = 50;
 $role = is_member($login_id);
 $role_city = get_user_attr($login_id, 'city');
 $role_city = $role_city ? $role_city:0;
@@ -254,9 +253,7 @@ else
 $login_text .= "&nbsp;&nbsp;".get_city_name($city);
 
 $book_id=0;
-if(isset($_GET['book_id'])) $book_id=$_GET['book_id'];
-if(isset($_GET['record_id'])) $record_id=$_GET['record_id'];
-if(isset($_GET['borrower'])) $borrower =$_GET['borrower'];
+
 
 
 print "<a href=\"book.php\">首页</a>";
@@ -292,17 +289,6 @@ print("<br>");
 #print('<div id="div_homeintro" ></div>');
 
 
-if(isset($_GET['items_perpage'])) $items_perpage=$_GET['items_perpage'];
-else if(isset($_SESSION['items_perpage'])) $items_perpage = $_SESSION['items_perpage'];
-$_SESSION['items_perpage'] = $items_perpage;
-
-$order = 2;
-if(isset($_GET['order'])) $order=$_GET['order'];
-else if(isset($_SESSION['order'])) $order = $_SESSION['order'];
-$_SESSION['order'] = $order;
-
-if(!isset($_SESSION['start'])) $_SESSION['start'] = 0;
-$start = $_SESSION['start'];
 
 if(isset($_GET['book_sname'])) $book_sname = $_GET['book_sname'];
 
@@ -331,28 +317,30 @@ if($role != 2 && preg_match("/manager|approve$|log|list_member|remove_member|app
 	return;
 }
 
-if(isset($_GET['comment_type'])) $comment_type=$_GET['comment_type'];
-else if(isset($_SESSION['comment_type'])) $comment_type=$_SESSION['comment_type'];
-else $comment_type = 0;
-$_SESSION['comment_type'] = $comment_type;
+
+$book_id = get_url_var('book_id', 0);
+$record_id = get_url_var('record_id', 0);
+$borrower = get_url_var('borrower', '');
+
+$order = get_persist_var('order', 4);
+$start = get_persist_var('start', 0);
+$items_perpage = get_persist_var('items_perpage', 50);
+
+$comment_type = get_persist_var('comment_type', 0);
 if($comment_type == 1){
 	$view = 'normal';
 	$_SESSION['view'] = $view;
 }
 
-if(isset($_GET['class'])) $class=$_GET['class'];
-else if(isset($_SESSION['class'])) $class=$_SESSION['class'];
-else $class = 100;
-$_SESSION['class'] = $class;
+$class = get_persist_var('class', 100);
+$view = $setting & 1 ? 'normal':'brief';
+$view = get_persist_var('view', $view);
+$type = get_url_var('type', -1);
 
-if(isset($_GET['view'])) $view=$_GET['view'];
-else if(isset($_SESSION['view'])) $view=$_SESSION['view'];
-else $view = $setting & 1 ? 'normal':'brief';
 //dprint("view:$view, setting:$setting<br>");
-$_SESSION['view'] = $view;
+
 $_SESSION['setting'] = $setting;
 $favor = false;
-$type = get_url_var('type', -1);
 
 switch($action){
 	case "home":
