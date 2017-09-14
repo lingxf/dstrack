@@ -217,7 +217,7 @@ function mail_reminder_day($remain_days)
 		$i++;
 		$bookname = $name; 
 		$to = $email;
-		$cc = get_admin_mail();
+		$cc = get_admin_mail($book_id);
 		if($remain_days > 0)
 			mail_html($to, $cc, "your book <$bookname> has $remain_days days left", "$borrower $bookname $bdate");
 		else

@@ -64,6 +64,8 @@ if($op == 'read' || $op == 'write' || $op=='modify'){
 	$buy_date = $_POST['buy_date'];
 	$old_date = $_POST['old_date'];
 	$desc =  $_POST['desc'];
+	$type =  get_url_var('type', 0);
+	$admin =  $_POST['admin'];
 }
 
 
@@ -128,7 +130,12 @@ if($book_id && $op=="modify"){
 	print("Update $rows<br>");
 	return;
 }else if($op=="add"){
-	$sql = "insert into books set `name`='$name', author='$author', ISBN='$isbn', `index`='$index', price='$price', buy_date='$buy_date', sponsor='$sponsor', note='$note', `desc`='$desc'";
+	$book_id = alloc_book_id($type, $city);
+	if($book_id == 0){
+		print("Wrong to alloc book_id!");
+		return;
+	}
+	$sql = "insert into books set book_id = $book_id, type = $type, `name`='$name', author='$author', ISBN='$isbn', `index`='$index', price='$price', buy_date='$buy_date', sponsor='$sponsor', admin='$admin', note='$note', `desc`='$desc'";
 	if($index != ""){
 		$class_no = get_class_by_index(substr($index, 0, 1));
 		$sql .= ", `class` = $class_no ";
@@ -145,9 +152,14 @@ if($book_id && $op=="modify"){
 	print("Add $rows rows, book_id:$book_id book:$name $author $sponsor<br>");
 	add_log($login_id, $login_id, $book_id, 10);
 	show_home_link();
+	if($type == 1)
+		print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=admin'\",2000);</script>");
+	else
+		print("<script type=\"text/javascript\">setTimeout(\"window.location.href='book.php?action=library'\",2000);</script>");
 	return;
 }else if($op=="edit_book_ui"||$op=="buy_book_done"){
 	$time = time();
+	$type = get_url_var('type', 0);
 	$buy_date = strftime("%Y-%m-%d %H:%M:%S", $time);
 	if($op=="buy_book_done"){
 		$op = 'add';
@@ -188,6 +200,11 @@ if($book_id && $op=="modify"){
 		$index = '';
 		$price = '';
 		$sponsor = '';
+		$admin = 'yingwang';
+		if($type == 1){
+			$sponsor = $login_id;
+			$admin = $login_id;
+		}
 		$note = ''; 
 		$desc = '';
 		$op = 'add';
@@ -199,6 +216,7 @@ if($book_id && $op=="modify"){
 		<tbody>
 		<input type='hidden' name='op' value='$op'>
 		<input name='book_id' type='hidden' value='$book_id'>
+		<input name='type' type='hidden' value='$type'>
 		<input name='old_date' type='hidden' value='$buy_date'>
 		<tr class='odd noclick'><th>ID:</th><td>$book_id</td></tr>
 		<tr><th>Name:</th><td><input name='name' type='text' value='$name' ></td></tr>
@@ -208,6 +226,7 @@ if($book_id && $op=="modify"){
 		<tr><th>price:</th><td><input name='price' type='text' value='$price'></td></tr>
 		<tr><th>buy_date:</th><td><input name='buy_date' type='text' value='$buy_date'></td></tr>
 		<tr><th>Sponsor:</th><td><input name='sponsor' type='text' value='$sponsor'></td></tr>
+		<tr><th>Admin:</th><td><input name='admin' type='text' value='$admin'></td></tr>
 		<tr><th>Description:</th><td>
 		<textarea wrap='soft' type='text' name='desc' rows='8' maxlength='2000' cols='60'>$desc</textarea>
 		</td></tr>

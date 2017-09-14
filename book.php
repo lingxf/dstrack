@@ -96,6 +96,16 @@ function change_class(bookclass, view){
 	});
 };
 
+function change_perpage(page, view){
+	url = "book.php?";
+	url = url + "action=library&items_perpage="+page;
+	if(view != 0)
+		url = url + "&view="+view;
+	window.location.href = url;
+	return;
+};
+
+
 function change_order(order, view){
 	url = "show_book.php?";
 	url = url + "order="+order;
@@ -255,11 +265,12 @@ print "&nbsp;&nbsp;<a href=\"book.php?action=library\">书库</a>";
 if($role == 0){
 	print "&nbsp;&nbsp;<a href=\"book.php?action=join\">入会</a>";
 }else if($role >= 1){
+	print "&nbsp;&nbsp;<a href=\"book.php?action=admin\">贡献</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_favor\">我的</a>";
 }
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_share\">分享</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_comments_all\">最新评论</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_recommend\">推荐/捐赠</a>";
+	print "&nbsp;&nbsp;<a href=\"book.php?action=list_recommend\">推荐/兑换</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
 	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
@@ -304,7 +315,7 @@ if(isset($_POST['list_all']))$action="list_all";
 
 //dprint("Action:$action Login:$login_id book_id:$book_id start:$start items:$items_perpage setting:$setting<br>");
 
-dprint("$login_id,$role");
+//dprint("$login_id,$role");
 if($role < 1 && preg_match("/history|list_share|list_timeout|list_out|list_statistic/",$action)){
 	print("You are not member!");
 	return;
@@ -315,7 +326,7 @@ if($role < 1 && !preg_match("/home|next|library|join|begin|end|prev|show_borrowe
 	return;
 }
 
-if($role != 2 && preg_match("/manager|approve|stock|push|log|reject_wait|edit_book|add_newbook|list_member|remove_member|approve_member/",$action)){
+if($role != 2 && preg_match("/manager|approve$|log|list_member|remove_member|approve_member/",$action)){
 	print("You are not administrator!");
 	return;
 }
@@ -341,6 +352,7 @@ else $view = $setting & 1 ? 'normal':'brief';
 $_SESSION['view'] = $view;
 $_SESSION['setting'] = $setting;
 $favor = false;
+$type = get_url_var('type', -1);
 
 switch($action){
 	case "home":
@@ -389,7 +401,6 @@ switch($action){
 		break;
 	case "list_recommend":
 		print("推荐列表:");
-		print("<a href='edit_book.php?op=add_recommend_ui&status=1'>捐赠</a>");
 		print("&nbsp;&nbsp;<a href='edit_book.php?op=add_recommend_ui&status=2'>推荐</a>");
 		print("&nbsp;&nbsp;<a href='edit_book.php?op=buy_book_ui&book_id=0'>换购</a>");
 		list_recommend();
@@ -500,6 +511,9 @@ switch($action){
 	case "list_statistic":
 		list_statistic();
 		break;
+	case "admin":
+		my_admin($login_id);
+		break;
 
 		/*admin*/
 	case "transfer":
@@ -527,7 +541,7 @@ switch($action){
 
 		$to = get_user_attr($new_borrower, 'email');
 		$to .= ';' . get_user_attr($old_borrower, 'email');
-		$cc = get_admin_mail();
+		$cc = get_admin_mail($book_id);
 		add_log($login_id, $old_borrower, $book_id, 0);
 		add_log($login_id, $new_borrower, $book_id, 2);
 		mail_html($to, $cc, "<$bookname> is transfered from <$old_borrower:$old_user> to <$new_borrower:$new_user>", "");
@@ -557,7 +571,7 @@ switch($action){
 		manage_record($login_id);
 		break;
 	case "add_newbook":
-		add_newbook($login_id);
+		add_newbook();
 		break;
 	case "edit_book":
 		edit_book($book_id);
@@ -567,7 +581,7 @@ switch($action){
 		$borrower = get_borrower($book_id);
 		$bookname = get_bookname($book_id);
 		$to = get_user_attr($borrower, 'email');
-		$cc = get_admin_mail();
+		$cc = get_admin_mail($book_id);
 		mail_html($to, $cc, "Timeout, Please return the book <$bookname>", "");
 		show_home_link("Back", 'manage');
 		break;
@@ -578,7 +592,7 @@ switch($action){
 		$bookname = get_bookname($book_id);
 		$to = get_user_attr($borrower, 'email');
 		$user = get_user_attr($borrower, 'name');
-		$cc = get_admin_mail();
+		$cc = get_admin_mail($book_id);
 		set_record_status($record_id, 0);
 		add_log($login_id, $borrower, $book_id, 0);
 		mail_html($to, $cc, "<$bookname> is returned by <$borrower:$user>", "");
@@ -587,7 +601,10 @@ switch($action){
 		set_record_status($record_id, 2);
 		add_log($login_id, $borrower, $book_id, 2);
 		mail_html($to, $cc, "<$bookname> is lent to <$borrower:$user>", "");
-		manage_record($login_id);
+		if($type == 0)
+			manage_record($login_id);
+		else
+			my_admin($login_id);
 		break;
 	case "lend":
 		$book_id = get_bookid_by_record($record_id);
@@ -600,12 +617,15 @@ switch($action){
 		}
 		$to = get_user_attr($borrower, 'email');
 		$user = get_user_attr($borrower, 'name');
-		$cc = get_admin_mail();
+		$cc = get_admin_mail($book_id);
 		set_record_status($record_id, 2);
 		$message = "book:$book_id $bookname, record:$record_id, $user";
 		mail_html($to, $cc, "<$bookname> is lent to <$borrower:$user>", "$message");
 		add_log($login_id, $borrower, $book_id, 2);
-		manage_record($login_id);
+		if($type == 0)
+			manage_record($login_id);
+		else
+			my_admin($login_id);
 		break;
 	case "stock":
 		$book_id = get_bookid_by_record($record_id);
@@ -613,7 +633,7 @@ switch($action){
 		$bookname = get_bookname($book_id);
 		$to = get_user_attr($borrower, 'email');
 		$user = get_user_attr($borrower, 'name');
-		$cc = get_admin_mail();
+		$cc = get_admin_mail($book_id);
 		mail_html($to, $cc, "<$bookname> is returned by <$user>", "");
 		$to = get_first_wait_mail($book_id);
 		if($to != ''){
@@ -621,7 +641,10 @@ switch($action){
 		}
 		add_log($login_id, $borrower, $book_id, 0);
 		set_record_status($record_id, 0);
-		manage_record($login_id);
+		if($type == 0)
+			manage_record($login_id);
+		else
+			my_admin($login_id);
 		break;
 	case "share_done":
 		set_record_status($record_id, 0x106);
@@ -654,7 +677,7 @@ switch($action){
 		$bookname = get_bookname($book_id);
 		$to = get_user_attr($borrower, 'email');
 		$user = get_user_attr($borrower, 'name');
-		$cc = get_admin_mail();
+		$cc = get_admin_mail($book_id);
 		mail_html($to, $cc, "Your return for <$bookname> is rejected", "");
 		set_record_status($record_id, 0x2);
 		set_book_status($book_id, 2);
@@ -666,7 +689,7 @@ switch($action){
 		$bookname = get_bookname($book_id);
 		$to = get_user_attr($borrower, 'email');
 		$user = get_user_attr($borrower, 'name');
-		$cc = get_admin_mail();
+		$cc = get_admin_mail($book_id);
 		mail_html($to, $cc, "You apply to <$bookname> is rejected", "");
 		set_record_status($record_id, 0x101);
 		set_book_status($book_id, 0);
@@ -765,14 +788,21 @@ function show_library()
 {
 
 	global $login_id, $view, $start, $items_perpage;
-	global $class_list, $class, $comment_type, $role, $order;
+	global $class_list, $class, $comment_type, $role, $order, $type;
 	$view_op = $view == 'brief'?'normal':'brief';
 	$view_ch = $view_op == 'brief'?'简略':'完整';
 	print("<div'>书库列表 <a href='book.php?action=library&view=$view_op'>$view_ch</a>");
-	print("&nbsp;<a href='book.php?action=library&items_perpage=25'>25</a>");
-	print("&nbsp;<a href='book.php?action=library&items_perpage=50'>50</a>");
-	print("&nbsp;<a href='book.php?action=library&items_perpage=100'>100</a>");
-	print("&nbsp;<a href='book.php?action=library&items_perpage=200'>200</a>");
+	print("&nbsp;每页");
+	print("<select id='sel_class' onchange='change_perpage(this.value, 0)'>");
+	$order_list = array(25=>"25",50=>"50", 100=>"100", 200=>"200");
+	foreach($order_list as $key => $text) {
+		print("<option value='$key'");
+		if($key == $items_perpage) print("selected");
+		print(">$text</option>");
+	}
+	print("</select>");
+
+	print("&nbsp;<a href='book.php?action=library&type=1'>个人贡献</a>&nbsp;");
 	print("&nbsp;&nbsp;&nbsp;&nbsp;<a href='book.php?action=library&view=class'>分类</a>&nbsp;");
 	print("<select id='sel_class' onchange='change_class(this.value, 0)'>");
 	print("<option value='100'>所有</option>");
@@ -791,7 +821,7 @@ function show_library()
 
 	print("&nbsp;排序&nbsp;");
 	print("<select id='sel_class' onchange='change_order(this.value, 0)'>");
-	$order_list = array("编号","次数", "评分", "评论数");
+	$order_list = array("编号","次数", "评分", "评论数", "日期");
 	foreach($order_list as $key => $order_text) {
 		print("<option value='$key'");
 		if($key == $order) print("selected");
@@ -812,10 +842,10 @@ function show_share()
 	print("<iframe height=1920 width=1150 src='import_file.php'></iframe>");
 }
 
-function add_newbook()
+function add_newbook($type = 0)
 {
 
-	print("<iframe height=1920 width=800 src='edit_book.php?op=edit_book_ui'></iframe>");
+	print("<iframe height=1920 width=800 src='edit_book.php?op=edit_book_ui&type=$type'></iframe>");
 }
 
 function edit_book($book_id)

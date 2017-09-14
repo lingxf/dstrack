@@ -24,13 +24,15 @@ function show_home_link($str="Home", $action='', $more=''){
 
 function my_admin($uid)
 {
-	global $login_id;
 	print("&nbsp;&nbsp;申请：");
+	print("<a href='edit_book.php?op=edit_book_ui&type=1'>贡献图书</a><br>");
 	list_record($uid, 'approve', " (history.status = 1 or history.status = 5) ");
 	print("&nbsp;&nbsp;归还：");
 	list_record($uid, 'approve', " history.status = 3 ");
 	print("&nbsp;&nbsp;等候：");
 	list_record($uid, 'approve', " (history.status = 4 or history.status = 0x104) ");
+	print("&nbsp;&nbsp;我贡献的图书：");
+	list_book('normal', 0, 100, 0, 'book_admin');
 }
 
 function manage_record()
@@ -38,15 +40,15 @@ function manage_record()
 	global $login_id;
 	print("&nbsp;&nbsp;申请：");
 	print("&nbsp;&nbsp;<a href=edit_book.php?op=edit_notice_ui>编辑规则</a>");
-	list_record($login_id, 'approve', " (history.status = 1 or history.status = 5) ");
+	list_record('', 'approve', " (history.status = 1 or history.status = 5) ");
 	print("&nbsp;&nbsp;归还：");
-	list_record($login_id, 'approve', " history.status = 3 ");
+	list_record('', 'approve', " history.status = 3 ");
 	print("&nbsp;&nbsp;等候：");
-	list_record($login_id, 'approve', " (history.status = 4 or history.status = 0x104) ");
+	list_record('', 'approve', " (history.status = 4 or history.status = 0x104) ");
 	print("&nbsp;&nbsp;分享：<a href=edit_book.php?op=add_share_ui>添加</a>");
-	list_record($login_id, 'share', " t1.status = 0x105 ");
+	list_record('', 'share', " t1.status = 0x105 ");
 	print("&nbsp;&nbsp;申请入会：");
-	list_record($login_id, 'member');
+	list_record('', 'member');
 	print("&nbsp;&nbsp;待购图书:");
 	list_recommend('', '', 3);
 }
@@ -73,7 +75,7 @@ function get_book_status_name($status)
 	return $status_name[$status];
 }
 
-function list_record($uid, $format='self', $condition='')
+function list_record($uid='', $format='self', $condition='')
 {
 	global $role, $table_head, $role_city, $disp_city, $login_id;
 	$role_city = isset($role_city)?$role_city:0;
@@ -94,8 +96,18 @@ function list_record($uid, $format='self', $condition='')
 	print($table_head);
 	if($format == 'approve'){
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, misc, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t3.user = t1.borrower $condition order by adate asc ";
-		$sql = " select record_id, borrower, history.status, name, misc, user_name, data, adate, bdate,rdate,sdate, history.book_id from history left join `books` as t2 using (`book_id`) left join member on member.user = history.borrower  where $condition order by adate asc ";
+		$sql = " select record_id, borrower, t1.status, type,name, misc, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t3.user = t1.borrower $condition order by adate asc ";
+		if($condition == '')
+			$condition = 1;
+		if($uid != ''){
+			$condition .= " and t2.admin = '$uid' and t2.type = 1 ";
+		}else{
+			//$condition .= " and t2.admin = '$login_id' and t2.type = 0 "; 
+			$condition .= " and t2.type = 0 "; 
+		}
+
+		$sql = " select record_id, borrower, history.status, type,name, misc, user_name, data, adate, bdate,rdate,sdate, history.book_id from history left join `books` as t2 using (`book_id`) left join member on member.user = history.borrower  where $condition order by adate asc ";
+
 	}else if($format == 'self'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, history.status, books.status as bstatus, data, name, user_name, adate, bdate,rdate,sdate, history.book_id from history, books, member  where history.borrower='$login_id' and history.book_id = books.book_id and member.user = history.borrower and $condition order by adate desc ";
@@ -149,6 +161,7 @@ function list_record($uid, $format='self', $condition='')
 		$sdate= $row['sdate']; 
 		$score = $row['data'];
 		$time = time();
+		$type = isset($row['type'])?$row['type']:0;
 		$nowdate = strftime("%Y-%m-%d", $time);
 		if($format == 'self'){
 			$adate = substr($adate, 0, 10);
@@ -162,37 +175,37 @@ function list_record($uid, $format='self', $condition='')
 		if($format == 'approve' || $format == 'out' || $format == 'timeout'){
 			if($status == 1){
 				$status_text = "申请中";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">批准</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject\">拒绝</a>";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=lend&type=$type\">批准</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject&type=$type\">拒绝</a>";
 			}else if($status == 2){
 				$status_text = "借出";
 				$blink = "<a href=\"book.php?record_id=$record_id&action=push\">催还</a>";
 				if(substr($bdate, 0, 10) == $nowdate)
-					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
+					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock&type=$type\">入库</a>";
 				else
-					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
+					$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=stock&type=$type\">入库</a>";
 				$rdate = $bdate + 28;
 				$ldate = strtotime($bdate) + 28*24*3600; 
 				$rdate = strftime("%Y-%m-%d", $ldate);
 			}else if($status == 3){
 				$status_text = "归还中";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=stock\">入库</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_return\">拒绝</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=push\">催还</a>";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=stock&type=$type\">入库</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_return&type=$type\">拒绝</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=push&type=$type\">催还</a>";
 			}else if($status == 4 || $status == 0x104 ){
 				$status_text = "等候";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=lend\">批准</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_wait\">拒绝</a>";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=lend&type=$type\">批准</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_wait&type=$type\">拒绝</a>";
 			}else if($status == 5){
 				$status_text = "续借";
-				$blink = "<a href=\"book.php?record_id=$record_id&action=approve_renew\">批准</a>";
-				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_wait\">拒绝</a>";
+				$blink = "<a href=\"book.php?record_id=$record_id&action=approve_renew&type=$type\">批准</a>";
+				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=reject_wait&type=$type\">拒绝</a>";
 			}else if($status == 0){
 				$status_text = "已还";
 			}else{
 				$status_text = "取消";
 			}
-			if($role < 2)
+			if($role < 1)
 				$blink = '';
 		}else if($format == 'self'){
 			$bstatus = $row['bstatus'];
@@ -255,8 +268,10 @@ function list_record($uid, $format='self', $condition='')
 				$blink = "<a href=\"book.php?record_id=$record_id&action=share_done\">完成</a>";
 				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=share_cancel\">取消</a>";
 				$blink .= "&nbsp;<a href=\"edit_book.php?record_id=$record_id&op=edit_share_ui\">编辑</a>";
-			}else
+			}else if ($status == 0x105 && $borrower_id == $login_id)
 				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel_share\">取消</a>";
+			else
+				$blink = "";
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $sdate, $blink)); 
 		}else if($format == 'member')
 			print_tdlist(array($i,$borrower_id, $borrower,$adate, $sdate, $blink)); 
@@ -439,7 +454,6 @@ function cal_score()
 			}
 		}
 	}
-	
 	$sql = "select * from history where status = 0x106";
 	$res = read_mysql_query($sql);
 	while($row = mysql_fetch_array($res)){
@@ -746,13 +760,13 @@ function get_city_booktb($city)
 
 function list_book($format='normal', $start=0, $items=50, $order = 0, $condition='')
 {
-	global $login_id, $role, $class, $comment_type, $book_sname, $favor;
+	global $login_id, $role, $class, $comment_type, $book_sname, $favor, $type;
 	global $role_city, $disp_city;
 
 	$table_name = "book";
 	$tb_name = get_city_booktb($disp_city);
 
-	$tr_width = 800;
+	$tr_width = 1024;
 	$background = '#efefef';
 
 	$hasmore = false;
@@ -765,6 +779,8 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		$cond .= "";
 	else
 		$cond .= " and class = $class";
+	if($type != -1 && $type != '')
+		$cond .= " and type = $type ";
 	if(isset($book_sname)){
 		if(is_numeric($book_sname))
 			$cond .= " and book_id = '$book_sname' ";
@@ -784,6 +800,8 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 	}else if($order == 3){
 		$sql_time = "select book_id, count(comments.words) as cmtimes from comments left join $tb_name using (book_id) group by book_id ";
 		$sql = " select * from $tb_name left join ($sql_time) btime using (book_id) $cond order by btime.cmtimes desc"; 
+	}else if($order == 4){
+		$sql = " select * from $tb_name $cond order by buy_date desc"; 
 	}else{
 		$sql_time = "select book_id, count( distinct history.borrower) as btimes from history left join $tb_name using (book_id) where history.status<6 group by book_id ";
 		$sql = " select * from $tb_name left join ($sql_time) btime using (book_id) $cond order by book_id asc"; 
@@ -794,7 +812,9 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 	else if($condition == 'history')
 		$sql = "select * from history left join $tb_name using (book_id) where borrower = '$login_id' and (history.status < 6) ";
 	else if($condition == 'book_borrowed'){
-		$sql = "select distinct book_id, name, author, comments, class, buy_date, books.status from history left join $tb_name using (book_id) where borrower = '$login_id' and (history.status < 6) ";
+		$sql = "select distinct book_id, name, author, comments, class, buy_date, books.status, `index`, ISBN, price, sponsor, `desc` from history left join $tb_name using (book_id) where borrower = '$login_id' and (history.status < 6) ";
+	}else if($condition == 'book_admin'){
+		$sql = "select * from $tb_name where admin = '$login_id' ";
 	}else{
 		$res1 = mysql_query($sql) or die("Invalid query:" .$sql. mysql_error());
 		$rows = mysql_num_rows($res1);
@@ -826,18 +846,18 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		print('</span>');
 	}
 
-	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	print("<table id='$table_name' width=1024 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	if($format == 'normal')
-		print_tdlist(array('编号', '书名','作者', '描述','评论','分类','评分','状态', '操作'));
+		print_tdlist(array('编号', '书名','作者', '描述','评论','分类','评分','状态', '管理', '操作'));
 	else if($format == 'brief'){
 		if($order == 1 || $order == 0)
-			print_tdlist(array('编号', '书名','作者','分类','次数','状态', '操作'));
+			print_tdlist(array('编号', '书名','作者','分类','次数','状态', '管理', '操作'));
 		else if($order == 2)
-			print_tdlist(array('编号', '书名','作者','分类','评分','状态', '操作'));
+			print_tdlist(array('编号', '书名','作者','分类','评分','状态', '管理', '操作'));
 	}else if($format == 'class')
-		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','会员分类','状态', '操作'));
+		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','会员分类','状态','管理',  '操作'));
 	else if($format == 'tbd')
-		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','会员分类','状态', '操作'));
+		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','会员分类','状态','管理',  '操作'));
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date','sponsor','status', 'action'));
 
@@ -855,6 +875,9 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		$sponsor = $row['sponsor'];
 		$buy_date = substr($row['buy_date'], 0, 10);
 		$class =  $row['class'];
+		$admin = isset($row['admin'])? $row['admin'] : '';
+		if($admin != '')
+			$admin = "<a href='http://people.qualcomm.com/servlet/PhotoPh?fld=def&mch=eq&query=$admin&org=0&lst=0&srt=cn&frm=0'>$admin</a>";
 		if($order == 1)
 			$data= $row['btimes'];
 		else if($order == 2)
@@ -925,8 +948,9 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 			print_td($comments, '150','','',$sc_comments);
 			print_td($class_text, 35, '', '', $sc_class);
 			print_td($data,35);
-			print_td($status_text,35);
-			print_td($blink,80);
+			print_td_nowrap($status_text,35);
+			print_td($admin,35);
+			print_td_nowrap($blink,140);
 		}else if($format == 'class' || $format == 'tbd'){
 			print_td($id,10);
 			print_td($name);
@@ -935,18 +959,20 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 			print_td($sponsor,60);
 			print_td($class_name);
 			print_td($class_text, 35, '', '', $sc_class);
-			print_td($status_text,35);
+			print_td_nowrap($status_text,50);
+			print_td($admin,35);
 			print_td($blink,80);
 		}else if($format == 'brief'){
 			print_td($id,10);
 			print_td($name);
 			print_td($author);
-			print_td($class_text, 35, '', '', $sc_class);
+			print_td($class_text, 50, '', '', $sc_class);
 			print_td($data,35);
-			print_td($status_text,35);
-			print_td($blink,120);
+			print_td_nowrap($status_text,50);
+			print_td($admin,35);
+			print_td($blink,150);
 		}else
-			print_tdlist(array($id, $name, $author, $isbn, $index, $price, $buy_date, $sponsor, $status_text, $blink)); 
+			print_tdlist(array($id, $name, $author, $isbn, $index, $price, $buy_date, $sponsor, $status_text, $admin, $blink)); 
 		print("</tr>\n");
 	}
 	print("</table>");
@@ -1220,7 +1246,7 @@ function show_book($book_id)
 		$blink .= "&nbsp;<a href='book.php?action=add_favor&book_id=$book_id' >收藏</a>";
 	$blink .= "&nbsp;<a href='javascript:add_score(this,$book_id);'>打分</a>";
 	$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
-	$blink .= "&nbsp;<a href='edit_book.php?op=add_comment_ui&book_id=$book_id&borrower=$borrower'>评论</a>";
+	$blink .= "&nbsp;<a href='edit_book.php?op=add_comment_ui&book_id=$book_id&borrower=$login_id'>评论</a>";
 	print("[" . get_book_status_name($status) . "]&nbsp;");
 	print("得分:$score&nbsp");
 	print("$blink");
@@ -1463,6 +1489,20 @@ function get_record_by_bookid($book_id)
 		return array($record_id, $borrower, $class);
 	}
 	return array('', '', 0);
+}
+
+function alloc_book_id($type = 0, $city = 0)
+{
+	$type = $city * 10 + $type;
+	$sql = " select next_id from param where type = $type ";
+	$res = read_mysql_query($sql);
+	if($row=mysql_fetch_array($res)){
+		$book_id = $row['next_id'];
+		$sql = " update param set next_id = next_id + 1 where type = $type ";
+		$res = update_mysql_query($sql);
+		return $book_id;
+	}
+	return 0;
 }
 
 function list_log($format='normal')
@@ -1801,20 +1841,23 @@ function get_first_wait_mail($book_id)
 	return $to;
 }
 
-function get_admin_mail()
+function get_admin_mail($book_id = 0)
 {
-	$sql = "select user, email from member where role = 2";
+	if($book_id == 0){
+		$sql = "select user, email from member where role = 2 and user != 'xling' ";
+	}else{
+		$sql = "select user, email from books left join member on books.admin = member.user where book_id = $book_id";
+	}
 	$res = read_mysql_query($sql);
 	$cc = "";
 	while($row = mysql_fetch_array($res)){
 		$user = $row['user'];
-		if($user == 'xling')
-			continue;
 		$cc .= $row['email'];
 		$cc .= ";";
 	}
 	return $cc;
 }
+
 function add_log($login_id, $borrower, $book_id, $status)
 {
 	$sql = " insert into log set `operator`='$login_id', book_id=$book_id, member_id = '$borrower', status=$status";
