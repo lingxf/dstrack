@@ -430,7 +430,7 @@ switch($action){
 
 	/*member*/
 	case "borrow":
-		if(isset($record_id)){
+		if(isset($record_id) && ($record_id != 0)){
 			borrow_wait_book($record_id, $login_id);
 		}else
 			borrow_book($book_id, $login_id);
@@ -680,7 +680,7 @@ switch($action){
 		$cc = get_admin_mail();
 		mail_html($to, $cc, "$user is approved to join reading club", "");
 		add_log($login_id, $borrower, 0, 0x108);
-		if(isset($record_id))
+		if(isset($record_id) && ($record_id != 0))
 			set_record_status($record_id, 0x108);
 		set_member_attr($borrower, 'role', 0x1);
 		manage_record($login_id);
