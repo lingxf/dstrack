@@ -31,6 +31,12 @@ function my_admin($uid)
 	list_record($uid, 'approve', " history.status = 3 ");
 	print("&nbsp;&nbsp;等候：");
 	list_record($uid, 'approve', " (history.status = 4 or history.status = 0x104) ");
+	print("&nbsp;&nbsp;借出：");
+	list_record($uid, 'out');
+	print("&nbsp;&nbsp;超时：>4 week<br>");
+	list_record($uid, 'timeout', 28);
+	print("&nbsp;&nbsp;历史：");
+	list_record($uid, 'history');
 	print("&nbsp;&nbsp;我贡献的图书：");
 	list_book('normal', 0, 100, 0, 'book_admin');
 }
@@ -55,8 +61,7 @@ function manage_record()
 
 function out_record()
 {
-	global $login_id;
-	list_record($login_id, 'out');
+	list_record('', 'out');
 }
 /* 0x100 cancel 
    0x101 reject
@@ -94,13 +99,20 @@ function list_record($uid='', $format='self', $condition='')
 		$mail_url = "http://cedump-sh.ap.qualcomm.com/book/book.php";
 	}
 	print($table_head);
+
+	if($uid != ''){
+		$extra_cond = " t2.admin = '$uid' and t2.type = 1 ";
+	}else{
+		$extra_cond = " (t2.type = 0 or t2.type = 1)  "; 
+	}
+
 	if($format == 'approve'){
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, t1.status, type,name, misc, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t3.user = t1.borrower $condition order by adate asc ";
 		if($condition == '')
 			$condition = 1;
 		if($uid != ''){
-			$condition .= " and t2.admin = '$uid' and t2.type = 1 ";
+			$condition .= " and $extra_cond ";
 		}else{
 			//$condition .= " and t2.admin = '$login_id' and t2.type = 0 "; 
 			$condition .= " and t2.type = 0 "; 
@@ -125,10 +137,10 @@ function list_record($uid='', $format='self', $condition='')
 		$sql .= " order by adate asc ";
 	}else if($format == 'out'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, misc, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower and t2.city = $role_city order by bdate desc";
+		$sql = " select record_id, borrower, t1.status, name, misc, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status  = 2 and t3.user = t1.borrower and t2.city = $role_city and $extra_cond order by bdate desc";
 	}else if($format == 'history'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期' ));
-		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower and t2.city = $role_city order by sdate desc ";
+		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower and t2.city = $role_city and $extra_cond order by sdate desc ";
 	}else if($format == 'share'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '完成日期' ));
 		$sql = " select record_id, borrower, t1.status, name, user_name, data, misc, adate, bdate,rdate,sdate, t1.book_id from $book_db.history t1, $book_db.books t2, $book_db.member t3 where t1.book_id = t2.book_id and $condition and t3.user = t1.borrower and t2.city = $role_city order by sdate desc,adate desc ";
@@ -137,7 +149,7 @@ function list_record($uid='', $format='self', $condition='')
 		$sql = " select record_id, borrower, t1.status, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, member t3 where t1.book_id = 0 and t1.status = 0x107 and t3.user = t1.borrower and t3.city = $role_city order by adate desc ";
 	}else if($format == 'timeout'){	
 		print_tdlist(array('序号', '借阅人', '书名','编号','申请日期', '借出日期', '到期日期','状态', '操作'));
-		$sql = " select record_id, borrower, t1.status, name, misc, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3 or t1.status = 5) and  t1.book_id = t2.book_id and t3.user = t1.borrower and t2.city = $role_city ";
+		$sql = " select record_id, borrower, t1.status, name, misc, user_name, data, adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where (t1.status = 2 or t1.status = 3 or t1.status = 5) and  t1.book_id = t2.book_id and t3.user = t1.borrower and t2.city = $role_city and $extra_cond ";
 		if($condition != ''){
 			$condition = " (to_days(now())  - to_days(bdate)) >= $condition ";
 			$sql .= "and $condition";
@@ -875,6 +887,7 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		$sponsor = $row['sponsor'];
 		$buy_date = substr($row['buy_date'], 0, 10);
 		$class =  $row['class'];
+		$type = isset($row['type'])? $row['type'] : 0;
 		$admin = isset($row['admin'])? $row['admin'] : '';
 		if($admin != '')
 			$admin = "<a href='http://people.qualcomm.com/servlet/PhotoPh?fld=def&mch=eq&query=$admin&org=0&lst=0&srt=cn&frm=0'>$admin</a>";
@@ -932,7 +945,10 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 				$status_text .= "在库";
 				$status_text .= "</a>";
 				$blink = "<a href=book.php?action=borrow&book_id=$book_id>借阅</a>";
-				$bcolor = 'white';
+				if($type == 0)
+					$bcolor = 'white';
+				else
+					$bcolor = '#98ded3';
 			}
 		}
 		//$blink .= "&nbsp;<a href='javascript:show_share_choice(this,$book_id);' >分享</a>";
@@ -1862,7 +1878,7 @@ function get_admin_mail($book_id = 0)
 	while($row = mysql_fetch_array($res)){
 		$user = $row['user'];
 		$cc .= $row['email'];
-		$cc .= ";";
+		$cc .= ",";
 	}
 	return $cc;
 }
@@ -1970,5 +1986,47 @@ function migrate_record($login_id)
 		}
 	}
 }
+
+function book_mail_notify($id, $subject, $message='', $type=0)
+{
+	global $login_id;
+	$to = "xling@qti.qualcomm.com";
+	$cc = "xling@qti.qualcomm.com";
+	$text = "$id, $subject, $message, $type";
+	if($type == 0){
+		$sql = "select a.book_id as book_id, b.name as book_name, c.email as email, c.name as user_name from history a, books b, user.user c where a.book_id = b.book_id and a.borrower = c.user_id and a.record_id = $id";
+		$res = read_mysql_query($sql);
+		if($row = mysql_fetch_array($res)){
+			$email = $row['email'];
+			$borrower_name = $row['user_name'];
+			$book_id = $row['book_id'];
+			$book_name = $row['book_name'];
+			$cc = get_admin_mail($book_id);
+			$to = $email;
+			$subject = "<$book_name>:" . $subject . " [$borrower_name]";
+			$text = $message . "<br>\n" . "book_id:$book_id book_name:$book_name, borrower:$borrower_name";
+		}
+	}else if($type == 1){
+		$sql = "select a.book_id as book_id, b.name as book_name, c.email as email, c.name as user_name from history a, books b, user.user c where a.book_id = b.book_id and a.borrower = c.user_id and a.record_id = $id";
+		$res = read_mysql_query($sql);
+		$to = '';
+		if($row = mysql_fetch_array($res)){
+			$email = $row['email'];
+			$borrower_name = $row['user_name'];
+			$book_id = $row['book_id'];
+			$book_name = $row['book_name'];
+			$cc = get_admin_mail($book_id);
+			$subject = "<$book_name>:" . $subject . " [$borrower_name]";
+			$text = $message . "<br>\n" . "book_id:$book_id book_name:$book_name, borrower:$borrower_name";
+			$to = get_first_wait_mail($book_id);
+		}
+		if($to != ''){
+			mail_html($to, $cc, $subject, $text);
+		}
+		return;
+	}
+	mail_html($to, $cc, $subject, $text);
+}
+
 
 ?>

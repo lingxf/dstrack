@@ -591,30 +591,20 @@ switch($action){
 		edit_book($book_id);
 		break;
 	case "push":
-		$book_id = get_bookid_by_record($record_id);
-		$borrower = get_borrower($book_id);
-		$bookname = get_bookname($book_id);
-		$to = get_user_attr($borrower, 'email');
-		$cc = get_admin_mail($book_id);
-		mail_html($to, $cc, "Timeout, Please return the book <$bookname>", "");
+		book_mail_notify($record_id, "Timeout, Please return the book", "please return");
 		show_home_link("Back", 'manage');
 		break;
 
 	case "approve_renew":
 		$book_id = get_bookid_by_record($record_id);
 		$borrower = get_borrower($book_id);
-		$bookname = get_bookname($book_id);
-		$to = get_user_attr($borrower, 'email');
-		$user = get_user_attr($borrower, 'name');
-		$cc = get_admin_mail($book_id);
 		set_record_status($record_id, 0);
 		add_log($login_id, $borrower, $book_id, 0);
-		mail_html($to, $cc, "<$bookname> is returned by <$borrower:$user>", "");
-
+		book_mail_notify($record_id, "is returned by", "");
 		$record_id = add_record($book_id, $borrower, 1, true);
 		set_record_status($record_id, 2);
 		add_log($login_id, $borrower, $book_id, 2);
-		mail_html($to, $cc, "<$bookname> is lent to <$borrower:$user>", "");
+		book_mail_notify($record_id, "is lent to ", "");
 		if($type == 0)
 			manage_record($login_id);
 		else
@@ -623,18 +613,14 @@ switch($action){
 	case "lend":
 		$book_id = get_bookid_by_record($record_id);
 		$borrower = get_borrower_by_record($record_id);
-		$bookname = get_bookname($book_id);
 		$old_status = get_book_status($book_id);
 		if($old_status != 0 && $old_status != 1){
+			$bookname = get_bookname($book_id);
 			print("<$book_id>$bookname is not returned yet");
 			break;
 		}
-		$to = get_user_attr($borrower, 'email');
-		$user = get_user_attr($borrower, 'name');
-		$cc = get_admin_mail($book_id);
 		set_record_status($record_id, 2);
-		$message = "book:$book_id $bookname, record:$record_id, $user";
-		mail_html($to, $cc, "<$bookname> is lent to <$borrower:$user>", "$message");
+		book_mail_notify($record_id, "is lent to ", "");
 		add_log($login_id, $borrower, $book_id, 2);
 		if($type == 0)
 			manage_record($login_id);
@@ -644,17 +630,10 @@ switch($action){
 	case "stock":
 		$book_id = get_bookid_by_record($record_id);
 		$borrower = get_borrower($book_id);
-		$bookname = get_bookname($book_id);
-		$to = get_user_attr($borrower, 'email');
-		$user = get_user_attr($borrower, 'name');
-		$cc = get_admin_mail($book_id);
-		mail_html($to, $cc, "<$bookname> is returned by <$user>", "");
-		$to = get_first_wait_mail($book_id);
-		if($to != ''){
-			mail_html($to, $cc, "your waiting book <$bookname> is returned by <$user>", "");
-		}
+		book_mail_notify($record_id, "is returned by", "");
 		add_log($login_id, $borrower, $book_id, 0);
 		set_record_status($record_id, 0);
+		book_mail_notify($record_id, "Your waiting book is returned by ", "", 1);
 		if($type == 0)
 			manage_record($login_id);
 		else
@@ -687,24 +666,14 @@ switch($action){
 		break;
 	case "reject_return":
 		$book_id = get_bookid_by_record($record_id);
-		$borrower = get_borrower($book_id);
-		$bookname = get_bookname($book_id);
-		$to = get_user_attr($borrower, 'email');
-		$user = get_user_attr($borrower, 'name');
-		$cc = get_admin_mail($book_id);
-		mail_html($to, $cc, "Your return for <$bookname> is rejected", "");
+		book_mail_notify($record_id, "Your return is rejected", "");
 		set_record_status($record_id, 0x2);
 		set_book_status($book_id, 2);
 		manage_record($login_id);
 		break;
 	case "reject":
 		$book_id = get_bookid_by_record($record_id);
-		$borrower = get_borrower($book_id);
-		$bookname = get_bookname($book_id);
-		$to = get_user_attr($borrower, 'email');
-		$user = get_user_attr($borrower, 'name');
-		$cc = get_admin_mail($book_id);
-		mail_html($to, $cc, "You apply to <$bookname> is rejected", "");
+		book_mail_notify($record_id, "You apply is rejected", "");
 		set_record_status($record_id, 0x101);
 		set_book_status($book_id, 0);
 		manage_record($login_id);
@@ -714,7 +683,7 @@ switch($action){
 		manage_record($login_id);
 		break;
 	case "history":
-		list_record('all', 'history');
+		list_record('', 'history');
 		break;
 	case "log":
 		list_log();
