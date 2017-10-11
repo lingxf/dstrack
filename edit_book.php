@@ -200,7 +200,11 @@ if($book_id && $op=="modify"){
 		$index = '';
 		$price = '';
 		$sponsor = '';
-		$admin = 'yingwang';
+		if($city == 0){
+			$admin = 'yingwang';
+		}else{
+			$admin = 'jianliny';
+		}
 		if($type == 1){
 			$sponsor = $login_id;
 			$admin = $login_id;
