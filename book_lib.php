@@ -811,7 +811,8 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		$sql = " select * from $tb_name left join ($sql_time) score using (book_id) $cond order by score.score desc"; 
 	}else if($order == 3){
 		$sql_time = "select book_id, count(comments.words) as cmtimes from comments left join $tb_name using (book_id) group by book_id ";
-		$sql = " select * from $tb_name left join ($sql_time) btime using (book_id) $cond order by btime.cmtimes desc"; 
+		$sql = "select book_id, name, author, ISBN, `index`, price, sponsor, buy_date, `class`, type, admin ";
+		$sql .= ", btime.cmtimes as cmtimes from $tb_name left join ($sql_time) btime using (book_id) $cond order by btime.cmtimes desc"; 
 	}else if($order == 4){
 		$sql = " select * from $tb_name $cond order by buy_date desc"; 
 	}else{
@@ -866,13 +867,16 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 			print_tdlist(array('编号', '书名','作者','分类','次数','状态', '管理', '操作'));
 		else if($order == 2)
 			print_tdlist(array('编号', '书名','作者','分类','评分','状态', '管理', '操作'));
+		else if($order == 3)
+			print_tdlist(array('编号', '书名','作者','分类','评论数','状态', '管理', '操作'));
+		else if($order == 4)
+			print_tdlist(array('编号', '书名','作者','分类','日期','状态', '管理', '操作'));
 	}else if($format == 'class')
 		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','会员分类','状态','管理',  '操作'));
 	else if($format == 'tbd')
 		print_tdlist(array('编号', '书名','作者','描述','推荐人','中图分类','会员分类','状态','管理',  '操作'));
 	else
 		print_tdlist(array('id', 'name','author', 'ISBN','index','price','buy_date','sponsor','status', 'action'));
-
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	while($row=mysql_fetch_array($res)){
@@ -895,6 +899,10 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 			$data= $row['btimes'];
 		else if($order == 2)
 			$data= $row['score'];
+		else if($order == 3)
+			$data= $row['cmtimes'];
+		else if($order == 4)
+			$data= $row['buy_date'];
 		else
 			$data = '';
 
