@@ -2026,13 +2026,14 @@ function book_mail_notify($id, $subject, $message='', $type=0)
 			$cc = get_admin_mail($book_id);
 			$subject = "<$book_name>:" . $subject . " [$borrower_name]";
 			$text = $message . "<br>\n" . "book_id:$book_id book_name:$book_name, borrower:$borrower_name";
+			$text .= "<a href=http://cedump-sh.ap.qualcomm.com/book/book.php>Book</a>";
 			$to = get_first_wait_mail($book_id);
 		}
-		if($to != ''){
-			mail_html($to, $cc, $subject, $text);
+		if($to == ''){
+			return;
 		}
-		return;
 	}
+	$text .= "<br><a href=http://cedump-sh.ap.qualcomm.com/book/book.php>Book</a>";
 	mail_html($to, $cc, $subject, $text);
 }
 
