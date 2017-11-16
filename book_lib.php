@@ -439,7 +439,7 @@ function transfer_comment()
 }
 
 
-function cal_score()
+function cal_score($who = '')
 {
 	$sql = "select * from comments ";
 	$res = read_mysql_query($sql);
@@ -475,6 +475,8 @@ function cal_score()
 
 	foreach($ct_array as $user=>$score){
 		$cc = isset($cc_array[$user])?$cc_array[$user]:0;
+		if($who != '' && $user != $who)
+			continue;
 		$sql = "update member set score=$score, effect_comments=$cc where user = '$user'";
 		$rows = update_mysql_query($sql);
 	}
