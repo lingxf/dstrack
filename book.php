@@ -393,7 +393,7 @@ switch($action){
 		$score_used = get_user_attr($login_id, 'score_used');
 
 		print("推荐列表:");
-		print("&nbsp;&nbsp;我的积分:$score 已用积分:$score_used<br>");
+		print("&nbsp;&nbsp;我的积分:$score 已用积分:$score_used");
 		print("&nbsp;&nbsp;<a href='edit_book.php?op=add_recommend_ui&status=2'>推荐</a>");
 		print("&nbsp;&nbsp;<a href='edit_book.php?op=buy_book_ui&book_id=0'>换购</a>");
 		list_recommend();
