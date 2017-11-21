@@ -742,8 +742,10 @@ function show_home()
 		$cmd = "&nbsp;&nbsp;<a href='edit_book.php?op=buy_book_ui&book_id=0'>换购</a>";
 		print("我的积分:$score 已用积分:$score_used 可用积分:$score_free $cmd<br>");
 		show_my_hot($login_id);
-		print("收藏夹&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
-		list_book('normal', $start, $items_perpage,0, 'favor');
+		print("收藏夹 - 未读&nbsp;<a href='book.php?action=clear_favor'>全部清除</a>");
+		list_book('normal', $start, $items_perpage,0, 'favor_nr');
+		print("收藏夹 - 已读");
+		list_book('normal', $start, $items_perpage,0, 'favor_r');
 		show_notice();
 	}else if($login_id == 'Guest' || $role == 0 || $role == -1){
 		show_notice();

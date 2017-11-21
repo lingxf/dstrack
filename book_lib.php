@@ -822,9 +822,25 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		$sql = " select * from $tb_name left join ($sql_time) btime using (book_id) $cond order by book_id asc"; 
 	}
 
-	if($condition == 'favor')
-		$sql = "select * from favor left join $tb_name using (book_id) where member_id = '$login_id'";
-	else if($condition == 'history')
+	if(preg_match('/favor/', $condition)){
+		$sql_read = " select book_id from ( select a.book_id as book_id from favor a where member_id = '$login_id' " .
+			 " union all ".
+			 " select distinct b.book_id as book_id from history b where borrower = '$login_id' and (status >= 0 or status <= 3)) c ".
+			 " group by book_id having count(book_id) = 2 ";
+		$sql_read_all = "select * from ($sql_read) d  left join $tb_name using (book_id) ";
+
+		$sql_noread = " select book_id from ( select a.book_id as book_id from favor a where member_id = '$login_id' " .
+			 " union all ".
+			 " select distinct b.book_id as book_id from ($sql_read) b) e ".
+			 " group by book_id having count(book_id) = 1 ";
+		$sql_noread_all = "select * from ($sql_noread) f  left join $tb_name using (book_id) ";
+	}
+
+	if($condition == 'favor_nr'){
+		$sql = $sql_noread_all;
+	}else if($condition == 'favor_r'){
+		$sql = $sql_read_all;
+	}else if($condition == 'history')
 		$sql = "select * from history left join $tb_name using (book_id) where borrower = '$login_id' and (history.status < 6) ";
 	else if($condition == 'book_borrowed'){
 		$sql = "select distinct book_id, name, author, comments, class, buy_date, books.status, `index`, ISBN, price, sponsor, `desc` from history left join $tb_name using (book_id) where borrower = '$login_id' and (history.status < 6) ";
