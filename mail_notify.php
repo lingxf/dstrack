@@ -24,12 +24,16 @@ else if($action == 'comment')
 	mail_new_comment();
 else if($action == 'toplist')
 	mail_toplist();
+else if($action == 'newbook')
+	mail_newbook();
 else if($action == 'reply')
 	notify_reply_comment(1);
 else if($action == 'gen_comment')
 	gen_comment();
 else if($action == 'gen_toplist')
 	gen_toplist();
+else if($action == 'gen_newbook')
+	gen_newbook();
 
 function gen_comment()
 {
@@ -41,6 +45,17 @@ function gen_toplist()
 	top_statistic();
 	print("积分排名");
 	point_statistic();
+}
+
+function gen_newbook()
+{
+	global $role_city, $disp_city, $role, $type, $class;
+	$role = 1;
+	$role_city = 0;
+	$disp_city = 0;
+	$type = '';
+	$class = 100;
+	list_book('class', 0, 20, 4, "");
 }
 
 function notify_reply_comment($last_days='')
@@ -112,12 +127,14 @@ function mail_reply_comment($parent, $comment, $borrower, $book_name, $url)
 	mail_html($to, $cc, $subject, $message);
 }
 
-function mail_new_comment()
+
+
+function get_mail($title, $link)
 {
 	$message = "
 	<html>
 	<head>
-	  <title>This Weeks Comments </title>
+	  <title>$title</title>
 	</head>
 	<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />
 	<meta http-equiv=\"Content-Language\" content=\"zh-CN\" /> 
@@ -142,9 +159,16 @@ function mail_new_comment()
 
 	<body>
 	<table style='font-size:14pt; color:#800000;'>
-	<tr><th style='text-align: left;'>Link:</th><td><a href='http://cedump-sh.ap.qualcomm.com/book/book.php?action=list_comments_all'>最新评论</a></td></tr>
+	<tr><th style='text-align: left;'>Link:</th><td>$link</td></tr>
 	</table>";
-	$subject = "本周评论";
+	return $message;
+}
+
+function mail_new_comment()
+{
+	$subject = "读书俱乐部本周评论";
+	$link = "<a href='http://cedump-sh.ap.qualcomm.com/book/book.php?action=list_comments_all'>最新评论</a>";
+	$message = get_mail($subject, $link);
 	exec("php mail_notify.php gen_comment", $output);
 	foreach($output as $line){
 		$message .= $line . "\n"; 
@@ -160,50 +184,39 @@ function mail_new_comment()
 
 function mail_toplist()
 {
-	$message = "
-	<html>
-	<head>
-	  <title>读书俱乐部最新排行</title>
-	</head>
-	<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />
-	<meta http-equiv=\"Content-Language\" content=\"zh-CN\" /> 
-	<style type=\"text/css\">
-	@media screen {
-		.print_ignore {
-	display: none;
-		}
-		body, table, th, td {
-			font-size:         12pt;
-		}
-		table, th, td {
-			border-width:      1px;
-			border-color:      #0000f0;
-			border-style:      solid;
-		}
-		th, td {
-	padding:           0.2em;
-		}
-	}
-	</style>
-
-	<body>
-	<table style='font-size:14pt; color:#800000;'>
-	<tr><th style='text-align: left;'>Link:</th><td><a href='http://cedump-sh.ap.qualcomm.com/book/book.php?action=list_statistic'>最新排行</a></td></tr>
-	</table>";
 	$subject = "读书俱乐部最新排行";
+	$link = "<a href='http://cedump-sh.ap.qualcomm.com/book/book.php?action=list_statistic'>$subject</a>";
+	$message = get_mail($subject, $link);
 	exec("php mail_notify.php gen_toplist", $output);
 	foreach($output as $line){
 		$message .= $line . "\n"; 
 	}
 	$message .= " </body> </html> ";
-//	$to = 'QClub.BJ.Reading@qti.qualcomm.com';
-	$to = 'xling@qti.qualcomm.com';
+	$to = 'QClub.BJ.Reading@qti.qualcomm.com';
+//	$to = 'xling@qti.qualcomm.com';
 	$cc = '';
 //	$message = base64_encode($message);
 	$subject = "=?UTF-8?B?".base64_encode($subject)."?=";
 	mail_html($to, $cc, $subject, $message);
 }
 
+function mail_newbook()
+{
+	$subject = "读书俱乐部新到书本";
+	$link = "<a href='http://cedump-sh.ap.qualcomm.com/book/book.php?action=library'>$subject</a>";
+	$message = get_mail($subject, $link);
+	exec("php mail_notify.php gen_newbook", $output);
+	foreach($output as $line){
+		$message .= $line . "\n"; 
+	}
+	$message .= " </body> </html> ";
+	$to = 'QClub.BJ.Reading@qti.qualcomm.com';
+//	$to = 'xling@qti.qualcomm.com';
+	$cc = '';
+//	$message = base64_encode($message);
+	$subject = "=?UTF-8?B?".base64_encode($subject)."?=";
+	mail_html($to, $cc, $subject, $message);
+}
 
 function mail_tbd_list(){
 	$reason = "";
