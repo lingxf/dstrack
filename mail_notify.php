@@ -22,14 +22,25 @@ else if($action == 'check')
 	check_timeout();
 else if($action == 'comment')
 	mail_new_comment();
+else if($action == 'toplist')
+	mail_toplist();
 else if($action == 'reply')
 	notify_reply_comment(1);
 else if($action == 'gen_comment')
 	gen_comment();
+else if($action == 'gen_toplist')
+	gen_toplist();
 
 function gen_comment()
 {
-	list_comments('', '', 0, 7);
+	list_comments('', '', 0, 14);
+}
+
+function gen_toplist()
+{
+	top_statistic();
+	print("积分排名");
+	point_statistic();
 }
 
 function notify_reply_comment($last_days='')
@@ -146,6 +157,53 @@ function mail_new_comment()
 	$subject = "=?UTF-8?B?".base64_encode($subject)."?=";
 	mail_html($to, $cc, $subject, $message);
 }
+
+function mail_toplist()
+{
+	$message = "
+	<html>
+	<head>
+	  <title>读书俱乐部最新排行</title>
+	</head>
+	<meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\" />
+	<meta http-equiv=\"Content-Language\" content=\"zh-CN\" /> 
+	<style type=\"text/css\">
+	@media screen {
+		.print_ignore {
+	display: none;
+		}
+		body, table, th, td {
+			font-size:         12pt;
+		}
+		table, th, td {
+			border-width:      1px;
+			border-color:      #0000f0;
+			border-style:      solid;
+		}
+		th, td {
+	padding:           0.2em;
+		}
+	}
+	</style>
+
+	<body>
+	<table style='font-size:14pt; color:#800000;'>
+	<tr><th style='text-align: left;'>Link:</th><td><a href='http://cedump-sh.ap.qualcomm.com/book/book.php?action=list_statistic'>最新排行</a></td></tr>
+	</table>";
+	$subject = "读书俱乐部最新排行";
+	exec("php mail_notify.php gen_toplist", $output);
+	foreach($output as $line){
+		$message .= $line . "\n"; 
+	}
+	$message .= " </body> </html> ";
+//	$to = 'QClub.BJ.Reading@qti.qualcomm.com';
+	$to = 'xling@qti.qualcomm.com';
+	$cc = '';
+//	$message = base64_encode($message);
+	$subject = "=?UTF-8?B?".base64_encode($subject)."?=";
+	mail_html($to, $cc, $subject, $message);
+}
+
 
 function mail_tbd_list(){
 	$reason = "";
