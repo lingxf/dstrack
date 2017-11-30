@@ -120,6 +120,9 @@ function list_record($uid='', $format='self', $condition='')
 
 		$sql = " select record_id, borrower, history.status, type,name, misc, user_name, data, adate, bdate,rdate,sdate, history.book_id from history left join `books` as t2 using (`book_id`) left join member on member.user = history.borrower  where $condition order by adate asc ";
 
+	}else if($format == 'list'){
+		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
+		$sql = " select record_id, borrower, history.status, books.status as bstatus, data, name, user_name, adate, bdate,rdate,sdate, history.book_id from history, books, member  where history.borrower='$login_id' and history.book_id = books.book_id and member.user = history.borrower and $condition order by adate desc ";
 	}else if($format == 'self'){
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期', '状态', '操作'));
 		$sql = " select record_id, borrower, history.status, books.status as bstatus, data, name, user_name, adate, bdate,rdate,sdate, history.book_id from history, books, member  where history.borrower='$login_id' and history.book_id = books.book_id and member.user = history.borrower and $condition order by adate desc ";
@@ -300,14 +303,15 @@ function list_record($uid='', $format='self', $condition='')
 
 function list_statistic()
 {
-	cal_score();
+	top_statistic();
+	//cal_score();
 	print("积分排名");
 	point_statistic();
 	print("评论统计");
 	comment_statistic(0);
 	//comment_statistic_legacy(0);
-	print("分享统计");
-	share_statistic();
+	//print("分享统计");
+	//share_statistic();
 	print("评分统计");
 	score_statistic();
 }
@@ -338,6 +342,7 @@ function share_statistic($type = 0)
 
 function point_statistic($type = 0)
 {
+/*
 //	$tr_width=400;
 //	print("<table id='$table_name' class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
 	print_table_head('', 400);
@@ -352,24 +357,26 @@ function point_statistic($type = 0)
 	print("<th >有效评论</th>");
 	print("<th >打分次数</th>");
 	print("</tr>");
-
+*/
 	$tb_comments = " (select borrower, count(words) as total_comments from `comments` group by borrower)";
-	$sql = "  select user,user_name, ".
-		"score, score_used, ".
+	$sqlq = "  select user,user_name, ".
+		"score,".
+		"score_used, ".
 		"tc.total_comments, effect_comments, ".
 		//"COUNT( CASE WHEN `status` = 0 THEN 1 ELSE NULL END ) AS `books_his`, ". 
 		"COUNT(distinct (CASE WHEN `status` = 0 THEN `book_id` ELSE NULL END)) AS `books_his`, ". 
 	    "COUNT( CASE WHEN `status` = 0x106 THEN 1 ELSE NULL END ) AS `shares`, ".
 		"COUNT( CASE WHEN `status` = 0x109 THEN 1 ELSE NULL END ) AS `scount` ";
 //	$sql .= ", count(case when `words` != '' then 1 else null end ) as `total_comments`";
-	$sql .= " from `member` left join $tb_comments tc on member.user = tc.borrower ";
-	$sql .= "  left join `history` on member.user = history.borrower ";
-	$sql .= " where member.user not like 'test%' ";
-	$sql .= " group by user order by score desc ";
-
-	$res = read_mysql_query($sql);
+	$sqlq .= " from `member` left join $tb_comments tc on member.user = tc.borrower ";
+	$sqlq .= "  left join `history` on member.user = history.borrower ";
+	$sqlq .= " where member.user not like 'test%' ";
+	$sqlq .= " group by user order by score desc ";
+/*
+	$res = read_mysql_query($sqlq);
 	while($row = mysql_fetch_array($res)){
 		$name = $row['user_name'];
+		$borrower = $row['user'];
 		$score = $row['score'];
 		$score_used = $row['score_used'];
 		$score_free = $score - $score_used;
@@ -379,7 +386,8 @@ function point_statistic($type = 0)
 		$comments = $row['total_comments'];
 		$effect_comments = $row['effect_comments'];
 		print("<tr>");
-		print_td($name);
+		$borrower_link = "<a href=?action=list_comments&borrower=$borrower>$name</a>";
+		print_td($borrower_link);
 		print_td($score);
 		print_td($score_used);
 		print_td($score_free);
@@ -391,7 +399,70 @@ function point_statistic($type = 0)
 		print("</tr>");
 	}
 	print("</table>");
+*/
+	$sql2 = "select concat('<a href=?action=list_comments&borrower=', user, '>', user_name, '</a>') as 用户, ".
+		"shares * 200 + effect_comments * 20 + scount *2 as `积分`, score_used as 已用积分,  shares * 200 + effect_comments * 20 + scount *2 - score_used as 可用积分,  books_his as 累计借书, shares as 累计分享, total_comments as 累计评论, effect_comments as 有效评论, scount as 打分次数 from ($sqlq) t order by 积分 desc";
+	show_table_by_sql("topcomment", 'book', 800, $sql2, array(), array(120));
 }
+
+function top_statistic($type = 0)
+{
+
+	print_table_head('', 850);
+	print("<tr><td>");
+	$tb_comments = " (select borrower, count(words) as total_comments from `comments` group by borrower)";
+	$sql = "  select ".
+		" concat('<a href=?action=list_comments&borrower=',user,'>', user_name,'</a>') as `姓名`, ".
+		"tc.total_comments as `累计评论`, effect_comments as `有效评论` ";
+	$sql .= " from `member` left join $tb_comments tc on member.user = tc.borrower ";
+	$sql .= "  left join `history` on member.user = history.borrower ";
+	$sql .= " where member.user not like 'test%' ";
+	$sql .= " group by user order by effect_comments desc limit 0,15 ";
+	print("Top 15 评论达人");
+	show_table_by_sql("topcomment", 'book', 300, $sql, array(), array(120));
+	print("</td><td>");
+	$sql = "  select ".
+		" concat('<a href=?action=list_borrow&borrower=',user,'>', user_name,'</a>') as `姓名`, ".
+		"COUNT(distinct (CASE WHEN `status` = 0 THEN `book_id` ELSE NULL END)) AS `曾借书本` "; 
+	$sql .= " from member ";
+	$sql .= "  left join `history` on member.user = history.borrower ";
+	$sql .= " where member.user not like 'test%' ";
+	$sql .= " group by user order by `曾借书本` desc limit 0,15 ";
+
+	print("Top 15 借书达人");
+	show_table_by_sql("topcomment", 'book', 300, $sql);
+
+	print("</td></tr>");
+	print("<tr><td>");
+	$sql = "  select ".
+		" concat('<a href=?action=list_grade&borrower=',user,'>', user_name,'</a>') as `姓名`, ".
+		"COUNT( CASE WHEN `status` = 0x109 THEN 1 ELSE NULL END ) AS `打分书本` ";
+	$sql .= " from member ";
+	$sql .= "  left join `history` on member.user = history.borrower ";
+	$sql .= " where member.user not like 'test%' ";
+	$sql .= " group by user order by `打分书本` desc limit 0,15 ";
+
+	print("Top 15 打分达人");
+	show_table_by_sql("topcomment", 'book', 300, $sql);
+
+	print("</td><td>");
+	$sql = "  select ".
+		" concat('<a href=?action=list_sharebook&borrower=',user,'>', user_name,'</a>') as `姓名`, ".
+		"COUNT( CASE WHEN `status` = 0x106 THEN 1 ELSE NULL END ) AS `分享书本` ";
+	$sql .= " from member ";
+	$sql .= "  left join `history` on member.user = history.borrower ";
+	$sql .= " where member.user not like 'test%' ";
+	$sql .= " group by user order by `分享书本` desc limit 0,15 ";
+
+	print("Top 15 分享达人");
+	show_table_by_sql("topcomment", 'book', 300, $sql);
+
+	print("</td></tr>");
+	print("</table>");
+
+	return;
+}
+
 function add_comment($book_id, $user, $this_comment, $month='', $date='')
 {
 	if($month == ''){
@@ -471,6 +542,13 @@ function cal_score($who = '')
 	while($row = mysql_fetch_array($res)){
 		$user = $row['borrower'];
 		$ct_array[$user] = isset($ct_array[$user]) ? $ct_array[$user] + 200 : 200;
+	}
+
+	$sql = "select * from history where status = 0x109";
+	$res = read_mysql_query($sql);
+	while($row = mysql_fetch_array($res)){
+		$user = $row['borrower'];
+		$ct_array[$user] = isset($ct_array[$user]) ? $ct_array[$user] + 2 : 2;
 	}
 
 	foreach($ct_array as $user=>$score){

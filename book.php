@@ -377,6 +377,24 @@ switch($action){
 	case "show_borrower":
 		show_book($book_id);
 		break;
+	case "list_borrow":
+		$sql = " select @x:=@x+1 as `序号`, user as `借阅人`, concat('<a href=?action=show_borrower&book_id=', history.book_id, '>', name, '</a>') as `书名`, ".
+			"count(history.book_id) as 次数, ". 
+			"bdate as 借出日期, sdate as 归还日期".
+			" from (select @x:=0) r, history, books, member  where history.book_id = books.book_id and member.user = history.borrower and history.status = 0 and history.borrower = '$borrower' group by history.book_id order by adate asc ";
+		show_table_by_sql("tb", "books", 800, $sql, array(), array(30,50,280,30, 150,150));
+		//list_record('', 'list', " history.status = 0 and history.borrower = '$borrower'");
+		break;
+	case "list_grade":
+		$sql = " select @x:=@x+1 as `序号`, user as `借阅人`, concat('<a href=?action=show_borrower&book_id=', history.book_id, '>', name, '</a>') as `书名`, data as 评分".
+			" from (select @x:=0) r, history, books, member  where history.book_id = books.book_id and member.user = history.borrower and history.status = 0x109 and history.borrower = '$borrower' group by history.book_id order by adate asc ";
+		show_table_by_sql("tb", "books", 600, $sql, array(), array(30,50,280,30));
+		break;
+	case "list_sharebook":
+		$sql = " select @x:=@x+1 as `序号`, user as `借阅人`, case when history.book_id = 0 then misc else concat('<a href=?action=show_borrower&book_id=', history.book_id, '>',name, '</a>') end as `书名` ".
+			" from (select @x:=0) r, history, books, member  where history.book_id = books.book_id and member.user = history.borrower and history.status = 0x106 and history.borrower = '$borrower' order by adate asc ";
+		show_table_by_sql("tb", "books", 600, $sql, array(), array(30,50,280,30));
+		break;
 	case "list_comments":
 		list_comments('', $borrower);
 		break;
