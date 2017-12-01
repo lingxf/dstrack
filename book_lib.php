@@ -408,7 +408,7 @@ function point_statistic($type = 0)
 function top_statistic($type = 0)
 {
 
-	print_table_head('', 850);
+	print_table_head('', 650);
 	print("<tr><td>");
 	$tb_comments = " (select borrower, count(words) as total_comments from `comments` group by borrower)";
 	$sql = "  select ".
@@ -458,8 +458,33 @@ function top_statistic($type = 0)
 	show_table_by_sql("topcomment", 'book', 300, $sql);
 
 	print("</td></tr>");
-	print("</table>");
+	print("<tr><td>");
+	$sql = "  select ".
+		" concat('<a href=?action=list_sponsor&borrower=',sponsor,'>', sponsor,'</a>') as `姓名`, ".
+		"COUNT(name) AS `赞助书本` ";
+	$sql .= " from books ";
+	$sql .= " where sponsor != '' and type != 1";
+//	$sql .= "left join member on books.sponsor = member.user_name ";
+	$sql .= " group by sponsor order by `赞助书本` desc limit 0,15 ";
 
+	print("Top 15 赞助达人");
+	show_table_by_sql("topcomment", 'book', 300, $sql);
+	print("</td><td>");
+
+	$sql = "  select ".
+		" concat('<a href=?action=list_admin&borrower=',admin,'>', user_name,'</a>') as `姓名`, ".
+		"COUNT(name) AS `贡献书本` ";
+	$sql .= " from books ";
+	$sql .= "left join member on books.admin = member.user ";
+	$sql .= " where admin != '' and type = 1";
+	$sql .= " group by sponsor order by `贡献书本` desc limit 0,15 ";
+
+	print("Top 15 贡献达人");
+	show_table_by_sql("topcomment", 'book', 300, $sql);
+
+
+	print("</td></tr>");
+	print("</table>");
 	return;
 }
 
