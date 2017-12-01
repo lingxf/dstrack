@@ -405,6 +405,15 @@ function point_statistic($type = 0)
 	show_table_by_sql("topcomment", 'book', 800, $sql2, array(), array(120));
 }
 
+function list_sponsor_callback($field, $value, $row, &$td_attr, &$width)
+{
+	if($field == '姓名'){
+		$val = urlencode($value);
+		$value = "<a href=?action=list_sponsor&borrower=$val>$value</a>";
+	}
+	return $value;
+}
+
 function top_statistic($type = 0)
 {
 
@@ -460,7 +469,7 @@ function top_statistic($type = 0)
 	print("</td></tr>");
 	print("<tr><td>");
 	$sql = "  select ".
-		" concat('<a href=?action=list_sponsor&borrower=',sponsor,'>', sponsor,'</a>') as `姓名`, ".
+		" sponsor as `姓名`, ".
 		"COUNT(name) AS `赞助书本` ";
 	$sql .= " from books ";
 	$sql .= " where sponsor != '' and type != 1";
@@ -468,7 +477,7 @@ function top_statistic($type = 0)
 	$sql .= " group by sponsor order by `赞助书本` desc limit 0,15 ";
 
 	print("Top 15 赞助达人");
-	show_table_by_sql("topcomment", 'book', 300, $sql);
+	show_table_by_sql("topcomment", 'book', 300, $sql, array(),array(), 'list_sponsor_callback');
 	print("</td><td>");
 
 	$sql = "  select ".
