@@ -431,19 +431,6 @@ function top_statistic($type = 0)
 	show_table_by_sql("topcomment", 'book', 300, $sql, array(), array(120));
 	print("</td><td>");
 	$sql = "  select ".
-		" concat('<a href=?action=list_borrow&borrower=',user,'>', user_name,'</a>') as `姓名`, ".
-		"COUNT(distinct (CASE WHEN `status` = 0 THEN `book_id` ELSE NULL END)) AS `曾借书本` "; 
-	$sql .= " from member ";
-	$sql .= "  left join `history` on member.user = history.borrower ";
-	$sql .= " where member.user not like 'test%' ";
-	$sql .= " group by user order by `曾借书本` desc limit 0,15 ";
-
-	print("Top 15 借书达人");
-	show_table_by_sql("topcomment", 'book', 300, $sql);
-
-	print("</td></tr>");
-	print("<tr><td>");
-	$sql = "  select ".
 		" concat('<a href=?action=list_grade&borrower=',user,'>', user_name,'</a>') as `姓名`, ".
 		"COUNT( CASE WHEN `status` = 0x109 THEN 1 ELSE NULL END ) AS `打分书本` ";
 	$sql .= " from member ";
@@ -469,6 +456,18 @@ function top_statistic($type = 0)
 	print("</td></tr>");
 	print("<tr><td>");
 	$sql = "  select ".
+		" concat('<a href=?action=list_borrow&borrower=',user,'>', user_name,'</a>') as `姓名`, ".
+		"COUNT(distinct (CASE WHEN `status` = 0 THEN `book_id` ELSE NULL END)) AS `曾借书本` "; 
+	$sql .= " from member ";
+	$sql .= "  left join `history` on member.user = history.borrower ";
+	$sql .= " where member.user not like 'test%' ";
+	$sql .= " group by user order by `曾借书本` desc limit 0,15 ";
+
+	print("Top 15 借书达人");
+	show_table_by_sql("topcomment", 'book', 300, $sql);
+
+	print("</td><td>");
+	$sql = "  select ".
 		" sponsor as `姓名`, ".
 		"COUNT(name) AS `赞助书本` ";
 	$sql .= " from books ";
@@ -490,7 +489,6 @@ function top_statistic($type = 0)
 
 	print("Top 15 贡献达人");
 	show_table_by_sql("topcomment", 'book', 300, $sql);
-
 
 	print("</td></tr>");
 	print("</table>");
