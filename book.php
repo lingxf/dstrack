@@ -31,6 +31,27 @@ check_login($web_name);
 <title>Book</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta http-equiv="Content-Language" content="zh-CN" /> 
+<style type="text/css">
+.menu_button {
+    background-color: #cee;
+    border: medium none;
+    color: inherit;
+    cursor: pointer;
+    display: inline-block;
+    overflow: hidden;
+    padding: 2px 8px;
+    text-align: center;
+    text-decoration: none;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.menu_button:hover {
+    background-color: #888 !important;
+	    color: #000 !important;
+}
+</style>
+
 <script type="text/javascript" src="inpage_edit.js"></script>
 <!--
 -<link rel="stylesheet" type="text/css" href="report.css" media="screen12"/>
@@ -246,9 +267,9 @@ else if($role == -1)
 	$role_text = "未激活";
 
 if($login_id == 'Guest')
-	$login_text = "<a id='id_login_name' href=?action=login>登录</a>&nbsp;&nbsp;<a href=\"?action=register\">注册</a>";
+	$login_text = "<a class='menu_button' id='id_login_name' href=?action=login>登录</a>&nbsp;&nbsp;<a href=\"?action=register\">注册</a>";
 else
-	$login_text = "<a href=book_user_setting.php>$login_id($role_text)</a>&nbsp;&nbsp;<a href=\"?action=logout&url=book.php\">注销</a>";
+	$login_text = "<a class='menu_button' href=book_user_setting.php>$login_id($role_text)</a><a class='menu_button' href=\"?action=logout&url=book.php\">注销</a>";
 
 $login_text .= "&nbsp;&nbsp;".get_city_name($city);
 
@@ -256,29 +277,30 @@ $book_id=0;
 
 
 
-print "<a href=\"book.php\">首页</a>";
-print "&nbsp;&nbsp;<a href=\"book.php?action=library\">书库</a>";
+print "<a class='menu_button' href=\"book.php\">首页</a>";
+print "<a class='menu_button' href=\"book.php?action=library\">书库</a>";
 
 if($role == 0){
-	print "&nbsp;&nbsp;<a href=\"book.php?action=join\">入会</a>";
+	print "<a class='menu_button' href=\"book.php?action=join\">入会</a>";
 }else if($role >= 1){
-	print "&nbsp;&nbsp;<a href=\"book.php?action=admin\">贡献</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_favor\">我的</a>";
+	print "<a class='menu_button' href=\"book.php?action=admin\">贡献</a>";
+	print "<a class='menu_button' href=\"book.php?action=list_favor\">我的</a>";
 }
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_share\">分享</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_comments_all\">最新评论</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_recommend\">推荐/兑换</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_out\">借出</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=history\">借阅历史</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_timeout\">超时</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_statistic\">统计</a>";
+	print "<a class='menu_button' href=\"book.php?action=list_share\">分享</a>";
+	print "<a class='menu_button' href=\"book.php?action=list_comments_all\">最新评论</a>";
+	print "<a class='menu_button' href=\"book.php?action=list_recommend\">推荐/兑换</a>";
+	print "<a class='menu_button' href=\"book.php?action=list_out\">借出</a>";
+	print "<a class='menu_button' href=\"book.php?action=history\">借阅历史</a>";
+	print "<a class='menu_button' href=\"book.php?action=list_timeout\">超时</a>";
+	print "<a class='menu_button' href=\"book.php?action=list_statistic\">统计</a>";
 
 if($role == 2){
-	print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href=\"book.php?action=manage\">管理</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=log\">日志</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_member\">会员</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=add_newbook\">新书</a>";
-	print "&nbsp;&nbsp;<a href=\"book.php?action=list_tbd\">待定</a>";
+	print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+	print "<a class='menu_button' href=\"book.php?action=manage\">管理</a>";
+	print "<a class='menu_button' href=\"book.php?action=log\">日志</a>";
+	print "<a class='menu_button' href=\"book.php?action=list_member\">会员</a>";
+	print "<a class='menu_button' href=\"book.php?action=add_newbook\">新书</a>";
+	print "<a class='menu_button' href=\"book.php?action=list_tbd\">待定</a>";
 }
 
 print "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$login_text ";
