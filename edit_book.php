@@ -19,9 +19,10 @@ function print_html_head(){
 			");
 }
 
-session_name($web_name);
-session_start();
-$login_id=isset($_SESSION['user'])?$_SESSION['user']:'Guest';
+if($web_name != session_name($web_name))
+	session_start();
+
+include_once 'myphp/login_action.php';
 
 $role = is_member($login_id);
 $book_id = 0;
@@ -33,7 +34,7 @@ if(!isset($op))
 
 $comment_id = get_persist_var('comment_id', '');
 
-if($login_id == 'Guest'){
+if($login_id == 'guest'){
 	print('Please login first');
 	exit();
 }
@@ -162,9 +163,19 @@ if($book_id && $op=="modify"){
 	$type = get_url_var('type', 0);
 	$buy_date = strftime("%Y-%m-%d %H:%M:%S", $time);
 	if($op=="buy_book_done"){
-		$op = 'add';
 		$book_id=$_GET['book_id'];
-		$sql = "select * from books_nostock where book_id = $book_id";
+
+		$new_book_id = alloc_book_id($type, $city);
+		$sql_old = "select $new_book_id, $type, name, author, sponsor, '$login_id', now(), note, `desc`, 0 from books_nostock where book_id = $book_id ";
+		$sql = "insert into books (book_id, type, name, author, sponsor, admin, buy_date, note, `desc`, status ) $sql_old ";
+		update_mysql_query($sql);
+		$sql = "delete from books_nostock where book_id = $book_id";
+		update_mysql_query($sql);
+		$_GET['book_id'] = $new_book_id;
+		$op = 'edit_book_ui';
+	}
+	/*
+		$sql = "select * from books where book_id = $new_book_id";
 		$res = read_mysql_query($sql);
 		while($row = mysql_fetch_array($res)){
 			$sponsor = $row['sponsor'];
@@ -175,7 +186,8 @@ if($book_id && $op=="modify"){
 			$author = $row['author'];
 			$note = $row['note'];
 		}
-	}else if(isset($_GET['book_id'])) { 
+	*/
+	if(isset($_GET['book_id'])) { 
 		$book_id=$_GET['book_id'];
 		$sql = " select * from books where book_id = $book_id";
 		$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
@@ -186,9 +198,11 @@ if($book_id && $op=="modify"){
 			$isbn = $row['ISBN'];
 			$index = $row['index'];
 			$price = $row['price'];
+			$admin = $row['admin'];
 			$sponsor = $row['sponsor'];
 			$note = $row['note'];
 			$buy_date = substr($row['buy_date'], 0, 10);
+			$buy_date = $row['buy_date'];
 			$desc =  $row['desc'];
 		}
 		$op = 'edit';
