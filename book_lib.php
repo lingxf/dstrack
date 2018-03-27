@@ -1916,7 +1916,7 @@ function add_member($user, $name, $email, $role) {
 	return false;
 }
 
-function check_member_score($user, $score){
+function check_member_score($user){
 	$sql = "select * from member where `user` = '$user' ";
 	$res = read_mysql_query($sql);
 	while($row = mysql_fetch_array($res)){

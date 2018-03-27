@@ -19,11 +19,9 @@ include 'db_connect.php';
 include_once 'myphp/common.php';
 include_once 'myphp/disp_lib.php';
 include 'book_lib.php';
-include 'myphp/login_lib.php';
-
 global $login_id, $max_book, $setting;	
-$login_id = "Guest";
-check_login($web_name);
+include_once 'myphp/login_action.php';
+
 
 ?>
 
@@ -265,9 +263,11 @@ else if($role == 0)
 	$role_text = "非会员";
 else if($role == -1)
 	$role_text = "未激活";
+else if($role == -2)
+	$role_text = "访客";
 
-if($login_id == 'Guest')
-	$login_text = "<a class='menu_button' id='id_login_name' href=?action=login>登录</a>&nbsp;&nbsp;<a href=\"?action=register\">注册</a>";
+if($login_id == 'guest')
+	$login_text = "<a class='menu_button' id='id_login_name' href=?action=show_login>登录</a>&nbsp;&nbsp;<a href=\"?action=show_register\">注册</a>";
 else
 	$login_text = "<a class='menu_button' href=book_user_setting.php>$login_id($role_text)</a><a class='menu_button' href=\"?action=logout&url=book.php\">注销</a>";
 
@@ -467,7 +467,7 @@ switch($action){
 		out_record($login_id);
 		break;
 	case "join":
-		if($login_id == 'Guest'){
+		if($login_id == 'guest'){
 			print("please register first!");
 			break;
 		}
@@ -799,7 +799,7 @@ function show_home()
 		print("收藏夹 - 已读");
 		list_book('normal', $start, $items_perpage,0, 'favor_r');
 		show_notice();
-	}else if($login_id == 'Guest' || $role == 0 || $role == -1){
+	}else if($login_id == 'guest' || $role == 0 || $role == -1){
 		show_notice();
 		show_library();
 	}

@@ -10,8 +10,10 @@ include 'myphp/common.php';
 include 'myphp/disp_lib.php';
 include 'book_lib.php';
 
-session_name($web_name);
-session_start();
+if($web_name != session_name($web_name))
+	session_start();
+
+include_once 'myphp/login_action.php';
 
 if(isset($_GET['view'])) $view=$_GET['view'];
 else $view=$_SESSION['view'];

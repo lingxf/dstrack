@@ -11,14 +11,12 @@ include 'book_lib.php';
 
 global $login_id, $max_book, $setting;	
 
-session_name($web_name);
 session_set_cookie_params(60*60*18);
-session_start();
+if($web_name != session_name($web_name))
+	session_start();
 
 $sid=session_id();
-$login_id = "";
-
-if(isset($_SESSION['user'])) $login_id=$_SESSION['user'];
+include_once 'myphp/login_action.php';
 
 $max_books = 1;
 $items_perpage = 50;

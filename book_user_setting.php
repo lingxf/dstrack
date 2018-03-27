@@ -14,10 +14,9 @@ session_name($web_name);
 session_start();
 
 include 'book_lib.php';
-include 'myphp/login_lib.php';
-
 global $login_id, $login_password;
-check_login();
+include 'myphp/login_action.php';
+
 
 print "<a href=\"book.php\">Home</a> &nbsp;&nbsp;<a href=\"book_user_setting.php\">Setting</a>";
 

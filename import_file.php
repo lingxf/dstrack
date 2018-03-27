@@ -6,8 +6,10 @@ include_once 'book_lib.php';
 include_once "db_connect.php";
 global $login_id, $role;	
 $login_id="";
-session_name($web_name);
-session_start();
+if($web_name != session_name($web_name))
+	session_start();
+include_once 'myphp/login_action.php';
+
 $disp_city=0;
 if(isset($_SESSION['user'])){
 	$login_id=$_SESSION['user'];
