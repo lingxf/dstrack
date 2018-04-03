@@ -817,12 +817,13 @@ function show_book_member($field_name, $value, $row='', $width)
 			$groups = $row['groups'];
 			$status_text = '';
 			if($role >= 1) {
-				$status_text .= "读书 ";
-			}
-			if($groups & 2) {
-				$status_text .= "桥牌 ";
-			}
-			if($role < 1 && ($groups & 2)) {
+				if($groups & 1) {
+					$status_text .= "读书 ";
+				}
+				if($groups & 2) {
+					$status_text .= "桥牌 ";
+				}
+			}else{
 				$status_text = "非会员";
 			}
 			$value = $status_text;
