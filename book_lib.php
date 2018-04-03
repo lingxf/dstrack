@@ -801,9 +801,56 @@ function comment_statistic_legacy($type = 0)
 //	print_r($ct_array);
 }
 
+function show_book_member($field_name, $value, $row='', $width)
+{
+	global $member_index;
+	if($field_name == $value)
+		return $value;
+	switch($field_name)	{
+		case 'id':
+			$member_index += 1;
+			$value = $member_index;
+			break;
+		case 'role':
+			$user_id = $row['user'];
+			$role = $value;
+			$groups = $row['groups'];
+			$status_text = '';
+			if($role >= 1) {
+				$status_text .= "读书 ";
+			}
+			if($groups & 2) {
+				$status_text .= "桥牌 ";
+			}
+			if($role < 1 && ($groups & 2)) {
+				$status_text = "非会员";
+			}
+			$value = $status_text;
+			break;
+		case 'action':
+			$user_id = $value;
+			$role = $row['role'];
+			if($role >= 1) {
+				$blink = "<a href=book.php?action=remove_member&borrower=$user_id>离会</a>";
+			} else { 
+				$blink = "<a href=book.php?action=approve_member&borrower=$user_id>入会</a>";
+			}
+			$blink .= "&nbsp;<a href='javascript:deduce_member_score(this,\"$user_id\");' >扣分</a>";
+			$blink .= "&nbsp;<a href='edit_book.php?op=add_share_ui&borrower=$user_id' >分享</a>";
+			$value = $blink;
+			break;
+		case 'wish':
+			global $total_wish;
+			$wish = floor(($value)/100);
+			$total_wish += $wish;
+			$value = $wish;
+			break;
+	}
+	return $value;
+}
+
 function list_member()
 {
-
 	global $login_id, $role, $class, $comment_type, $book_sname;
 
 	cal_score();
@@ -814,19 +861,29 @@ function list_member()
 	$hasmore = false;
 	$hasprev = false;
 
-	print('<form enctype="multipart/form-data" action="book.php" method="POST">');
+	//print('<form enctype="multipart/form-data" action="book.php" method="POST">');
 
-	print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
-	print_tdlist(array('序号', '帐号', '姓名','邮件', '身份','已借','曾借','积分','已用积分', 'wish', '操作'));
+	//print("<table id='$table_name' width=600 class=MsoNormalTable border=0 cellspacing=0 cellpadding=0 style='width:$tr_width.0pt;background:$background;margin-left:20.5pt;border-collapse:collapse'>");
+	$table_column = array('序号','帐号', '姓名','邮件', '身份','', '已借','曾借','积分','已用积分', 'wish', '操作');
+	$table_width =  array(5, 20, 30, 50, 20, -1, 20, 20, 20, 20, 20, 80);
 
-	$sql = "  select user,user_name, email, role,  ";
-	$sql .= "COUNT( CASE WHEN `status` = 0 THEN 1 ELSE NULL END ) AS `books_his`,  COUNT( CASE WHEN `status` = 2 THEN 1 ELSE NULL END ) AS `books_borrow`";
-	$sql .= ", score, score_used ";
+	$sql = "  select 0 as id, user, user_name, email, role, groups ";
+	$sql .= ", COUNT( CASE WHEN `status` = 2 THEN 1 ELSE NULL END ) AS `books_borrow`";
+	$sql .= ", COUNT( CASE WHEN `status` = 0 THEN 1 ELSE NULL END ) AS `books_his` ";
+	$sql .= ", score, score_used, score-score_used as wish, user as action";
 	$sql .= " from `member` left join `history` on member.user = history.borrower group by user ";
+	global $member_index, $total_wish;
+	$member_index = 0;
+	$total_wish = 0;
+
+	show_table_by_sql('', 'book', 800, $sql, $table_column, $table_width, 'show_book_member', 1);
+	printf("Total Wish List:%d<br>", $total_wish);
+	return;
 
 	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
 	$i = 0;
 	$total_wish = 0;
+
 	while($row=mysql_fetch_array($res)){
 		$user_id = $row['user']; 
 		$user_name = $row['user_name'];
@@ -845,6 +902,7 @@ function list_member()
 		}
 		$blink .= "&nbsp;<a href='javascript:deduce_member_score(this,\"$user_id\");' >扣分</a>";
 		$blink .= "&nbsp;<a href='edit_book.php?op=add_share_ui&borrower=$user_id' >分享</a>";
+		
 		print("<tr>\n");
 		if(preg_match("/^test/", $user_id))
 			continue;
@@ -1017,6 +1075,7 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		$index = $row['index'];
 		$price = $row['price'];
 		$sponsor = $row['sponsor'];
+		$groups = $row['groups'];
 		$buy_date = substr($row['buy_date'], 0, 10);
 		$class =  $row['class'];
 		$type = isset($row['type'])? $row['type'] : 0;
@@ -1091,6 +1150,10 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 		$blink .= "&nbsp;<a href='javascript:add_score(this,$book_id);' >打分</a>";
 		$blink .= "&nbsp;<a href='edit_book.php?op=add_comment_ui&book_id=$book_id'&comment_id=&borrower=>评论</a>";
 		#$blink .= "&nbsp;<a href='book.php?action=share&book_id=$book_id' >分享</a>";
+		global $user_groups;
+		if(!($user_groups & $groups)){
+			$blink = "无权限";
+		}
 		print("<tr style='background:$bcolor;'>");
 		if($format == 'normal'){
 			print_td($id,10);
@@ -1138,13 +1201,14 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 	}
 }
 
-function is_member($login_id)
+function is_member($login_id, &$groups)
 {
 	global $max_books, $setting, $items_perpage;
 	$sql = "select * from member where user=\"$login_id\"";
 	$res = mysql_query($sql) or die("Invalid query:".$sql.mysql_error());
 	if($row = mysql_fetch_array($res)){
 		$role= $row['role'];
+		$groups = $row['groups'];
 		$max_books = $row['max'];
 		$setting = $row['setting'];
 		$items_perpage = $row['perpage'];

@@ -248,7 +248,8 @@ function deduce_member_score(tdc, member)
 global $login_id, $max_book, $setting;	
 
 $max_books = 1;
-$role = is_member($login_id);
+$user_groups = 0;
+$role = is_member($login_id, $user_groups);
 $role_city = get_user_attr($login_id, 'city');
 $role_city = $role_city ? $role_city:0;
 $disp_city = 0;
