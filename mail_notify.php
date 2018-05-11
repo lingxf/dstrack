@@ -124,6 +124,7 @@ function mail_reply_comment($parent, $comment, $borrower, $book_name, $url)
 	$to = get_user_email($parent);
 //	$to = 'xling@qti.qualcomm.com';
 	$cc = '';
+	$message = wordwrap($message, 70);
 	mail_html($to, $cc, $subject, $message);
 }
 
@@ -179,6 +180,7 @@ function mail_new_comment()
 	$cc = '';
 //	$message = base64_encode($message);
 	$subject = "=?UTF-8?B?".base64_encode($subject)."?=";
+	$message = wordwrap($message, 70);
 	mail_html($to, $cc, $subject, $message);
 }
 
@@ -197,6 +199,7 @@ function mail_toplist()
 	$cc = '';
 //	$message = base64_encode($message);
 	$subject = "=?UTF-8?B?".base64_encode($subject)."?=";
+	$message = wordwrap($message, 70);
 	mail_html($to, $cc, $subject, $message);
 }
 
@@ -215,6 +218,7 @@ function mail_newbook()
 	$cc = '';
 //	$message = base64_encode($message);
 	$subject = "=?UTF-8?B?".base64_encode($subject)."?=";
+	$message = wordwrap($message, 70);
 	mail_html($to, $cc, $subject, $message);
 }
 
@@ -248,6 +252,7 @@ function mail_tbd_list(){
 
 	$to = get_admin_mail();
 	$cc = '';
+	$message = wordwrap($message, 70);
 	mail_html($to, $cc, $subject, $message);
 }
 
