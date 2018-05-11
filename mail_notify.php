@@ -125,7 +125,7 @@ function mail_reply_comment($parent, $comment, $borrower, $book_name, $url)
 //	$to = 'xling@qti.qualcomm.com';
 	$cc = '';
 	$message = wordwrap($message, 70);
-	mail_html($to, $cc, $subject, $message);
+	mail_html($to, $cc, $subject, $message, "book_club@cedump-sh.ap.qualcomm.com");
 }
 
 
@@ -181,7 +181,7 @@ function mail_new_comment()
 //	$message = base64_encode($message);
 	$subject = "=?UTF-8?B?".base64_encode($subject)."?=";
 	$message = wordwrap($message, 70);
-	mail_html($to, $cc, $subject, $message);
+	mail_html($to, $cc, $subject, $message, "book_club@cedump-sh.ap.qualcomm.com");
 }
 
 function mail_toplist()
@@ -200,7 +200,7 @@ function mail_toplist()
 //	$message = base64_encode($message);
 	$subject = "=?UTF-8?B?".base64_encode($subject)."?=";
 	$message = wordwrap($message, 70);
-	mail_html($to, $cc, $subject, $message);
+	mail_html($to, $cc, $subject, $message, "book_club@cedump-sh.ap.qualcomm.com");
 }
 
 function mail_newbook()
@@ -219,7 +219,7 @@ function mail_newbook()
 //	$message = base64_encode($message);
 	$subject = "=?UTF-8?B?".base64_encode($subject)."?=";
 	$message = wordwrap($message, 70);
-	mail_html($to, $cc, $subject, $message);
+	mail_html($to, $cc, $subject, $message, "book_club@cedump-sh.ap.qualcomm.com");
 }
 
 function mail_tbd_list(){
@@ -253,7 +253,7 @@ function mail_tbd_list(){
 	$to = get_admin_mail();
 	$cc = '';
 	$message = wordwrap($message, 70);
-	mail_html($to, $cc, $subject, $message);
+	mail_html($to, $cc, $subject, $message, "book_club@cedump-sh.ap.qualcomm.com");
 }
 
 function check_timeout()
@@ -295,9 +295,9 @@ function mail_reminder_day($remain_days)
 		$to = $email;
 		$cc = get_admin_mail($book_id);
 		if($remain_days > 0)
-			mail_html($to, $cc, "your book <$bookname> has $remain_days days left", "$borrower $bookname $bdate");
+			mail_html($to, $cc, "your book <$bookname> has $remain_days days left", "$borrower $bookname $bdate", "book_club@cedump-sh.ap.qualcomm.com");
 		else
-			mail_html($to, $cc, "your book <$bookname> has timeout, please return", "$borrower $bookname $bdate");
+			mail_html($to, $cc, "your book <$bookname> has timeout, please return", "$borrower $bookname $bdate", "book_club@cedump-sh.ap.qualcomm.com");
 	}
 }
 

@@ -483,7 +483,7 @@ switch($action){
 		$to = get_admin_mail();
 		add_member($borrower, $user, $cc, 0x0);
 		add_record(0, $login_id, 0x107);
-		mail_html($to, $cc, "$user is applying to join reading club", "");
+		mail_html($to, $cc, "$user is applying to join reading club", "", "book_club@cedump-sh.ap.qualcomm.com");
 		break;
 
 	/*member*/
@@ -531,7 +531,7 @@ switch($action){
 			$to = get_user_attr($borrower, 'email');
 			$user = get_user_attr($login_id, 'name');
 			$cc = '';
-			mail_html($to, $cc, "$user is waiting for your book <$bookname>", "");
+			mail_html($to, $cc, "$user is waiting for your book <$bookname>", "", "book_club@cedump-sh.ap.qualcomm.com");
 		}
 		show_home_link();
 		break;
@@ -590,7 +590,7 @@ switch($action){
 		$cc = get_admin_mail($book_id);
 		add_log($login_id, $old_borrower, $book_id, 0);
 		add_log($login_id, $new_borrower, $book_id, 2);
-		mail_html($to, $cc, "<$bookname> is transfered from <$old_borrower:$old_user> to <$new_borrower:$new_user>", "");
+		mail_html($to, $cc, "<$bookname> is transfered from <$old_borrower:$old_user> to <$new_borrower:$new_user>", "", "book_club@cedump-sh.ap.qualcomm.com");
 		set_record_status($record_id_my, 0);
 		set_record_status($record_id, 2);
 		show_home($login_id);
@@ -605,7 +605,7 @@ switch($action){
 		$to = get_admin_mail($book_id);
 		set_book_status($book_id, 6);
 		$message = "book:$book_id $bookname ";
-		mail_html($to, $to, "<$bookname> is offlined", "$message");
+		mail_html($to, $to, "<$bookname> is offlined", "$message", "book_club@cedump-sh.ap.qualcomm.com");
 		add_log($login_id, $login_id, $book_id, 2);
 		break;
 
@@ -619,7 +619,7 @@ switch($action){
 		set_book_status($book_id, 0);
 		$message = "book:$book_id $bookname ";
 		$to = get_admin_mail($book_id);
-		mail_html($to, $to, "<$bookname> is online", "$message");
+		mail_html($to, $to, "<$bookname> is online", "$message", "book_club@cedump-sh.ap.qualcomm.com");
 		add_log($login_id, $login_id, $book_id, 2);
 		break;
 	/*admin*/
@@ -715,7 +715,7 @@ switch($action){
 		$to = get_user_attr($borrower, 'email');
 		$user = get_user_attr($borrower, 'name');
 		$cc = get_admin_mail();
-		mail_html($to, $cc, "$user is approved to join reading club", "");
+		mail_html($to, $cc, "$user is approved to join reading club", "", "book_club@cedump-sh.ap.qualcomm.com");
 		add_log($login_id, $borrower, 0, 0x108);
 		if(isset($record_id) && ($record_id != 0))
 			set_record_status($record_id, 0x108);

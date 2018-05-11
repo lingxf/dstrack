@@ -2228,7 +2228,7 @@ function book_mail_notify($id, $subject, $message='', $type=0)
 	}
 	$text .= "<br><a href=http://cedump-sh.ap.qualcomm.com/book/book.php>Book</a>";
 	$text = wordwrap($text, 70);
-	mail_html($to, $cc, $subject, $text);
+	mail_html($to, $cc, $subject, $text, "book_club@cedump-sh.ap.qualcomm.com");
 }
 
 
