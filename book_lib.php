@@ -306,17 +306,23 @@ function list_record($uid='', $format='self', $condition='')
 
 function list_statistic()
 {
-	top_statistic();
 	//cal_score();
+	top_statistic();
+	print("<div >");
 	print("积分排名");
 	point_statistic();
+	print("</div>");
+	print("<div>");
 	print("评论统计");
 	comment_statistic(0);
+	print("</div>");
 	//comment_statistic_legacy(0);
 	//print("分享统计");
 	//share_statistic();
+	print("<div>");
 	print("评分统计");
 	score_statistic();
+	print("</div>");
 }
 function share_statistic($type = 0)
 {
@@ -405,7 +411,7 @@ function point_statistic($type = 0)
 	print("</table>");
 */
 	$sql2 = "select concat('<a href=?action=list_comments&borrower=', user, '>', user_name, '</a>') as 用户, ".
-		"shares * 200 + effect_comments * 20 + scount *2 as `积分`, score_used as 已用积分,  shares * 200 + effect_comments * 20 + scount *2 - score_used as 可用积分,  books_his as 累计借书, shares as 累计分享, joinshares as 累计参会, total_comments as 累计评论, effect_comments as 有效评论, scount as 打分次数 from ($sqlq) t order by 积分 desc";
+		"shares * 200 + effect_comments * 20 + scount *2 as `积分`, score_used as 已用积分,  shares * 200 + effect_comments * 20 + scount *2 - score_used as 可用积分,  books_his as 累计借书, shares as 累计分享, joinshares as 累计参会, ifnull(total_comments, 0) as 累计评论, effect_comments as 有效评论, scount as 打分次数 from ($sqlq) t order by 积分 desc";
 	show_table_by_sql("topcomment", 'book', 800, $sql2, array(), array(120));
 }
 
@@ -421,8 +427,8 @@ function list_sponsor_callback($field, $value, $row, &$td_attr, &$width)
 function top_statistic($type = 0)
 {
 
-	print_table_head('', 650);
-	print("<tr><td>");
+	print_tables_begin();
+	print("<div style='float:left'>");
 	$tb_comments = " (select borrower, count(words) as total_comments from `comments` group by borrower)";
 	$sql = "  select ".
 		" concat('<a href=?action=list_comments&borrower=',user,'>', user_name,'</a>') as `姓名`, ".
@@ -431,9 +437,11 @@ function top_statistic($type = 0)
 	$sql .= "  left join `history` on member.user = history.borrower ";
 	$sql .= " where member.user not like 'test%' ";
 	$sql .= " group by user order by effect_comments desc limit 0,15 ";
-	print("Top 15 评论达人");
+	print("Top 15 评论达人<br>");
 	show_table_by_sql("topcomment", 'book', 300, $sql, array(), array(120));
-	print("</td><td>");
+	print("</div>");
+	print_tables_inter();
+	print("<div style='float:left'>");
 	$sql = "  select ".
 		" concat('<a href=?action=list_grade&borrower=',user,'>', user_name,'</a>') as `姓名`, ".
 		"COUNT( CASE WHEN `status` = 0x109 THEN 1 ELSE NULL END ) AS `打分书本` ";
@@ -444,8 +452,9 @@ function top_statistic($type = 0)
 
 	print("Top 15 打分达人");
 	show_table_by_sql("topcomment", 'book', 300, $sql);
-
-	print("</td><td>");
+	print("</div>");
+	print_tables_inter();
+	print("<div style='float:auto'>");
 	$sql = "  select ".
 		" concat('<a href=?action=list_sharebook&borrower=',user,'>', user_name,'</a>') as `姓名`, ".
 		"COUNT( CASE WHEN `status` = 0x106 THEN 1 ELSE NULL END ) AS `分享书本` ";
@@ -457,8 +466,11 @@ function top_statistic($type = 0)
 	print("Top 15 分享达人");
 	show_table_by_sql("topcomment", 'book', 300, $sql);
 
-	print("</td></tr>");
-	print("<tr><td>");
+	print("</div>");
+	print_tables_end();
+
+	print_tables_begin();
+	print("<div style='float:left'>");
 	$sql = "  select ".
 		" concat('<a href=?action=list_borrow&borrower=',user,'>', user_name,'</a>') as `姓名`, ".
 		"COUNT(distinct (CASE WHEN `status` = 0 THEN `book_id` ELSE NULL END)) AS `曾借书本` "; 
@@ -470,7 +482,9 @@ function top_statistic($type = 0)
 	print("Top 15 借书达人");
 	show_table_by_sql("topcomment", 'book', 300, $sql);
 
-	print("</td><td>");
+	print("</div>");
+	print_tables_inter();
+	print("<div style='float:left'>");
 	$sql = "  select ".
 		" sponsor as `姓名`, ".
 		"COUNT(name) AS `赞助书本` ";
@@ -481,8 +495,9 @@ function top_statistic($type = 0)
 
 	print("Top 15 赞助达人");
 	show_table_by_sql("topcomment", 'book', 300, $sql, array(),array(), 'list_sponsor_callback');
-	print("</td><td>");
-
+	print("</div>");
+	print_tables_inter();
+	print("<div style='float:top'>");
 	$sql = "  select ".
 		" concat('<a href=?action=list_admin&borrower=',admin,'>', user_name,'</a>') as `姓名`, ".
 		"COUNT(name) AS `贡献书本` ";
@@ -493,9 +508,22 @@ function top_statistic($type = 0)
 
 	print("Top 15 贡献达人");
 	show_table_by_sql("topcomment", 'book', 300, $sql);
+	print("</div>");
 
-	print("</td></tr>");
-	print("</table>");
+	print("<div style='float:auto'>");
+	$sql = "  select ".
+		" concat('<a href=?action=list_grade&borrower=',user,'>', user_name,'</a>') as `姓名`, ".
+		"COUNT( CASE WHEN `status` = 0x112 THEN 1 ELSE NULL END ) AS `分享参与` ";
+	$sql .= " from member ";
+	$sql .= "  left join `history` on member.user = history.borrower ";
+	$sql .= " where member.user not like 'test%' ";
+	$sql .= " group by user order by `分享参与` desc limit 0,15 ";
+	print("Top 15 参会达人");
+	show_table_by_sql("topcomment", 'book', 300, $sql);
+	print("</div>");
+
+	print_tables_end();
+
 	return;
 }
 
