@@ -287,7 +287,7 @@ function list_record($uid='', $format='self', $condition='')
 			}else if ($status == 0x105 && $borrower_id == $login_id){
 				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel_share\">取消</a>";
 			}else if ($status == 0x106 && $role == 2)
-				$blink = "<a onclick='add_join_member($record_id)' href=$record_id>添加</a>";
+				$blink = "<a onclick='add_join_member($record_id)' href=#$record_id>添加</a>";
 			else
 				$blink = "";
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $sdate, $blink)); 
@@ -1371,12 +1371,23 @@ function apply_share($book_id, $login_id, $date=0)
 function join_share($book_id, $record_id, $user_id)
 {
 	$sql = " select * from history where book_id = $book_id and borrower='$user_id' and data='$record_id' and (status = 0x112)";
-	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$res = read_mysql_query($sql);
 	$rows = mysql_num_rows($res);
 	if($rows > 0){
 		print ("$user_id already join share seminar\n");
 		return false;
 	}
+	$sql = " select * from member where user='$user_id'";
+	$res = read_mysql_query($sql);
+	$rows = mysql_num_rows($res);
+	if($rows == 0){
+		print ("$user_id is not a valid user\n");
+		return false;
+	}else{
+		$rows = mysql_fetch_array($res);
+		$user_name = $rows['user_name'];
+	}
+	print("Adding $user_name\n");
 	add_record($book_id, $user_id, 0x112, false, $record_id);
 	return 1;
 }
