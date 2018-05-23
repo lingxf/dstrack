@@ -13,16 +13,25 @@ include_once 'myphp/login_action.php';
 $disp_city=0;
 if(isset($_SESSION['user'])){
 	$login_id=$_SESSION['user'];
-	$role = is_member($login_id);
+	$groups = '';
+	$role = is_member($login_id, $groups);
 	$role_city = get_user_attr($login_id, 'city');
 }
-
-print("
+?>
 <html>
 <Title>Import Sharing PPT</Title>
 <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
 <meta http-equiv='Content-Language' content='zh-CN' /> 
-");
+<script type="text/javascript">
+function add_join_member(record_id){
+	var result = prompt("Please input user_ids(seperated by ,):");
+	url = "book_action.php?record_id="+record_id+"&action=join_share&users="+result;
+	load_url(url);
+	return false;
+}
+</script>
+<?php
+include_once 'myphp/common_js.php';
 print("
 <form enctype='multipart/form-data' action='import_file.php' method='POST'>
     <input type='hidden' name='MAX_FILE_SIZE' value='128000000' />

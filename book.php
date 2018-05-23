@@ -96,6 +96,7 @@ function load_intro(){
 	}
 
 }
+
 function change_class(bookclass, view){
 	url = "show_book.php?";
 	url = url + "class="+bookclass;

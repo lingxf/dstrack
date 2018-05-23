@@ -73,6 +73,7 @@ function out_record()
    0x109 add score
    0x110 share_cancel
    0x111 add want
+   0x112 share_join
  */
 function get_book_status_name($status)
 {
@@ -145,7 +146,7 @@ function list_record($uid='', $format='self', $condition='')
 		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '借出日期', '归还日期','入库日期' ));
 		$sql = " select record_id, borrower, t1.status, name, user_name, data,adate, bdate,rdate,sdate, t1.book_id from history t1, books t2, member t3 where t1.book_id = t2.book_id and t1.status = 0 and t3.user = t1.borrower and t2.city = $role_city and $extra_cond order by sdate desc ";
 	}else if($format == 'share'){
-		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '完成日期' ));
+		print_tdlist(array('序号','借阅人', '书名','编号','申请日期', '完成日期', '操作' ));
 		$sql = " select record_id, borrower, t1.status, name, user_name, data, misc, adate, bdate,rdate,sdate, t1.book_id from $book_db.history t1, $book_db.books t2, $book_db.member t3 where t1.book_id = t2.book_id and $condition and t3.user = t1.borrower and t2.city = $role_city order by sdate desc,adate desc ";
 	}else if($format == 'member'){
 		print_tdlist(array('序号','帐号','申请人','申请日期', '批准日期', '操作'));
@@ -283,8 +284,10 @@ function list_record($uid='', $format='self', $condition='')
 				$blink = "<a href=\"book.php?record_id=$record_id&action=share_done\">完成</a>";
 				$blink .= "&nbsp;<a href=\"book.php?record_id=$record_id&action=share_cancel\">取消</a>";
 				$blink .= "&nbsp;<a href=\"edit_book.php?record_id=$record_id&op=edit_share_ui\">编辑</a>";
-			}else if ($status == 0x105 && $borrower_id == $login_id)
+			}else if ($status == 0x105 && $borrower_id == $login_id){
 				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel_share\">取消</a>";
+			}else if ($status == 0x106 )
+				$blink = "<a onclick='add_join_member($record_id)' href=#>添加</a>";
 			else
 				$blink = "";
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $sdate, $blink)); 
@@ -362,11 +365,12 @@ function point_statistic($type = 0)
 	$sqlq = "  select user,user_name, ".
 		"score,".
 		"score_used, ".
-		"tc.total_comments, effect_comments, ".
-		//"COUNT( CASE WHEN `status` = 0 THEN 1 ELSE NULL END ) AS `books_his`, ". 
-		"COUNT(distinct (CASE WHEN `status` = 0 THEN `book_id` ELSE NULL END)) AS `books_his`, ". 
-	    "COUNT( CASE WHEN `status` = 0x106 THEN 1 ELSE NULL END ) AS `shares`, ".
-		"COUNT( CASE WHEN `status` = 0x109 THEN 1 ELSE NULL END ) AS `scount` ";
+		"tc.total_comments, effect_comments ".
+		//",COUNT( CASE WHEN `status` = 0 THEN 1 ELSE NULL END ) AS `books_his` ". 
+		",COUNT(distinct (CASE WHEN `status` = 0 THEN `book_id` ELSE NULL END)) AS `books_his` ". 
+	    ",COUNT( CASE WHEN `status` = 0x106 THEN 1 ELSE NULL END ) AS `shares` ".
+		",COUNT( CASE WHEN `status` = 0x109 THEN 1 ELSE NULL END ) AS `scount` ".
+		",COUNT( CASE WHEN `status` = 0x112 THEN 1 ELSE NULL END ) AS `joinshares` ";
 //	$sql .= ", count(case when `words` != '' then 1 else null end ) as `total_comments`";
 	$sqlq .= " from `member` left join $tb_comments tc on member.user = tc.borrower ";
 	$sqlq .= "  left join `history` on member.user = history.borrower ";
@@ -401,7 +405,7 @@ function point_statistic($type = 0)
 	print("</table>");
 */
 	$sql2 = "select concat('<a href=?action=list_comments&borrower=', user, '>', user_name, '</a>') as 用户, ".
-		"shares * 200 + effect_comments * 20 + scount *2 as `积分`, score_used as 已用积分,  shares * 200 + effect_comments * 20 + scount *2 - score_used as 可用积分,  books_his as 累计借书, shares as 累计分享, total_comments as 累计评论, effect_comments as 有效评论, scount as 打分次数 from ($sqlq) t order by 积分 desc";
+		"shares * 200 + effect_comments * 20 + scount *2 as `积分`, score_used as 已用积分,  shares * 200 + effect_comments * 20 + scount *2 - score_used as 可用积分,  books_his as 累计借书, shares as 累计分享, joinshares as 累积参会, total_comments as 累计评论, effect_comments as 有效评论, scount as 打分次数 from ($sqlq) t order by 积分 desc";
 	show_table_by_sql("topcomment", 'book', 800, $sql2, array(), array(120));
 }
 
@@ -582,6 +586,14 @@ function cal_score($who = '')
 		$user = $row['borrower'];
 		$ct_array[$user] = isset($ct_array[$user]) ? $ct_array[$user] + 2 : 2;
 	}
+
+	$sql = "select * from history where status = 0x112";
+	$res = read_mysql_query($sql);
+	while($row = mysql_fetch_array($res)){
+		$user = $row['borrower'];
+		$ct_array[$user] = isset($ct_array[$user]) ? $ct_array[$user] + 5 : 5;
+	}
+
 
 	foreach($ct_array as $user=>$score){
 		$cc = isset($cc_array[$user])?$cc_array[$user]:0;
@@ -1354,6 +1366,19 @@ function apply_share($book_id, $login_id, $date=0)
 	add_record($book_id, $login_id, 0x105);
 	print ("申请分享成功!");
 	return true;
+}
+
+function join_share($book_id, $record_id, $user_id)
+{
+	$sql = " select * from history where book_id = $book_id and borrower='$user_id' and data='$record_id' and (status = 0x112)";
+	$res = mysql_query($sql) or die("Invalid query:" . $sql . mysql_error());
+	$rows = mysql_num_rows($res);
+	if($rows > 0){
+		print ("$user_id already join share seminar\n");
+		return false;
+	}
+	add_record($book_id, $user_id, 0x112, false, $record_id);
+	return 1;
 }
 
 function get_total_books()

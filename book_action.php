@@ -20,7 +20,8 @@ include_once 'myphp/login_action.php';
 
 $max_books = 1;
 $items_perpage = 50;
-$role = is_member($login_id);
+$groups = '';
+$role = is_member($login_id, $groups);
 
 $action="home";
 if(isset($_GET['action']))$action=$_GET['action'];
@@ -84,6 +85,21 @@ switch($action){
 		break;
 
 	/*admin*/
+	case "join_share":
+		$users = get_url_var('users', '');
+		$users_array = explode(',', $users);
+		$book_id = get_bookid_by_record($record_id);
+		$total = 0;
+		foreach($users_array as $borrower){
+			$n = join_share($book_id, $record_id, $borrower);
+			if($n === false)
+				continue;
+			else
+				$total += $n;
+		}
+		if($total > 0)
+			print ("添加".$total."位分享会参与者!");
+		break;
 	case "migrate":
 		migrate_record($login_id);
 		break;
