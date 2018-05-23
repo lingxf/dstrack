@@ -286,8 +286,8 @@ function list_record($uid='', $format='self', $condition='')
 				$blink .= "&nbsp;<a href=\"edit_book.php?record_id=$record_id&op=edit_share_ui\">编辑</a>";
 			}else if ($status == 0x105 && $borrower_id == $login_id){
 				$blink = "<a href=\"book.php?record_id=$record_id&action=cancel_share\">取消</a>";
-			}else if ($status == 0x106 )
-				$blink = "<a onclick='add_join_member($record_id)' href=#>添加</a>";
+			}else if ($status == 0x106 && $role == 2)
+				$blink = "<a onclick='add_join_member($record_id)' href=$record_id>添加</a>";
 			else
 				$blink = "";
 			print_tdlist(array($i,$borrower, $name,$book_id,  $adate, $sdate, $blink)); 
