@@ -405,7 +405,7 @@ function point_statistic($type = 0)
 	print("</table>");
 */
 	$sql2 = "select concat('<a href=?action=list_comments&borrower=', user, '>', user_name, '</a>') as 用户, ".
-		"shares * 200 + effect_comments * 20 + scount *2 as `积分`, score_used as 已用积分,  shares * 200 + effect_comments * 20 + scount *2 - score_used as 可用积分,  books_his as 累计借书, shares as 累计分享, joinshares as 累积参会, total_comments as 累计评论, effect_comments as 有效评论, scount as 打分次数 from ($sqlq) t order by 积分 desc";
+		"shares * 200 + effect_comments * 20 + scount *2 as `积分`, score_used as 已用积分,  shares * 200 + effect_comments * 20 + scount *2 - score_used as 可用积分,  books_his as 累计借书, shares as 累计分享, joinshares as 累计参会, total_comments as 累计评论, effect_comments as 有效评论, scount as 打分次数 from ($sqlq) t order by 积分 desc";
 	show_table_by_sql("topcomment", 'book', 800, $sql2, array(), array(120));
 }
 
