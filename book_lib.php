@@ -517,7 +517,7 @@ function top_statistic($type = 0)
 	$sql .= " from member ";
 	$sql .= "  left join `history` on member.user = history.borrower ";
 	$sql .= " where member.user not like 'test%' ";
-	$sql .= " group by user order by `分享参与` desc limit 0,15 ";
+	$sql .= " group by user having `分享参与` > 0 order by `分享参与` desc limit 0,15 ";
 	print("Top 15 参会达人");
 	show_table_by_sql("topcomment", 'book', 300, $sql);
 	print("</div>");
