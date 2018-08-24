@@ -981,6 +981,13 @@ function get_city_booktb($city)
 	return $city_book[$city];
 }
 
+function list_book2()
+{
+	$sql_time = "select book_id, round(avg( history.data),1) as score from history left join books using (book_id) where history.status = 0x109 group by book_id ";
+	$sql = " select name, class_name, author, score, `desc`, comments from books a left join ($sql_time) score using (book_id) left join class_simple b on a.`class` = b.class_id where score.score > 0 order by score.score desc"; 
+	show_table_by_sql('', 'book', 1024, $sql);
+}
+
 function list_book($format='normal', $start=0, $items=50, $order = 0, $condition='')
 {
 	global $login_id, $role, $class, $comment_type, $book_sname, $favor, $type;
@@ -1052,7 +1059,7 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 	}else if($condition == 'history')
 		$sql = "select * from history left join $tb_name using (book_id) where borrower = '$login_id' and (history.status < 6) ";
 	else if($condition == 'book_borrowed'){
-		$sql = "select distinct book_id, name, author, comments, class, buy_date, books.status, `index`, ISBN, price, sponsor, `desc` from history left join $tb_name using (book_id) where borrower = '$login_id' and (history.status < 6) ";
+		$sql = "select distinct book_id, name, author, groups, comments, class, buy_date, books.status, `index`, ISBN, price, sponsor, `desc` from history left join $tb_name using (book_id) where borrower = '$login_id' and (history.status < 6) ";
 	}else if($condition == 'book_admin'){
 		$sql = "select * from $tb_name where admin = '$login_id' ";
 	}else{
@@ -1109,14 +1116,14 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 	while($row=mysql_fetch_array($res)){
 		$book_id = $row['book_id']; 
 		$name = $row['name'];
-		$name = "<a href='book.php?action=show_borrower&book_id=$book_id'>$name</a>";
+		$name = "<a class='book_name' book_id='$book_id' href='#' >$name</a>";
 		$author= $row['author'];
 		$author = substr($author, 0, 64);
 		$isbn = $row['ISBN'];
 		$index = $row['index'];
 		$price = $row['price'];
 		$sponsor = $row['sponsor'];
-		$groups = $row['groups'];
+		$groups = isset($row['groups'])?$row['groups']:0;
 		$buy_date = substr($row['buy_date'], 0, 10);
 		$class =  $row['class'];
 		$type = isset($row['type'])? $row['type'] : 0;
@@ -1181,6 +1188,7 @@ function list_book($format='normal', $start=0, $items=50, $order = 0, $condition
 				$status_text .= "在库";
 				$status_text .= "</a>";
 				$blink = "<a href=book.php?action=borrow&book_id=$book_id>借阅</a>";
+				$blink = "<input type='button' class='button' href=book.php?action=borrow&book_id=$book_id value='借阅'></input>";
 				if($type == 0)
 					$bcolor = 'white';
 				else
